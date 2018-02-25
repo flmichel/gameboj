@@ -1,7 +1,6 @@
 package ch.epfl.gameboj;
 
-import static ch.epfl.gameboj.Preconditions.checkBits16;
-import static ch.epfl.gameboj.Preconditions.checkBits8;
+import ch.epfl.gameboj.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -18,7 +17,7 @@ public final class Bus {
     }
     
     public int read(int address) {
-        checkBits16(address);
+        Preconditions.checkBits16(address);
         for (Component component : components) {
             if (component.read(address) != Component.NO_DATA)
                 return component.read(address);        
@@ -27,8 +26,8 @@ public final class Bus {
     }
     
     public void write(int address, int data) {
-        checkBits16(address);
-        checkBits8(data);
+        Preconditions.checkBits16(address);
+        Preconditions.checkBits8(data);
         for (Component component : components) {
             component.write(address, data);
         }
