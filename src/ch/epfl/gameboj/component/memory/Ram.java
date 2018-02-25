@@ -20,12 +20,13 @@ final public class Ram {
     }
     
     public int read(int index) {
-        checkBits8(data[index]);
+        if (index < 0 || index >= data.length)
+            throw new IndexOutOfBoundsException();
         return Byte.toUnsignedInt(data[index]);
     }
     
     public void write(int index, int value) {
-        if (index < 0 && index >= data.length)
+        if (index < 0 || index >= data.length)
             throw new IndexOutOfBoundsException();
         checkBits8(value);
         data[index] = (byte) value;

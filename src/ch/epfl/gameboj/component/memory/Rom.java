@@ -2,7 +2,6 @@ package ch.epfl.gameboj.component.memory;
 
 import java.util.Arrays;
 import java.lang.Byte;
-import static ch.epfl.gameboj.Preconditions.checkBits8;
 
 
 final public class Rom {
@@ -10,10 +9,10 @@ final public class Rom {
     private byte[] data;
     
     public Rom(byte[] data) {
-        if (data.length == 0)
+        if (data == null)
             throw new NullPointerException();
         else
-            data = Arrays.copyOf(this.data, this.data.length);
+            this.data = Arrays.copyOf(data, data.length);
     }
     
     public int size() {
@@ -21,7 +20,8 @@ final public class Rom {
     }
     
     public int read(int index) {
-        checkBits8(data[index]);
+        if (index < 0 || index > 0xff)
+            throw new IndexOutOfBoundsException();
         return Byte.toUnsignedInt(data[index]);
     }
 }
