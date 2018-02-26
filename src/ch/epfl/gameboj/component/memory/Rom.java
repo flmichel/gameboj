@@ -1,6 +1,7 @@
 package ch.epfl.gameboj.component.memory;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.lang.Byte;
 
 
@@ -9,10 +10,8 @@ final public class Rom {
     private byte[] data;
     
     public Rom(byte[] data) {
-        if (data == null)
-            throw new NullPointerException();
-        else
-            this.data = Arrays.copyOf(data, data.length);
+        Objects.requireNonNull(data);
+        this.data = Arrays.copyOf(data, data.length);
     }
     
     public int size() {

@@ -26,8 +26,7 @@ final public class Ram {
     public void write(int index, int value) {
         if (index < 0 || index >= data.length)
             throw new IndexOutOfBoundsException();
-        Preconditions.checkBits8(value);
-        data[index] = (byte) value;
+        data[index] = (byte) Preconditions.checkBits8(value);
 
     }
 }
