@@ -9,7 +9,7 @@ public final class Alu {
     private Alu() {}
     
     enum Flag implements Bit {
-        UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, Z, N, H, C
+        UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, C, H, N, Z
     }
 
     enum RotDir {
@@ -45,19 +45,19 @@ public final class Alu {
         
         boolean z = false, h = false, c = false;
         int value = l+r;
-        int valueBits4 = Bits.clip(l, 4) + Bits.clip(r, 4);
+        int valueBits4 = Bits.clip(4, l) + Bits.clip(4, r);
         
         if (c0) {
             value++;
             valueBits4++;
         }
         
-        if (value == 0) z = true;
         if (Bits.test(valueBits4, 4)) h = true;
         if (Bits.test(value, 8)) {
             c = true;
             value = Bits.set(value, 8, false);
         }
+        if (value == 0) z = true;
 
         return packValueZNHC(value, z, false, h, c);
     }
@@ -70,7 +70,7 @@ public final class Alu {
         Preconditions.checkBits16(r);
         
         boolean c = false;
-        int lowB = add(Bits.clip(l, 8), Bits.clip(l, 8));
+        int lowB = add(Bits.clip(8, r), Bits.clip(8, l));
         
         if (Bits.test(lowB, Flag.C.index())) c = true;
         
@@ -95,42 +95,73 @@ public final class Alu {
     public static int sub(int l, int r, boolean b0) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
-        int value = l-r;
+        int borrow = 0;
+        if (b0) borrow = 1;
+        boolean c = l - borrow < r;
+        boolean h = Bits.clip(4, l) - borrow < Bits.clip(4, r);
+        int value = Bits.clip(8, l - r - borrow);
+        boolean z = (value == 0);
         
+        return packValueZNHC(value, z, true, h, c);    
     }
     
     public static int sub(int l, int r) {
-        
+        return sub(l, r, false);
     }
     
     public static int bcdAdjust(int v, boolean n, boolean h, boolean c) {
+        Preconditions.checkBits8(v);
+        boolean fixL = h || (!n && Bits.clip(4, v) > 9);
+        boolean fixH = c || (!n && v > 0x99);
+        int fix = 0;
+        if (fixL) fix += 0x06;
+        if (fixH) fix += 0x60;
+        int val;
+        if (n) val = v - fix;
+        else val = v + fix;
         
+        return packValueZNHC(val, val == 0, n, false, fixH);
     }
     
     public static int and(int l, int r) {
-        
+        Preconditions.checkBits8(l);
+        Preconditions.checkBits8(r);
+        int val = l & r;
+        return packValueZNHC(val, val == 0, false, true, false);
     }
     
     public static int or(int l, int r) {
-        
+        Preconditions.checkBits8(l);
+        Preconditions.checkBits8(r);
+        int val = l | r;
+        return packValueZNHC(val, val == 0, false, false, false);
     }
     
     public static int xor(int l, int r) {
-        
+        Preconditions.checkBits8(l);
+        Preconditions.checkBits8(r);
+        int val = l ^ r;
+        return packValueZNHC(val, val == 0, false, false, false);
     }
     
     public static int shiftLeft(int v) {
-        
+        int val = v << 1;
+        val = Bits.clip(8, val);
+        return packValueZNHC(val, val == 0, false, false, Bits.test(v, 7));
     }
     
     public static int shiftRightA(int v) {
-        
+        int val = v >> 1;
+        val = Bits.clip(8, val);
+        return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0));
     }
     
     public static int shiftRightL(int v) {
-        
+        int val = v >>> 1;
+        val = Bits.clip(8, val);
+        return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0)); 
     }
-    
+  /*  
     public static int rotate(RotDir d, int v) {
         
     }
@@ -146,4 +177,5 @@ public final class Alu {
     public static int testBit(int v, int bitIndex) {
         
     }
+    */
 }
