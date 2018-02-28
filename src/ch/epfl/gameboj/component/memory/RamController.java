@@ -13,7 +13,7 @@ public class RamController implements Component {
     private int startAddress;
     private int endAddress;
     
-    RamController(Ram ram, int startAddress, int endAddress) {
+    public RamController(Ram ram, int startAddress, int endAddress) {
         Objects.requireNonNull(ram);
         Preconditions.checkBits16(startAddress);
         Preconditions.checkBits16(endAddress);
@@ -23,7 +23,7 @@ public class RamController implements Component {
         this.endAddress = endAddress;
     }
     
-    RamController(Ram ram, int startAddress) {
+    public RamController(Ram ram, int startAddress) {
         this(ram, startAddress, startAddress + ram.size());
     }
     

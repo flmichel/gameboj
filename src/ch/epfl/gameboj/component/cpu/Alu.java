@@ -8,7 +8,7 @@ public final class Alu {
     
     private Alu() {}
     
-    enum Flag implements Bit {
+    public enum Flag implements Bit {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, C, H, N, Z
     }
 
