@@ -8,7 +8,6 @@ public class GameBoy {
     private Bus bus;
     private Ram workRam;
 
-
     public GameBoy(Object cartridge) {
         workRam = new Ram(AddressMap.WORK_RAM_SIZE);
         bus.attach(new RamController(workRam, AddressMap.WORK_RAM_START));
