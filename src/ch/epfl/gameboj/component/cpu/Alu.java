@@ -12,7 +12,7 @@ public final class Alu {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, C, H, N, Z
     }
 
-    enum RotDir {
+    public enum RotDir {
         LEFT, RIGHT
     }
     
@@ -36,7 +36,7 @@ public final class Alu {
     
     public static int unpackFlags(int valueFlags) {
         Preconditions.checkBits16(valueFlags);
-        return Bits.clip(valueFlags, 8);
+        return Bits.clip(8, valueFlags);
     }
     
     public static int add(int l, int r, boolean c0) {
@@ -145,37 +145,64 @@ public final class Alu {
     }
     
     public static int shiftLeft(int v) {
+        Preconditions.checkBits8(v);
         int val = v << 1;
         val = Bits.clip(8, val);
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 7));
     }
     
     public static int shiftRightA(int v) {
-        int val = v >> 1;
+        Preconditions.checkBits8(v);
+        int val = (byte)v >> 1;
         val = Bits.clip(8, val);
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0));
     }
     
     public static int shiftRightL(int v) {
+        Preconditions.checkBits8(v);
         int val = v >>> 1;
         val = Bits.clip(8, val);
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0)); 
     }
-  /*  
+  
     public static int rotate(RotDir d, int v) {
-        
+        Preconditions.checkBits8(v);
+        int dir, index;
+        if (d.name() == "LEFT") {
+            dir = 1;
+            index = 0;
+        } else {
+            dir = -1;
+            index = 7;
+        }
+        v = Bits.rotate(8, v, dir);
+        return packValueZNHC(v, v == 0, false, false, Bits.test(v, index));
     }
     
     public static int rotate(RotDir d, int v, boolean c) {
+        Preconditions.checkBits8(v);
+        int dir;
+        if (d.name() == "LEFT") dir = 1;
+        else dir = -1;
         
+        if (c) v = Bits.set(v, 8, true);
+        v = Bits.rotate(9, v, dir);
+        int val = Bits.clip(8, v);
+        return packValueZNHC(val, val == 0, false, false, Bits.test(v, 8));
+      
     }
     
     public static int swap(int v) {
-        
+        Preconditions.checkBits8(v);
+        v = Bits.reverse8(v);
+        return packValueZNHC(v, v == 0, false, false, false);
     }
     
     public static int testBit(int v, int bitIndex) {
-        
+        Preconditions.checkBits8(v);
+        if (bitIndex < 0 | bitIndex >= 8)
+            throw new IndexOutOfBoundsException();
+        return packValueZNHC(0, Bits.test(v, bitIndex), false, false, false);     
     }
-    */
+    
 }
