@@ -16,7 +16,7 @@ public final class Alu {
         LEFT, RIGHT
     }
     
-    private static int packValueZNHC(int v, boolean z, boolean n, boolean h, boolean c) {
+    static public int packValueZNHC(int v, boolean z, boolean n, boolean h, boolean c) {
         return v << 8 | maskZNHC(z, n, h, c);
     }
     
@@ -202,7 +202,6 @@ public final class Alu {
         Preconditions.checkBits8(v);
         if (bitIndex < 0 | bitIndex >= 8)
             throw new IndexOutOfBoundsException();
-        return packValueZNHC(0, Bits.test(v, bitIndex), false, false, false);     
-    }
-    
+        return packValueZNHC(0, !Bits.test(v, bitIndex), false, true, false);     
+    } 
 }
