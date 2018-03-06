@@ -6,22 +6,46 @@ import ch.epfl.gameboj.Preconditions;
 
 public final class Bits {
     
-    private Bits() {}
+    private Bits() {} //Le constructeur fermé rend la classe non instensiable.
 
+    /**
+     * Retourne un entier int dont seul le bit d'index donné vaut 1
+     * @param index compris entre 0 (inclus) et 32 (exclus).
+     * @return un entier int dont seul le bit d'index donné vaut 1.
+     */
     public static int mask(int index) {
         Objects.checkIndex(index, 32);
         return 0b1 << index;
     }
     
+    /**
+     * Retourne vrai ssi le bit d'index donné de bits vaut 1.
+     * @param bits est un entier int.
+     * @param index compris entre 0 (inclus) et 32 (exclus).
+     * @return vrai ssi le bit d'index donné de bits vaut 1
+     */
     public static boolean test(int bits, int index) {
         Objects.checkIndex(index, 32);
         return (mask(index) & bits) != 0;
     }
     
+    /**
+     * Retourne vrai ssi le bit d'index (donné par bit) de bits vaut 1.
+     * @param bits est un entier int.
+     * @param bit est un entier int. On obtient l'index à tester grace à ce bit.
+     * @return vrai ssi le bit d'index donné de bits vaut 1
+     */
     public static boolean test(int bits, Bit bit) {
         return test(bits, bit.index());
     }
     
+    /**
+     * Retourne une valeur dont tous les bits sont égaux à ceux de bits, sauf celui d'index donné, qui est égal à newValue
+     * @param bits est l'entier int utilisé.
+     * @param index compris entre 0 (inclus) et 32 (exclus).
+     * @param newValue est un boolean qui défini si le bit doit passer à 1 ou 0.
+     * @return une valeur dont tous les bits sont égaux à ceux de bits, sauf celui d'index donné, qui est égal à newValue
+     */
     public static int set(int bits, int index, boolean newValue) {
         Objects.checkIndex(index, 32);
         if (newValue)
@@ -29,6 +53,12 @@ public final class Bits {
         else return bits & ~(0x1 << index);
     }
     
+    /**
+     * 
+     * @param size 
+     * @param bits
+     * @return 
+     */
     public static int clip(int size, int bits) {
         Preconditions.checkArgument(size >= 0 && size <= 32);
         if (size == 32)
