@@ -10,6 +10,7 @@ public class GameBoy {
 
     public GameBoy(Object cartridge) {
         workRam = new Ram(AddressMap.WORK_RAM_SIZE);
+        bus = new Bus();
         bus.attach(new RamController(workRam, AddressMap.WORK_RAM_START));
         bus.attach(new RamController(workRam, AddressMap.ECHO_RAM_START, AddressMap.ECHO_RAM_END));
     }

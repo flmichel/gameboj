@@ -1,11 +1,11 @@
 package ch.epfl.gameboj.component.cpu;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-public class AluTest {
+class AluTest {
 
     @Test
     void MaskZNHCtest() {       
@@ -16,13 +16,6 @@ public class AluTest {
     void unpackValueTest() {       
         assertEquals(0b01001000, 
                 Alu.unpackValue(0b0100100011111111));
-    }
-
-    @Test
-    void unpackValueTestFailsWithInvalidInput() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Alu.unpackValue(0b0100100011111111010);
-        });
     }
 
     @Test
@@ -129,7 +122,7 @@ public class AluTest {
         assertEquals(0b1100_0000_0000_0000, 
                 Alu.shiftRightA(0b1000_0000));
     }
-    
+
     @Test
     void shiftRightLTest() {       
         assertEquals(0b01010_0001_0000, 
@@ -139,7 +132,7 @@ public class AluTest {
         assertEquals(0b100_0000_0000_0000, 
                 Alu.shiftRightL(0b1000_0000));
     }
-    
+
     @Test
     void rotateTest() {
         assertEquals(0b01010101_0000_0000, 
@@ -149,36 +142,37 @@ public class AluTest {
         assertEquals(0b0_1000_0000, 
                 Alu.rotate(Alu.RotDir.LEFT, 0b0));
     }
-    
-//    @Test
-//    void rotateWithBooleanTest() {
-//        assertEquals(0b01010101_0000_0000, 
-//                Alu.rotate(Alu.RotDir.RIGHT, 0b10101010));
-//        assertEquals(0b01010101_0001_0000, 
-//                Alu.rotate(Alu.RotDir.LEFT, 0b10101010));
-//        assertEquals(0b0_1000_0000, 
-//                Alu.rotate(Alu.RotDir.LEFT, 0b0));
-//    }
+
+    //    @Test
+    //    void rotateWithBooleanTest() {
+    //        assertEquals(0b01010101_0000_0000, 
+    //                Alu.rotate(Alu.RotDir.RIGHT, 0b10101010));
+    //        assertEquals(0b01010101_0001_0000, 
+    //                Alu.rotate(Alu.RotDir.LEFT, 0b10101010));
+    //        assertEquals(0b0_1000_0000, 
+    //                Alu.rotate(Alu.RotDir.LEFT, 0b0));
+    //    }
 
     @Test
     void swapTest() {   
-        assertEquals(0x4000, Alu.swap(0x02));
+        assertEquals(0x1000, Alu.swap(0x01));
     }
-    
+
     @Test
     void swapTestZeroValue() {   
         assertEquals(0b1000_0000, Alu.swap(0x00));
     }
-    
+
     @Test
     void testBitTest() {   
         assertEquals(0b0010_0000, Alu.testBit(0xFF, 5));
         assertEquals(0b1010_0000, Alu.testBit(0x00, 5));
     }
-    
+
     @Test
     void testBitTestBadIndex() {   
         assertThrows(IndexOutOfBoundsException.class, () -> {Alu.testBit(0, -1);});
         assertThrows(IndexOutOfBoundsException.class, () -> {Alu.testBit(0, 8);});
     }    
+
 }
