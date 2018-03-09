@@ -13,9 +13,9 @@ import ch.epfl.gameboj.component.cpu.Opcode.Kind;
 public final class Cpu implements Component, Clocked {
 
     private Bus bus;
-    private long nextNonIdleCycle;
+    private long nextNonIdleCycle = 0;
     private static final Opcode[] DIRECT_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.DIRECT);
-    private int PC;
+    private int PC = 0;
     private int SP;
 
     private enum Reg implements Register {
@@ -27,11 +27,6 @@ public final class Cpu implements Component, Clocked {
         AF, BC, DE, HL
     }
 
-    public void cycle(long cycle) {
-        if (cycle == nextNonIdleCycle) return;
-        dispatch();
-    }
-
     private static Opcode[] buildOpcodeTable(Kind direct) {
         Opcode a[] = new Opcode[256];
         for (Opcode o: Opcode.values()) {
@@ -41,10 +36,18 @@ public final class Cpu implements Component, Clocked {
         }
         return a;
     }
+    
+    public void cycle(long cycle) {
+        if (cycle == nextNonIdleCycle)
+            dispatch();
+        else return;
+    }
 
     private void dispatch() {
         int opcodeValue = read8(PC);
         Opcode opcode = DIRECT_OPCODE_TABLE[opcodeValue];
+        PC += opcode.totalBytes;
+        nextNonIdleCycle += opcode.cycles;
         switch (opcode.family) {
 
         case NOP: {
@@ -225,8 +228,8 @@ public final class Cpu implements Component, Clocked {
         Preconditions.checkBits16(newV);
         if (r.name() == "AF")
             newV = newV & 0xFFF0;
-        registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.extract(newV, 8, 8));
-        registerFile.set(Reg.values()[r.index() * 2], Bits.clip(8, newV));
+        registerFile.set(Reg.values()[r.index() * 2], Bits.extract(newV, 8, 8));
+        registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.clip(8, newV));
     }
     
     private void setReg16SP(Reg16 r, int newV) {
