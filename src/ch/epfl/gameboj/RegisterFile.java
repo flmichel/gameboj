@@ -22,11 +22,11 @@ public final class RegisterFile<E extends Register> {
         values[reg.index()] = (byte) newValue;
     }
     
-    boolean testBit(E reg, Bit b) {
+    public boolean testBit(E reg, Bit b) {
         return Bits.test(values[reg.index()], b);
     }
     
-    void setBit(E reg, Bit bit, boolean newValue) {
+    public void setBit(E reg, Bit bit, boolean newValue) {
         Bits.set(values[reg.index()], bit.index(), newValue);
     }
 }
