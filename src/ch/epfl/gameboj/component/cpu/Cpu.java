@@ -8,6 +8,7 @@ import ch.epfl.gameboj.RegisterFile;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
+import ch.epfl.gameboj.component.cpu.Alu.*;
 import ch.epfl.gameboj.component.cpu.Opcode.Kind;
 
 public final class Cpu implements Component, Clocked {
@@ -15,6 +16,7 @@ public final class Cpu implements Component, Clocked {
     private Bus bus;
     private long nextNonIdleCycle = 0;
     private static final Opcode[] DIRECT_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.DIRECT);
+    private static final Opcode[] PREFIXED_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.PREFIXED);
     private int PC = 0;
     private int SP;
 
@@ -25,6 +27,10 @@ public final class Cpu implements Component, Clocked {
     
     private enum Reg16 implements Register {
         AF, BC, DE, HL
+    }
+    
+    private enum FlagSrc {
+        V0, V1, ALU, CPU
     }
 
     private static Opcode[] buildOpcodeTable(Kind direct) {
@@ -38,16 +44,18 @@ public final class Cpu implements Component, Clocked {
     }
     
     public void cycle(long cycle) {
-        if (cycle == nextNonIdleCycle)
-            dispatch();
-        else return;
+        System.out.println(SP);
+        if (cycle == nextNonIdleCycle) {
+            int opcodeValue = read8(PC);
+            Opcode opcode = DIRECT_OPCODE_TABLE[opcodeValue];           
+            dispatch(opcode);
+            PC += opcode.totalBytes;
+            nextNonIdleCycle += opcode.cycles;
+        }
     }
 
-    private void dispatch() {
-        int opcodeValue = read8(PC);
-        Opcode opcode = DIRECT_OPCODE_TABLE[opcodeValue];
-        PC += opcode.totalBytes;
-        nextNonIdleCycle += opcode.cycles;
+    private void dispatch(Opcode opcode) {
+
         switch (opcode.family) {
 
         case NOP: {
@@ -71,13 +79,13 @@ public final class Cpu implements Component, Clocked {
             registerFile.set(Reg.A, read8(address));   
         } break;
         case LD_A_N16R: {
-            registerFile.set(Reg.A, read16AfterOpcode());
+            registerFile.set(Reg.A, read8(read16AfterOpcode()));
         } break;
         case LD_A_BCR: {
-            registerFile.set(Reg.A, reg16(Reg16.BC));
+            registerFile.set(Reg.A, read8(reg16(Reg16.BC)));
         } break;
         case LD_A_DER: {
-            registerFile.set(Reg.A, reg16(Reg16.DE));
+            registerFile.set(Reg.A, read8(reg16(Reg16.DE)));
         } break;
         case LD_R8_N8: {
             int data = read8AfterOpcode();
@@ -138,6 +146,129 @@ public final class Cpu implements Component, Clocked {
             Reg16 reg16 = extractReg16(opcode);
             push16(reg16(reg16));
         } break;
+        
+        // Add
+        case ADD_A_R8: {
+        } break;
+        case ADD_A_N8: {
+        } break;
+        case ADD_A_HLR: {
+        } break;
+        case INC_R8: {
+            Reg reg = extractReg(opcode, 3);
+            int vf = Alu.add(registerFile.get(reg), 1);
+            setRegFromAlu(reg, vf);
+            combineAluFlags(vf, FlagSrc.ALU, FlagSrc.V0, FlagSrc.ALU, FlagSrc.CPU);
+        } break;
+        case INC_HLR: {
+            int vf = Alu.add(read8AtHl(), 1);
+            int v = Alu.unpackValue(vf);
+            write8AtHl(v);
+            combineAluFlags(vf, FlagSrc.ALU, FlagSrc.V0, FlagSrc.ALU, FlagSrc.CPU);
+        } break;
+        case INC_R16SP: {
+            Reg16 reg16 = extractReg16(opcode);
+            int vf = Alu.add16H(reg16(reg16), 1);
+            int v = Alu.unpackValue(vf);
+            setReg16SP(reg16, v);
+        } break;
+        case ADD_HL_R16SP: {
+            Reg16 reg16 = extractReg16(opcode);
+            int vf = Alu.add16H(reg16(Reg16.HL), reg16(reg16));
+            int v = Alu.unpackFlags(vf);
+            setReg16(Reg16.HL, v);
+            combineAluFlags(vf, FlagSrc.CPU, FlagSrc.V0, FlagSrc.ALU, FlagSrc.ALU);
+        } break;
+        case LD_HLSP_S8: {
+        } break;
+
+        // Subtract
+        case SUB_A_R8: {
+        } break;
+        case SUB_A_N8: {
+        } break;
+        case SUB_A_HLR: {
+        } break;
+        case DEC_R8: {
+        } break;
+        case DEC_HLR: {
+        } break;
+        case CP_A_R8: {
+        } break;
+        case CP_A_N8: {
+        } break;
+        case CP_A_HLR: {
+        } break;
+        case DEC_R16SP: {
+        } break;
+
+        // And, or, xor, complement
+        case AND_A_N8: {
+        } break;
+        case AND_A_R8: {
+        } break;
+        case AND_A_HLR: {
+        } break;
+        case OR_A_R8: {
+        } break;
+        case OR_A_N8: {
+        } break;
+        case OR_A_HLR: {
+        } break;
+        case XOR_A_R8: {
+        } break;
+        case XOR_A_N8: {
+        } break;
+        case XOR_A_HLR: {
+        } break;
+        case CPL: {
+        } break;
+
+        // Rotate, shift
+        case ROTCA: {
+        } break;
+        case ROTA: {
+        } break;
+        case ROTC_R8: {
+        } break;
+        case ROT_R8: {
+        } break;
+        case ROTC_HLR: {
+        } break;
+        case ROT_HLR: {
+        } break;
+        case SWAP_R8: {
+        } break;
+        case SWAP_HLR: {
+        } break;
+        case SLA_R8: {
+        } break;
+        case SRA_R8: {
+        } break;
+        case SRL_R8: {
+        } break;
+        case SLA_HLR: {
+        } break;
+        case SRA_HLR: {
+        } break;
+        case SRL_HLR: {
+        } break;
+
+        // Bit test and set
+        case BIT_U3_R8: {
+        } break;
+        case BIT_U3_HLR: {
+        } break;
+        case CHG_U3_R8: {
+        } break;
+        case CHG_U3_HLR: {
+        } break;
+
+        // Misc. ALU
+        case DAA: {
+        } break;
+        case SCCF: {
+        } break;
         default: 
             throw new IllegalArgumentException();
         }
@@ -195,7 +326,7 @@ public final class Cpu implements Component, Clocked {
 
     private void write16(int address, int v) {
         write8(address, Bits.clip(8, v));
-        write8(address, Bits.extract(v, 8, 8));
+        write8(Bits.clip(16, address + 1), Bits.extract(v, 8, 8));
     }
 
     private void write8AtHl(int v){
@@ -204,14 +335,14 @@ public final class Cpu implements Component, Clocked {
 
     private void push16(int v) {
         SP -= 2; 
-        SP = Bits.clip(SP, 16);
+        SP = Bits.clip(16, SP);
         write16(SP, v);
     }
 
     private int pop16() {
         int val = read16(SP);
         SP += 2;
-        SP = Bits.clip(SP, 16);
+        SP = Bits.clip(16, SP);
         return val;
 
     }
@@ -219,8 +350,8 @@ public final class Cpu implements Component, Clocked {
     // GESTION DES PAIRES DE REGISTRES
     
     private int reg16(Reg16 r) {
-        int h = registerFile.get(Reg.values()[r.index() * 2 + 1]);
-        int l = registerFile.get(Reg.values()[r.index() * 2]);
+        int h = registerFile.get(Reg.values()[r.index() * 2]);
+        int l = registerFile.get(Reg.values()[r.index() * 2 + 1]);
         return Bits.make16(h, l);
     }
     
@@ -231,12 +362,13 @@ public final class Cpu implements Component, Clocked {
         registerFile.set(Reg.values()[r.index() * 2], Bits.extract(newV, 8, 8));
         registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.clip(8, newV));
     }
+
     
     private void setReg16SP(Reg16 r, int newV) {
         if (r.name() == "AF")
             SP = newV;
         else
-            setReg16(r, newV);       
+            setReg16(r, newV); 
     }
 
     // Extraction de paramètres
@@ -257,6 +389,53 @@ public final class Cpu implements Component, Clocked {
     private int extractHlIncrement(Opcode opcode) {
         return (Bits.test(opcode.encoding, 4)) ? -1 : 1;
     }
+    
+    private RotDir rotDirection(int v) {
+        if (Bits.test(v, 3)) return RotDir.LEFT;
+        return RotDir.RIGHT;
+    }
+    
+    private int extractBit(int v) {
+        return Bits.extract(v, 3, 3); 
+    }
+    
+    private boolean bitResSet(int v) {
+        return Bits.test(v, 6);   
+    }
 
+    // Gestion des fanions
+    
+    private void setRegFromAlu(Reg r, int vf) {
+        registerFile.set(r, Alu.unpackValue(vf));
+    }
+    
+    private void setFlags(int valueFlags) {
+        registerFile.set(Reg.F, Alu.unpackFlags(valueFlags));
+    }
+    
+    private void setRegFlags(Reg r, int vf) {
+        setRegFromAlu(r, vf);
+        setFlags(vf);
+    }
+    
+    private void write8AtHlAndSetFlags(int vf) {
+        write8AtHl(Alu.unpackValue(vf));
+        setFlags(vf);
+    }
+    
+    private void combineAluFlags(int vf, FlagSrc z, FlagSrc n, FlagSrc h, FlagSrc c) {
+        FlagSrc[] flags = {z, n, h, c};
+        boolean[] tab = new boolean[4];
+        for (int i = 0; i < flags.length; i++) {
+            if (flags[i].name() == "V1")
+                tab[i] = true;
+            else if (flags[i].name() == "ALU")
+                tab[i] = Bits.test(vf, 7 - i); //On choisit l'index correspondant au bon fanions dans vf
+            else if (flags[i].name() == "CPU");
+                tab[i] = Bits.test(registerFile.get(Reg.F), 7 - i); //On choisit l'index correspondant au bon fanions dans le registre F.
+        }
+        int newValue = Alu.maskZNHC(tab[0], tab[1], tab[2], tab[3]);
+        registerFile.set(Reg.F, newValue);
+    }
 
 }
