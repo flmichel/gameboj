@@ -165,7 +165,6 @@ public final class Alu {
 
     public static int rotate(RotDir d, int v) {
         Preconditions.checkBits8(v);
-        //        Preconditions.checkArgument(d.name() == "LEFT" || d.name() == "RIGHT");
         int dir, index;
         if (d.name() == "LEFT") {
             dir = 1;
