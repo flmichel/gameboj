@@ -837,27 +837,6 @@ import ch.epfl.gameboj.component.memory.RamController;
               new int[] { 3, 0, 0b00000000, 0b00010000, 0, 0, 0, 0, 0, 0 },
               c._testGetPcSpAFBCDEHL());
   }
-  
-//Clemence
-  @Test
-  void ROTL_HLR() {
-      Cpu c = new Cpu();
-      Ram r = new Ram(200);
-      Bus b = connect(c, r);
-      b.write(0, Opcode.LD_H_N8.encoding);
-      b.write(1, 0b0001);
-      b.write(2, Opcode.LD_L_N8.encoding);
-      b.write(3, 0b001);
-      b.write(4, Opcode.LD_HLR_N8.encoding);
-      b.write(5, 0b01010000);
-      b.write(6, 0xCB);
-      b.write(7, Opcode.RL_HLR.encoding);
-      cycleCpu(c, Opcode.LD_H_N8.cycles + Opcode.LD_L_N8.cycles
-              + Opcode.RL_HLR.cycles + Opcode.LD_HLR_N8.cycles);
-      assertArrayEquals(new int[] { 8, 0, 0, 0b00010000, 0, 0, 0, 0, 1, 1 },
-              c._testGetPcSpAFBCDEHL());
-      assertEquals(0b01010000, b.read(0b100000001), 0.1);
-  }
 
   // Clemence
   @Test

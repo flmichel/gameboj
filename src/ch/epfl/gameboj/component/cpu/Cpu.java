@@ -4,6 +4,7 @@ import ch.epfl.gameboj.AddressMap;
 import ch.epfl.gameboj.Bus;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
+import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
@@ -17,7 +18,9 @@ public final class Cpu implements Component, Clocked {
     private static final Opcode[] DIRECT_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.DIRECT);
     private static final Opcode[] PREFIXED_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.PREFIXED);
     private int PC = 0;
+    private int nextPC = 0;
     private int SP;
+    private boolean IME;
 
     private enum Reg implements Register {
         A, F, B, C, D, E, H, L
@@ -31,6 +34,10 @@ public final class Cpu implements Component, Clocked {
     private enum FlagSrc {
         V0, V1, ALU, CPU
     }
+    
+    public enum Interrupt implements Bit {
+        VBLANK, LCD_STAT, TIMER, SERIAL, JOYPAD
+      }
 
     private static Opcode[] buildOpcodeTable(Kind direct) {
         Opcode a[] = new Opcode[256];
@@ -44,17 +51,23 @@ public final class Cpu implements Component, Clocked {
     
     public void cycle(long cycle) {
         if (cycle == nextNonIdleCycle) {
-            int opcodeValue = read8(PC);
-            Opcode opcode;
-            if (opcodeValue == 0xCB)
-                opcode = PREFIXED_OPCODE_TABLE[read8AfterOpcode()]; 
-            else
-                opcode = DIRECT_OPCODE_TABLE[opcodeValue]; 
-            dispatch(opcode);
-            PC += opcode.totalBytes;
-            nextNonIdleCycle += opcode.cycles;
+            reallyCycle();
         }
     }
+    
+    public void reallyCycle() {
+        int opcodeValue = read8(PC);
+        Opcode opcode;
+        if (opcodeValue == 0xCB)
+            opcode = PREFIXED_OPCODE_TABLE[read8AfterOpcode()]; 
+        else
+            opcode = DIRECT_OPCODE_TABLE[opcodeValue];
+        nextPC = PC + opcode.totalBytes;
+        dispatch(opcode);
+        PC += opcode.totalBytes;
+        nextNonIdleCycle += opcode.cycles;
+    }
+
 
     private void dispatch(Opcode opcode) {
 
@@ -430,6 +443,73 @@ public final class Cpu implements Component, Clocked {
             if (c) combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V1);
             else combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V0);
         } break;
+        
+        // Jumps
+        case JP_HL: {
+            PC = reg16(Reg16.HL);
+        } break;
+        case JP_N16: {
+            PC = read16AfterOpcode();
+        } break;
+        case JP_CC_N16: {
+            if (checkCondition(opcode)) {
+                PC = read16AfterOpcode();
+                nextNonIdleCycle += opcode.additionalCycles;
+            }   
+        } break;
+        case JR_E8: {
+            int e8 = Bits.signExtend8(read8AfterOpcode());
+            PC = nextPC + e8;
+        } break;
+        case JR_CC_E8: {
+            if (checkCondition(opcode)) {
+                int e8 = Bits.signExtend8(read8AfterOpcode());
+                PC = nextPC + e8;
+                nextNonIdleCycle += opcode.additionalCycles;
+            }
+        } break;
+
+        // Calls and returns
+        case CALL_N16: {
+            push16(nextPC);
+            PC = read16AfterOpcode();
+        } break;
+        case CALL_CC_N16: {
+            if (checkCondition(opcode)) {
+                push16(nextPC);
+                PC = read16AfterOpcode();
+                nextNonIdleCycle += opcode.additionalCycles;
+            }
+        } break;
+        case RST_U3: {
+            push16(PC + 1);
+            PC = AddressMap.INTERRUPTS[extractIndex(opcode)];
+        } break;
+        case RET: {
+            PC = pop16();
+        } break;
+        case RET_CC: {
+            if (checkCondition(opcode)) {
+                PC = pop16();
+                nextNonIdleCycle += opcode.additionalCycles;
+            }
+        } break;
+
+        // Interrupts
+        case EDI: {
+            IME = Bits.test(opcode.encoding, 3);
+        } break;
+        case RETI: {
+            IME = true;
+            PC = pop16();
+        } break;
+
+        // Misc control
+        case HALT: {
+            nextNonIdleCycle = Long.MAX_VALUE;
+        } break;
+        case STOP:
+          throw new Error("STOP is not implemented");
         default: 
             throw new IllegalArgumentException();
         }
@@ -437,6 +517,11 @@ public final class Cpu implements Component, Clocked {
 
     public void attachTo(Bus bus) {
         this.bus = bus;
+        bus.attach(this);
+    }
+    
+    public void requestInterrupt(Interrupt i) {
+        
     }
 
     @Override
@@ -604,5 +689,18 @@ public final class Cpu implements Component, Clocked {
         if (Bits.test(opcodeValue, 3) && Bits.test(fValue, Flag.C.index()))
             return true;
         return false;
+    }
+    
+    private boolean checkCondition(Opcode opcode) {
+        int cc = Bits.extract(opcode.encoding, 3, 2);
+        int regF = registerFile.get(Reg.F);
+        if (cc == 0b00)
+            return !Bits.test(regF, Flag.Z) ? true : false;
+        else if (cc == 0b01)
+            return Bits.test(regF, Flag.Z) ? true : false;
+        else if (cc == 0b10)
+            return !Bits.test(regF, Flag.C) ? true : false;
+        else
+            return Bits.test(regF, Flag.C) ? true : false;
     }
 }
