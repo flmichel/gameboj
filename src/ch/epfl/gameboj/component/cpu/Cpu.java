@@ -10,6 +10,7 @@ import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.cpu.Alu.*;
 import ch.epfl.gameboj.component.cpu.Opcode.Kind;
+import ch.epfl.gameboj.component.memory.Ram;
 
 public final class Cpu implements Component, Clocked {
 
@@ -21,6 +22,9 @@ public final class Cpu implements Component, Clocked {
     private int nextPC = 0;
     private int SP;
     private boolean IME;
+    private int IE;
+    private int IF;
+    private Ram highRam = new Ram(AddressMap.HIGH_RAM_SIZE);
 
     private enum Reg implements Register {
         A, F, B, C, D, E, H, L
@@ -50,26 +54,43 @@ public final class Cpu implements Component, Clocked {
     }
     
     public void cycle(long cycle) {
+       // System.out.println("A : " + registerFile.get(Reg.A));
+       // System.out.println("PC : " +  PC);
+
+        if(nextNonIdleCycle == Long.MAX_VALUE && IME) {
+            nextNonIdleCycle = cycle;
+        }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle();
         }
-    }
-    
+    }    
     public void reallyCycle() {
-        int opcodeValue = read8(PC);
-        Opcode opcode;
-        if (opcodeValue == 0xCB)
-            opcode = PREFIXED_OPCODE_TABLE[read8AfterOpcode()]; 
-        else
-            opcode = DIRECT_OPCODE_TABLE[opcodeValue];
-        nextPC = PC + opcode.totalBytes;
-        dispatch(opcode);
-        PC += opcode.totalBytes;
-        nextNonIdleCycle += opcode.cycles;
+        int reg = IE & IF;
+        if (IME && (Bits.clip(5, reg) != 0)) {
+            IME = false;
+            int i = Integer.lowestOneBit(reg);
+            Bits.set(IF, i, false);
+            push16(PC);
+            PC = AddressMap.INTERRUPTS[i];
+            nextNonIdleCycle += 5;
+        }
+        else {            
+            int opcodeValue = read8(PC);
+            Opcode opcode;
+            if (opcodeValue == 0xCB)
+                opcode = PREFIXED_OPCODE_TABLE[read8AfterOpcode()]; 
+            else
+                opcode = DIRECT_OPCODE_TABLE[opcodeValue];
+            nextPC = PC + opcode.totalBytes;
+            dispatch(opcode);
+            PC += opcode.totalBytes;
+            nextNonIdleCycle += opcode.cycles;
+        }
     }
 
 
     private void dispatch(Opcode opcode) {
+        System.out.println(opcode);
 
         switch (opcode.family) {
 
@@ -480,25 +501,25 @@ public final class Cpu implements Component, Clocked {
         // Calls and returns
         case CALL_N16: {
             push16(nextPC);
-            PC = read16AfterOpcode();
+            PC = read16AfterOpcode() - opcode.totalBytes;
         } break;
         case CALL_CC_N16: {
             if (checkCondition(opcode)) {
                 push16(nextPC);
-                PC = read16AfterOpcode();
+                PC = read16AfterOpcode() - opcode.totalBytes;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
         case RST_U3: {
-            push16(PC + 1);
-            PC = AddressMap.INTERRUPTS[extractIndex(opcode)];
+            push16(nextPC);
+            PC = AddressMap.INTERRUPTS[extractIndex(opcode)] - opcode.totalBytes;
         } break;
         case RET: {
-            PC = pop16();
+            PC = pop16() - opcode.totalBytes;
         } break;
         case RET_CC: {
             if (checkCondition(opcode)) {
-                PC = pop16();
+                PC = pop16() - opcode.totalBytes;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
@@ -509,7 +530,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case RETI: {
             IME = true;
-            PC = pop16();
+            PC = pop16() - opcode.totalBytes;
         } break;
 
         // Misc control
@@ -534,11 +555,26 @@ public final class Cpu implements Component, Clocked {
 
     @Override
     public int read(int address) {
-        return NO_DATA;
+        if (address == AddressMap.REG_IE)
+            return IE;
+        if (address == AddressMap.REG_IF)
+            return IF;
+        if (address >= AddressMap.HIGH_RAM_START && address < AddressMap.HIGH_RAM_END)
+            return highRam.read(address - AddressMap.HIGH_RAM_START);
+        else
+            return NO_DATA;
     }
 
     @Override
-    public void write(int address, int data) {}
+    public void write(int address, int data) {
+        if (address == AddressMap.REG_IE)
+            IE = data;
+        if (address == AddressMap.REG_IF)
+            IF = data;
+        if (address >= AddressMap.HIGH_RAM_START && address < AddressMap.HIGH_RAM_END)
+            highRam.write(address - AddressMap.HIGH_RAM_START, data);
+            
+    }
 
     public int[] _testGetPcSpAFBCDEHL() {
         int[] tab = new int[10];
