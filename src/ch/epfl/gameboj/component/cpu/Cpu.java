@@ -20,7 +20,7 @@ public final class Cpu implements Component, Clocked {
     private static final Opcode[] PREFIXED_OPCODE_TABLE = buildOpcodeTable(Opcode.Kind.PREFIXED);
     private int PC = 0;
     private int nextPC = 0;
-    private int SP;
+    private int SP = 0;
     private boolean IME;
     private int IE;
     private int IF;
@@ -54,11 +54,10 @@ public final class Cpu implements Component, Clocked {
     }
     
     public void cycle(long cycle) {
-       // System.out.println("A : " + registerFile.get(Reg.A));
-       // System.out.println("PC : " +  PC);
-
-        if(nextNonIdleCycle == Long.MAX_VALUE && IME) {
-            nextNonIdleCycle = cycle;
+        if(nextNonIdleCycle == Long.MAX_VALUE) {
+            int reg = IE & IF;
+            if (Bits.clip(5, reg) != 0)
+                nextNonIdleCycle = cycle;
         }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle();
@@ -69,9 +68,9 @@ public final class Cpu implements Component, Clocked {
         if (IME && (Bits.clip(5, reg) != 0)) {
             IME = false;
             int i = Integer.lowestOneBit(reg);
-            Bits.set(IF, i, false);
+            IF -= i;
             push16(PC);
-            PC = AddressMap.INTERRUPTS[i];
+            PC = AddressMap.INTERRUPTS[(int) (Math.log(i) / Math.log(2))];
             nextNonIdleCycle += 5;
         }
         else {            
@@ -90,7 +89,6 @@ public final class Cpu implements Component, Clocked {
 
 
     private void dispatch(Opcode opcode) {
-        System.out.println(opcode);
 
         switch (opcode.family) {
 
@@ -475,14 +473,14 @@ public final class Cpu implements Component, Clocked {
         
         // Jumps
         case JP_HL: {
-            PC = reg16(Reg16.HL);
+            PC = reg16(Reg16.HL) - opcode.totalBytes;
         } break;
         case JP_N16: {
-            PC = read16AfterOpcode();
+            PC = read16AfterOpcode() - opcode.totalBytes;
         } break;
         case JP_CC_N16: {
             if (checkCondition(opcode)) {
-                PC = read16AfterOpcode();
+                PC = read16AfterOpcode() - opcode.totalBytes;
                 nextNonIdleCycle += opcode.additionalCycles;
             }   
         } break;
@@ -512,7 +510,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case RST_U3: {
             push16(nextPC);
-            PC = AddressMap.INTERRUPTS[extractIndex(opcode)] - opcode.totalBytes;
+            PC = AddressMap.RESETS[extractIndex(opcode)] - opcode.totalBytes;
         } break;
         case RET: {
             PC = pop16() - opcode.totalBytes;
@@ -541,7 +539,7 @@ public final class Cpu implements Component, Clocked {
           throw new Error("STOP is not implemented");
         default: 
             throw new IllegalArgumentException();
-        }
+        }        
     }
 
     public void attachTo(Bus bus) {
@@ -550,7 +548,7 @@ public final class Cpu implements Component, Clocked {
     }
     
     public void requestInterrupt(Interrupt i) {
-        
+        IF = Bits.set(IF, i.index(), true);
     }
 
     @Override
@@ -573,7 +571,6 @@ public final class Cpu implements Component, Clocked {
             IF = data;
         if (address >= AddressMap.HIGH_RAM_START && address < AddressMap.HIGH_RAM_END)
             highRam.write(address - AddressMap.HIGH_RAM_START, data);
-            
     }
 
     public int[] _testGetPcSpAFBCDEHL() {
