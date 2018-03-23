@@ -1,11 +1,12 @@
 package ch.epfl.gameboj;
 
+import java.util.Objects;
+
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.cpu.Cpu;
+import ch.epfl.gameboj.component.memory.BootRomController;
 import ch.epfl.gameboj.component.memory.Ram;
 import ch.epfl.gameboj.component.memory.RamController;
-
-import java.util.Objects;
 
 public class GameBoy {
 
@@ -22,8 +23,8 @@ public class GameBoy {
         bus.attach(new RamController(workRam, AddressMap.WORK_RAM_START));
         bus.attach(new RamController(workRam, AddressMap.ECHO_RAM_START, AddressMap.ECHO_RAM_END));
         cpu.attachTo(bus);
-//        BootRomController brc = new BootRomController (cartridge);
-//        bus.attach(brc);
+        BootRomController brc = new BootRomController (cartridge);
+        bus.attach(brc);
 //        Timer minuteur = new Timer () ;
 //        bus.attach(minuteur);
     }
