@@ -13,13 +13,7 @@ public final class Cartridge implements Component {
     
     private Cartridge(MBC0 controller) {
         this.controller = controller;
-        this.rom = controller.rom;
 
-    }
-
-    public static Cartridge ofFile(File romFile) {
-        return new Cartridge() ;
-        
     }
     
     @Override
