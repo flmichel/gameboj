@@ -2,13 +2,15 @@ package ch.epfl.gameboj.component.cpu;
 
 import ch.epfl.gameboj.AddressMap;
 import ch.epfl.gameboj.Bus;
+import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
 import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
-import ch.epfl.gameboj.component.cpu.Alu.*;
+import ch.epfl.gameboj.component.cpu.Alu.Flag;
+import ch.epfl.gameboj.component.cpu.Alu.RotDir;
 import ch.epfl.gameboj.component.cpu.Opcode.Kind;
 import ch.epfl.gameboj.component.memory.Ram;
 
@@ -553,6 +555,7 @@ public final class Cpu implements Component, Clocked {
 
     @Override
     public int read(int address) {
+        Preconditions.checkBits16(address);
         if (address == AddressMap.REG_IE)
             return IE;
         if (address == AddressMap.REG_IF)
@@ -565,6 +568,8 @@ public final class Cpu implements Component, Clocked {
 
     @Override
     public void write(int address, int data) {
+        Preconditions.checkBits16(address);
+        Preconditions.checkBits8(data);
         if (address == AddressMap.REG_IE)
             IE = data;
         if (address == AddressMap.REG_IF)
@@ -743,23 +748,5 @@ public final class Cpu implements Component, Clocked {
             return !Bits.test(regF, Flag.C) ? true : false;
         else
             return Bits.test(regF, Flag.C) ? true : false;
-    }
-    
-    //methode test
-    
-    public void writeInF(int val) {
-        registerFile.set(Reg.F, val);
-    }
-    
-    public boolean getIME() {
-        return IME;
-    }
-    
-    public int[] _testIeIfIme() {
-        int[] tab = new int[3];
-        tab[0] = IE;
-        tab[1] = IF;
-        if (IME) tab[2] = 1;
-        return tab;
-    }
+    }   
 }
