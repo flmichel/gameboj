@@ -2607,26 +2607,27 @@ import ch.epfl.gameboj.component.memory.RamController;
             assertArrayEquals(new int [] {4, 0, 0, 0, 0, 0, 0, 0, 0, 0}, c._testGetPcSpAFBCDEHL());
         }
 
-//        @Test
-//        public void HaltAndInterruptsHandlingWorks() {
-//            Cpu c = new Cpu();
-//            Ram r = new Ram(0x6000);
-//            Bus b = connect(c, r);
-//            b.write(0, Opcode.LD_SP_N16.encoding);
-//            b.write(1, 0x00);
-//            b.write(2, 0xFF);
-//            b.write(3, Opcode.HALT.encoding);
-//            cycleCpu(c, 8);
-//            assertArrayEquals(new int [] {4, 0xFF00, 0, 0, 0, 0, 0, 0, 0, 0}, c._testGetPcSpAFBCDEHL());
-//            c.requestInterrupt(Interrupt.LCD_STAT);
-//            b.write(AddressMap.REG_IE, 0b00011111);
-//            c.cycle(9);
-//            c.cycle(10);
-//            c.cycle(11);
-//            c.cycle(12);
-//            c.cycle(13);
-//            assertArrayEquals(new int [] {AddressMap.INTERRUPTS[1], 0xFF00 - 2, 0, 0, 0, 0, 0, 0, 0, 0}, c._testGetPcSpAFBCDEHL());
-//        }
+        @Test
+        public void HaltAndInterruptsHandlingWorks() {
+            Cpu c = new Cpu();
+            Ram r = new Ram(0x6000);
+            Bus b = connect(c, r);
+            b.write(0, Opcode.EI.encoding);
+            b.write(1, Opcode.LD_SP_N16.encoding);
+            b.write(2, 0x00);
+            b.write(3, 0xFF);
+            b.write(4, Opcode.HALT.encoding);
+            cycleCpu(c, 8);
+            assertArrayEquals(new int [] {5, 0xFF00, 0, 0, 0, 0, 0, 0, 0, 0}, c._testGetPcSpAFBCDEHL());
+            c.requestInterrupt(Interrupt.LCD_STAT);
+            b.write(AddressMap.REG_IE, 0b00011111);
+            c.cycle(9);
+            c.cycle(10);
+            c.cycle(11);
+            c.cycle(12);
+            c.cycle(13);
+            assertArrayEquals(new int [] {AddressMap.INTERRUPTS[1], 0xFF00 - 2, 0, 0, 0, 0, 0, 0, 0, 0}, c._testGetPcSpAFBCDEHL());
+        }
 
         private byte[] tab = new byte[] {
                 (byte)0x31, (byte)0xFF, (byte)0xFF, (byte)0x3E,

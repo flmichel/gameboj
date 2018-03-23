@@ -71,7 +71,6 @@ public final class Cpu implements Component, Clocked {
             IF -= i;
             push16(PC);
             PC = AddressMap.INTERRUPTS[(int) (Math.log(i) / Math.log(2))];
-            System.out.println(PC);
             nextNonIdleCycle += 5;
         }
         else {            
