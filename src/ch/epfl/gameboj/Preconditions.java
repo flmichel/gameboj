@@ -1,7 +1,7 @@
 package ch.epfl.gameboj;
 
 public interface Preconditions {
-
+    
     static public void checkArgument(boolean b) {
         if (!b)
             throw new IllegalArgumentException();
