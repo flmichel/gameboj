@@ -71,6 +71,7 @@ public final class Cpu implements Component, Clocked {
             IF -= i;
             push16(PC);
             PC = AddressMap.INTERRUPTS[(int) (Math.log(i) / Math.log(2))];
+            System.out.println(PC);
             nextNonIdleCycle += 5;
         }
         else {            
@@ -486,12 +487,12 @@ public final class Cpu implements Component, Clocked {
         } break;
         case JR_E8: {
             int e8 = Bits.signExtend8(read8AfterOpcode());
-            PC = nextPC + e8;
+            PC = Bits.clip(16, nextPC + e8) - opcode.totalBytes;
         } break;
         case JR_CC_E8: {
             if (checkCondition(opcode)) {
                 int e8 = Bits.signExtend8(read8AfterOpcode());
-                PC = nextPC + e8;
+                PC = Bits.clip(16, nextPC + e8) - opcode.totalBytes;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
@@ -743,5 +744,23 @@ public final class Cpu implements Component, Clocked {
             return !Bits.test(regF, Flag.C) ? true : false;
         else
             return Bits.test(regF, Flag.C) ? true : false;
+    }
+    
+    //methode test
+    
+    public void writeInF(int val) {
+        registerFile.set(Reg.F, val);
+    }
+    
+    public boolean getIME() {
+        return IME;
+    }
+    
+    public int[] _testIeIfIme() {
+        int[] tab = new int[3];
+        tab[0] = IE;
+        tab[1] = IF;
+        if (IME) tab[2] = 1;
+        return tab;
     }
 }
