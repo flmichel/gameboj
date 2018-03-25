@@ -2,6 +2,7 @@ package ch.epfl.gameboj;
 
 import java.util.Objects;
 
+import ch.epfl.gameboj.component.Timer;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.memory.BootRomController;
@@ -14,6 +15,7 @@ public class GameBoy {
     private Ram workRam;
     private Cpu cpu;
     private long cyclesNb = 0;
+    private Timer minuteur;
 
     public GameBoy(Cartridge cartridge) {
         Objects.requireNonNull(cartridge);
@@ -25,8 +27,8 @@ public class GameBoy {
         cpu.attachTo(bus);
         BootRomController brc = new BootRomController (cartridge);
         bus.attach(brc);
-//        Timer minuteur = new Timer () ;
-//        bus.attach(minuteur);
+        minuteur = new Timer (cpu) ;
+        bus.attach(minuteur);
     }
 
     public Bus bus() {
@@ -46,7 +48,7 @@ public class GameBoy {
        
        if (cycles() < cycle) {
             for (long i = cycles() ; i < cycle ; i++) {
-                //timer.cycle(i);
+                minuteur.cycle(i);
                 cpu.cycle(i);
                 cyclesNb++;
             }
