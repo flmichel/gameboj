@@ -67,10 +67,8 @@ public final class Timer implements Component, Clocked {
             incIfChange(status);
         } 
 
-        case AddressMap.REG_TIMA: {
-            boolean status = state();
+        case AddressMap.REG_TIMA: {          
             TIMA = data;
-            incIfChange(status);
         }
 
         case AddressMap.REG_TMA: {
