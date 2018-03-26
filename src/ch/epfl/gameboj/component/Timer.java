@@ -4,7 +4,9 @@ import java.util.Objects;
 
 import ch.epfl.gameboj.AddressMap;
 import ch.epfl.gameboj.Preconditions;
+import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.cpu.Cpu;
+import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 
 public final class Timer implements Component, Clocked {
 
@@ -13,6 +15,8 @@ public final class Timer implements Component, Clocked {
     private int TIMA;
     private int TMA;
     private int TAC;
+    private static final int BITS16_MAX_VALUE = 0xFFFF;
+    private static final int BITS8_MAX_VALUE = 0xFF;
 
     public Timer (Cpu cpu) {
         Objects.requireNonNull(cpu);
@@ -21,7 +25,7 @@ public final class Timer implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
-        mainCounter++;
+        mainCounter += Bits.clip(BITS16_MAX_VALUE, mainCounter + 4);
     }
 
     @Override
@@ -58,15 +62,15 @@ public final class Timer implements Component, Clocked {
         switch (address) {
 
         case AddressMap.REG_DIV: {
-            //boolean status = state();
+            boolean status = state();
             mainCounter = data;
-            //incIfChange(status);
+            incIfChange(status);
         } 
 
         case AddressMap.REG_TIMA: {
-            //boolean status = state();
+            boolean status = state();
             TIMA = data;
-            //incIfChange(status);
+            incIfChange(status);
         }
 
         case AddressMap.REG_TMA: {
@@ -78,17 +82,36 @@ public final class Timer implements Component, Clocked {
             TAC = data;
             incIfChange(status);
         } 
-        // default : {} ??
+        default : {} //ne fait rien si l addresse n'est pas une des listées ci-dessus;  
         }
     }
 
+    private int bitToUse () {
+        int r;
+
+        switch (Bits.extract(TAC, 0, 2)) {
+
+        case 0b00 : r = 9; break;
+        case 0b01 : r = 3; break;
+        case 0b10 : r = 5; break;
+        default : r = 7;
+
+        }
+        return r;
+    }
+
     private boolean state() {       
-        return false;
+        return Bits.test(TAC, 2) && Bits.test(mainCounter, bitToUse()) ;
     }
 
     private void incIfChange(boolean b) {
         if (b && !state()) {
-            TIMA++;
+            if (TIMA != BITS8_MAX_VALUE) TIMA++;
+            else {
+                cpu.requestInterrupt(Interrupt.TIMER);
+                TIMA = TMA;
+            }
+
         }
     }
 
