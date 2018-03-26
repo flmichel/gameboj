@@ -18,7 +18,7 @@ public final class Cartridge implements Component {
         
     }
     
-    public Cartridge ofFile(File romFile) throws IOException {
+    public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile));) {
         if (stream.readAllBytes()[0x147] != 0)
             throw new IllegalArgumentException();
