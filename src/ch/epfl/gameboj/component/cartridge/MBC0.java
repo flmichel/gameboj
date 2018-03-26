@@ -9,7 +9,7 @@ public final class MBC0 implements Component {
     
     private Rom rom;
 
-    MBC0(Rom rom) {
+    public MBC0(Rom rom) {
         if (Objects.isNull(rom))
             throw new NullPointerException();
         if (rom.size() != 32768)
