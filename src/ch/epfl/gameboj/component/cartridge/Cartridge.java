@@ -20,9 +20,9 @@ public final class Cartridge implements Component {
     
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile));) {
-        if (stream.readAllBytes()[0x147] != 0)
-            throw new IllegalArgumentException();
         byte[] data = stream.readAllBytes();
+        if (data[0x147] != 0)
+            throw new IllegalArgumentException();
         MBC0 bankController = new MBC0(new Rom(data));
         return new Cartridge(bankController);
         }
