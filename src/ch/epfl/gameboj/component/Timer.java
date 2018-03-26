@@ -15,7 +15,6 @@ public final class Timer implements Component, Clocked {
     private int TIMA;
     private int TMA;
     private int TAC;
-    private static final int BITS16_MAX_VALUE = 0xFFFF;
     private static final int BITS8_MAX_VALUE = 0xFF;
 
     public Timer (Cpu cpu) {
@@ -25,7 +24,7 @@ public final class Timer implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
-        mainCounter += Bits.clip(BITS16_MAX_VALUE, mainCounter + 4);
+        mainCounter += Bits.clip(16, mainCounter + 4);
     }
 
     @Override
@@ -65,23 +64,24 @@ public final class Timer implements Component, Clocked {
             boolean status = state();
             mainCounter = data;
             incIfChange(status);
-        } 
+        } break;
 
         case AddressMap.REG_TIMA: {          
             TIMA = data;
-        }
+        } break;
 
         case AddressMap.REG_TMA: {
             TMA = data;
-        }
+        } break;
 
         case AddressMap.REG_TAC: {
             boolean status = state();
             TAC = data;
             incIfChange(status);
-        } 
+        } break;
+        
         default : {} //ne fait rien si l addresse n'est pas une des listées ci-dessus;  
-        }
+        } 
     }
 
     private int bitToUse () {
