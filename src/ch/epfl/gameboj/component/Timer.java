@@ -79,9 +79,8 @@ public final class Timer implements Component, Clocked {
             TAC = data;
             incIfChange(status);
         } break;
-        
         default : {} //ne fait rien si l addresse n'est pas une des listées ci-dessus;  
-        } 
+        }
     }
 
     private int bitToUse () {

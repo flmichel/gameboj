@@ -91,7 +91,7 @@ public final class Cpu implements Component, Clocked {
 
 
     private void dispatch(Opcode opcode) {
-
+        
         switch (opcode.family) {
 
         case NOP: {

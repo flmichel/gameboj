@@ -32,7 +32,6 @@ public final class Cartridge implements Component {
     public int read(int address) {
         Preconditions.checkBits16(address);
         return bankController.read(address);
-
     }
 
     @Override
