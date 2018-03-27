@@ -292,9 +292,13 @@ public final class Cpu implements Component, Clocked {
             int vf = Alu.sub(registerFile.get(Reg.A), hl);
             setFlags(vf);
         } break;
-        case DEC_R16SP: {
+        case DEC_R16SP: {          
             Reg16 reg16 = extractReg16(opcode);
-            int v = Bits.clip(16, reg16(reg16) - 1);
+            int v;
+            if (reg16.name() == "AF")
+                v = Bits.clip(16, SP - 1);
+            else
+                v = Bits.clip(16, reg16(reg16) - 1);
             setReg16SP(reg16, v);
         } break;
 
