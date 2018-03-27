@@ -24,7 +24,9 @@ public final class Timer implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
-        mainCounter += Bits.clip(16, mainCounter + 4);
+        boolean status = state();
+        mainCounter = Bits.clip(16, mainCounter + 4);
+        incIfChange(status);
     }
 
     @Override
@@ -38,11 +40,11 @@ public final class Timer implements Component, Clocked {
 
         case AddressMap.REG_TIMA: {
             return TIMA;
-        }
+        } 
 
         case AddressMap.REG_TMA: {
             return TMA;
-        }
+        } 
 
         case AddressMap.REG_TAC: {
             return TAC;
@@ -57,7 +59,6 @@ public final class Timer implements Component, Clocked {
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
-
         switch (address) {
 
         case AddressMap.REG_DIV: {
@@ -108,8 +109,6 @@ public final class Timer implements Component, Clocked {
                 cpu.requestInterrupt(Interrupt.TIMER);
                 TIMA = TMA;
             }
-
         }
     }
-
 }

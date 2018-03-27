@@ -19,7 +19,7 @@ final public class Rom {
     }
     
     public int read(int index) {
-        if (index < 0 || index > 0xff)
+        if (index < 0 || index > this.size())
             throw new IndexOutOfBoundsException();
         return Byte.toUnsignedInt(data[index]);
     }

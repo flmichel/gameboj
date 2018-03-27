@@ -22,7 +22,7 @@ public final class BootRomController implements Component {
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (!bootRomDisabled && address >= AddressMap.BOOT_ROM_START && address < AddressMap.BOOT_ROM_END) {
-            return Byte.toUnsignedInt(BootRom.DATA[address]);
+            return bootRom.read(address - AddressMap.BOOT_ROM_START);
         } else {
             return cartridge.read(address);
         }

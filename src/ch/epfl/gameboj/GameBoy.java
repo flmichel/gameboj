@@ -16,19 +16,17 @@ public class GameBoy {
     private Cpu cpu;
     private long cyclesNb = 0;
     private Timer minuteur;
-    private BootRomController brc;
 
     public GameBoy(Cartridge cartridge) {
         Objects.requireNonNull(cartridge);
         workRam = new Ram(AddressMap.WORK_RAM_SIZE);
         cpu = new Cpu();
         bus = new Bus();
+        cpu.attachTo(bus);
         bus.attach(new RamController(workRam, AddressMap.WORK_RAM_START));
         bus.attach(new RamController(workRam, AddressMap.ECHO_RAM_START, AddressMap.ECHO_RAM_END));
-        cpu.attachTo(bus);
-        brc = new BootRomController (cartridge);
-        bus.attach(brc);
-        minuteur = new Timer (cpu) ;
+        bus.attach(new BootRomController(cartridge));
+        minuteur = new Timer(cpu) ;
         bus.attach(minuteur);
     }
 
