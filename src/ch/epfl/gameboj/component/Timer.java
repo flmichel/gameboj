@@ -111,9 +111,5 @@ public final class Timer implements Component, Clocked {
             }
         }
     }
-<<<<<<< HEAD
 }
-=======
 
-}
->>>>>>> d79b86f87ce8e323ad7027865f3f08b1ce65aa6f
