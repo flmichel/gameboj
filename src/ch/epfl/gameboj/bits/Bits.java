@@ -6,7 +6,7 @@ import ch.epfl.gameboj.Preconditions;
 
 public final class Bits {
     
-    private Bits() {} //Le constructeur fermé rend la classe non instensiable.
+    private Bits() {} //Le constructeur fermé rend la classe non instanciable.
 
     /**
      * Retourne un entier int dont seul le bit d'index donné vaut 1

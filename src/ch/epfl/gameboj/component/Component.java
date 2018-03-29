@@ -10,6 +10,10 @@ public interface Component {
     
     void write(int address, int data);
     
+    /**
+     * Attache le composant au bus donné.
+     * @param bus : Bus auquel il faut attacher le composant.
+     */   
     default void attachTo(Bus bus) {
         bus.attach(this);
     }
