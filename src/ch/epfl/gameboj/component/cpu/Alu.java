@@ -2,6 +2,9 @@ package ch.epfl.gameboj.component.cpu;
 
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.bits.Bit;
+
+import java.util.Objects;
+
 import ch.epfl.gameboj.Preconditions;
 
 public final class Alu {
@@ -36,7 +39,7 @@ public final class Alu {
         if (c) mask += Flag.C.mask();
         return mask;
     }
-    
+
     /**
      * Retourne la valeur contenue dans le paquet valeur/fanion donné.
      * @param valueFlags : entier correspondant à un paquet valeur/fanion.
@@ -94,7 +97,7 @@ public final class Alu {
     public static int add(int l, int r) {
         return add(l, r, false);
     }
-    
+
     private static int add16(int l, int r, boolean low) {
         Preconditions.checkBits16(l);
         Preconditions.checkBits16(r);
@@ -114,7 +117,7 @@ public final class Alu {
 
         return Bits.make16(unpackValue(highB), unpackValue(lowB)) << 8 | flags;
     }
-    
+
     /**
      * Retourne la somme des deux valeurs 16 bits données et les fanions 00HC, où H et C sont les fanions correspondant à l'addition des 8 bits de poids faible.
      * @param l : premiere valeur à additionner.
@@ -166,12 +169,12 @@ public final class Alu {
     }
 
     /**
-     * 
-     * @param v
-     * @param n
-     * @param h
-     * @param c
-     * @return
+     * Ajuste la valeur 8 bits donnée en argument afin qu'elle soit au format DCB.
+     * @param v : entier à ajuster.
+     * @param n : fanion n
+     * @param h : fanion h
+     * @param c : fanion c
+     * @return la valeur donnée en format DCB.
      */
     public static int bcdAdjust(int v, boolean n, boolean h, boolean c) {
         Preconditions.checkBits8(v);
@@ -187,6 +190,12 @@ public final class Alu {
         return packValueZNHC(Bits.clip(8, val), Bits.clip(8, val) == 0, n, false, fixH);
     }
 
+    /**
+     * Retourne le « et » bit à bit des deux valeurs 8 bits données et les fanions Z010.
+     * @param l : entier à utiliser
+     * @param r : entier à utiliser
+     * @return entier dont les bits proviennent du "et" entre les bits de "l" et "r", et fanions correspondants.
+     */
     public static int and(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
@@ -194,6 +203,12 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, true, false);
     }
 
+    /**
+     * Retourne le « ou inclusif » bit à bit des deux valeurs 8 bits données et les fanions Z000.
+     * @param l : entier à utiliser
+     * @param r : entier à utiliser
+     * @return entier dont les bits proviennent du "ou inclusif" entre les bits de "l" et "r", et fanions correspondants.
+     */
     public static int or(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
@@ -201,6 +216,12 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, false, false);
     }
 
+    /**
+     * Retourne le « ou exclusif » bit à bit des deux valeurs 8 bits données et les fanions Z000.
+     * @param l : entier à utiliser
+     * @param r : entier à utiliser
+     * @return entier dont les bits proviennent du "ou exclusif" entre les bits de "l" et "r", et fanions correspondants.
+     */
     public static int xor(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
@@ -208,6 +229,11 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, false, false);
     }
 
+    /**
+     * Retourne la valeur 8 bits donnée décalée à gauche d'un bit, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
+     * @param v : entier à effectuer le décalage
+     * @return entier apres décalage, et fanions correspondants.
+     */
     public static int shiftLeft(int v) {
         Preconditions.checkBits8(v);
         int val = v << 1;
@@ -215,6 +241,11 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 7));
     }
 
+    /**
+     * Retourne la valeur 8 bits donnée décalée droite d'un bit, de manière arithmétique, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
+     * @param v : entier à effectuer le décalage
+     * @return entier apres décalage, et fanions correspondants.
+     */
     public static int shiftRightA(int v) {
         Preconditions.checkBits8(v);
         int val = (byte)v >> 1;
@@ -222,6 +253,11 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0));
     }
 
+    /**
+     * Retourne la valeur 8 bits donnée décalée droite d'un bit, de manière logique, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
+     * @param v : entier à effectuer le décalage
+     * @return entier apres décalage, et fanions correspondants.
+     */
     public static int shiftRightL(int v) {
         Preconditions.checkBits8(v);
         int val = v >>> 1;
@@ -229,6 +265,12 @@ public final class Alu {
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 0)); 
     }
 
+    /**
+     * Retourne la rotation de la valeur 8 bits donnée, d'une distance de un bit dans la direction donnée, et les fanions Z00C où C contient le bit qui est passé d'une extrémité à l'autre lors de la rotation.
+     * @param d : direction de rotation
+     * @param v : entier à subir la rotation
+     * @return entier apres rotation, et fanions correspondants.
+     */
     public static int rotate(RotDir d, int v) {
         Preconditions.checkBits8(v);
         int dir, index;
@@ -243,6 +285,13 @@ public final class Alu {
         return packValueZNHC(v, v == 0, false, false, Bits.test(v, index));
     }
 
+    /**
+     * Retourne la rotation à travers la retenue, dans la direction donnée, de la combinaison de la valeur 8 bits et du fanion de retenue donnés, ainsi que les fanions Z00C. Cette opération consiste à construire une valeur 9 bits à partir de la retenue et de la valeur 8 bits, la faire tourner dans la direction donnée, puis retourner les 8 bits de poids faible comme résultat, et le bit de poids le plus fort comme nouvelle retenue (fanion C).
+     * @param d : direction de la rotation
+     * @param v : entier à subir la rotation
+     * @param c : fanion c
+     * @return Entier suivant le procédé expliqué ci-dessus, et fanions correspondants.
+     */
     public static int rotate(RotDir d, int v, boolean c) {
         Preconditions.checkBits8(v);
         int dir;
@@ -256,17 +305,28 @@ public final class Alu {
 
     }
 
+    /**
+     * Retourne la valeur obtenue en échangeant les 4 bits de poids faible et de poids fort de la valeur 8 bits donnée, et les fanions Z000.
+     * @param v : entier à manipuler.
+     * @return entier apres manipulation et fanions correspondants.
+     */
     public static int swap(int v) {
         Preconditions.checkBits8(v);
         v = Bits.clip(4, v) << 4 | Bits.extract(v, 4, 4);
         return packValueZNHC(v, v == 0, false, false, false);
     }
 
+    /**
+     * Retourne la valeur 0 et les fanions Z010 où Z est vrai si et seulement si le bit d'index donné de la valeur 8 bits donnée vaut 0 ; en plus de la validation de la valeur 8 bits reçue, cette méthode valide l'index reçu et lève IndexOutOfBoundsException s'il n'est pas compris entre 0 et 7.
+     * @param v : valeur 8 bits
+     * @param bitIndex : index compris entre 0 et 7 (inclus).
+     * @return 0 si la condition décrite ci-dessus est remplie, et fanions correspondants.
+     */
     public static int testBit(int v, int bitIndex) {
         Preconditions.checkBits8(v);
-        if (bitIndex < 0 | bitIndex >= 8)
-            throw new IndexOutOfBoundsException();
+//        if (bitIndex < 0 | bitIndex >= 8)
+//            throw new IndexOutOfBoundsException();
+        Objects.checkIndex(bitIndex, 8);
         return packValueZNHC(0, !Bits.test(v, bitIndex), false, true, false);     
     } 
-
 }
