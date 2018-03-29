@@ -20,6 +20,14 @@ public final class Alu {
         return v << 8 | maskZNHC(z, n, h, c);
     }
 
+    /**
+     * Retourne une valeur dont les bits correspondant aux différents fanions valent 1 si et seulement si l'argument correspondant est vrai.
+     * @param z : valeur du fanion z (true si 1, false si 0).
+     * @param n : valeur du fanion n (true si 1, false si 0).
+     * @param h : valeur du fanion h (true si 1, false si 0).
+     * @param c : valeur du fanion c (true si 1, false si 0).
+     * @return entier suivant la description ci-dessus.
+     */
     public static int maskZNHC(boolean z, boolean n, boolean h, boolean c) {
         int mask = 0;
         if (z) mask += Flag.Z.mask();
@@ -28,15 +36,32 @@ public final class Alu {
         if (c) mask += Flag.C.mask();
         return mask;
     }
-
+    
+    /**
+     * Retourne la valeur contenue dans le paquet valeur/fanion donné.
+     * @param valueFlags : entier correspondant à un paquet valeur/fanion.
+     * @return entier correspondant à la valeur contenue dans le paquet valeur/fanion donné.
+     */
     public static int unpackValue(int valueFlags) {
         return Bits.extract(valueFlags, 8, 16);
     }
 
+    /**
+     * Retourne les fanions contenus dans le paquet valeur/fanion donné.
+     * @param valueFlags : entier correspondant à un paquet valeur/fanion.
+     * @return entier correspondant au fanion contenu dans le paquet valeur/fanion donné.
+     */
     public static int unpackFlags(int valueFlags) {
         return Bits.clip(8, valueFlags);
     }
 
+    /**
+     * Retourne la somme des deux valeurs 8 bits données et du bit de retenue initial c0, et les fanions Z0HC.
+     * @param l : premiere valeur à additionner.
+     * @param r : deuxieme valeur à additionner.
+     * @param c0 : retenue initiale.
+     * @return somme des arguments et fanions correspondants.
+     */
     public static int add(int l, int r, boolean c0) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
@@ -60,9 +85,16 @@ public final class Alu {
         return packValueZNHC(value, z, false, h, c);
     }
 
+    /**
+     * Retourne la somme des deux valeurs 8 bits données, et les fanions Z0HC.
+     * @param l : premiere valeur à additionner.
+     * @param r : deuxieme valeur à additionner.
+     * @return somme des arguments et fanions correspondants.
+     */
     public static int add(int l, int r) {
         return add(l, r, false);
     }
+    
     private static int add16(int l, int r, boolean low) {
         Preconditions.checkBits16(l);
         Preconditions.checkBits16(r);
@@ -82,14 +114,34 @@ public final class Alu {
 
         return Bits.make16(unpackValue(highB), unpackValue(lowB)) << 8 | flags;
     }
+    
+    /**
+     * Retourne la somme des deux valeurs 16 bits données et les fanions 00HC, où H et C sont les fanions correspondant à l'addition des 8 bits de poids faible.
+     * @param l : premiere valeur à additionner.
+     * @param r : deuxieme valeur à additionner.
+     * @return somme des arguments et fanions correspondants.
+     */
     public static int add16L(int l, int r) {
         return add16(l, r, true);
     }
 
+    /**
+     * Retourne la somme des deux valeurs 16 bits données et les fanions 00HC, où H et C sont les fanions correspondant à l'addition des 8 bits de poids forts.
+     * @param l : premiere valeur à additionner.
+     * @param r : deuxieme valeur à additionner.
+     * @return somme des arguments et fanions correspondants.
+     */
     public static int add16H(int l, int r) {
         return add16(l, r, false);
     }
 
+    /**
+     * 
+     * @param l
+     * @param r
+     * @param b0
+     * @return
+     */
     public static int sub(int l, int r, boolean b0) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
