@@ -60,7 +60,7 @@ public final class Alu {
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
      * @param c0 : retenue initiale.
-     * @return somme des arguments et fanions correspondants.
+     * @return somme des arguments, et fanions correspondants.
      */
     public static int add(int l, int r, boolean c0) {
         Preconditions.checkBits8(l);
@@ -89,7 +89,7 @@ public final class Alu {
      * Retourne la somme des deux valeurs 8 bits données, et les fanions Z0HC.
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
-     * @return somme des arguments et fanions correspondants.
+     * @return somme des arguments, et fanions correspondants.
      */
     public static int add(int l, int r) {
         return add(l, r, false);
@@ -119,7 +119,7 @@ public final class Alu {
      * Retourne la somme des deux valeurs 16 bits données et les fanions 00HC, où H et C sont les fanions correspondant à l'addition des 8 bits de poids faible.
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
-     * @return somme des arguments et fanions correspondants.
+     * @return somme des arguments, et fanions correspondants.
      */
     public static int add16L(int l, int r) {
         return add16(l, r, true);
@@ -129,18 +129,18 @@ public final class Alu {
      * Retourne la somme des deux valeurs 16 bits données et les fanions 00HC, où H et C sont les fanions correspondant à l'addition des 8 bits de poids forts.
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
-     * @return somme des arguments et fanions correspondants.
+     * @return somme des arguments, et fanions correspondants.
      */
     public static int add16H(int l, int r) {
         return add16(l, r, false);
     }
 
     /**
-     * 
-     * @param l
-     * @param r
-     * @param b0
-     * @return
+     * Retourne la différence des valeurs de 8 bits données et du bit d'emprunt initial b0, et les fanions Z1HC.
+     * @param l : valeur initiale
+     * @param r : valeur à soustraire à "l"
+     * @param b0 : emprunt initial
+     * @return la différence des arguments, et fanions correspondants.
      */
     public static int sub(int l, int r, boolean b0) {
         Preconditions.checkBits8(l);
@@ -155,10 +155,24 @@ public final class Alu {
         return packValueZNHC(value, z, true, h, c);    
     }
 
+    /**
+     * Retourne la différence des valeurs de 8 bits données, et les fanions Z1HC.
+     * @param l : valeur initiale
+     * @param r : valeur à soustraire à "l"
+     * @return la différence des arguments, et fanions correspondants.
+     */
     public static int sub(int l, int r) {
         return sub(l, r, false);
     }
 
+    /**
+     * 
+     * @param v
+     * @param n
+     * @param h
+     * @param c
+     * @return
+     */
     public static int bcdAdjust(int v, boolean n, boolean h, boolean c) {
         Preconditions.checkBits8(v);
         boolean fixL = h || (!n && Bits.clip(4, v) > 9);
