@@ -8,7 +8,7 @@ public interface Bit {
     int ordinal();
     
     /**
-     * Même methode que ordinal mais le nom est plus parlant.
+     * Même méthode que ordinal mais le nom est plus parlant.
      * @return la même valeur que la méthode ordinal
      */
     default int index() {
@@ -16,8 +16,8 @@ public interface Bit {
     }
     
     /**
-     * Retourne le masque correspondant au bit.
-     * @return le masque correspondant au bit
+     * Retourne le masque correspondant au bit, c'est-à-dire une valeur dont seul le bit de même index que celui du récepteur vaut 1.
+     * @return le masque correspondant au bit.
      */
     default int mask() {
         return 0b1 << index();
