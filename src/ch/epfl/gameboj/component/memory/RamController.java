@@ -27,11 +27,6 @@ public class RamController implements Component {
         this(ram, startAddress, startAddress + ram.size());
     }
     
-    /**
-     * Retourne la valeur stockée à l'adresse donnée dans la condition que l'adresse soit valide.
-     * @param address : valeur qui repère où lire la donnée. 
-     * @return valeur stockée à l'adresse donnée.
-     */
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (!isAccessible(address))
@@ -39,11 +34,6 @@ public class RamController implements Component {
         return ram.read(address-startAddress);
     }
 
-    /**
-     * écrit la valeur "data" à l'adresse donnée dans la condition que l'adresse soit valide.
-     * @param address : valeur qui repère où écrire dans la mémoire.
-     * @param data : valeur à écrire à l'adresse donnée.
-     */   
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);

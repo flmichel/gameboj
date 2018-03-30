@@ -6,8 +6,18 @@ public interface Component {
 
     public static final int NO_DATA = 0x100;
     
+    /**
+     * Retourne la valeur stockée à l'adresse donnée dans la condition que l'adresse soit valide.
+     * @param address : valeur qui repère où lire la donnée. 
+     * @return valeur stockée à l'adresse donnée.
+     */
     int read(int address);
     
+    /**
+     * écrit la valeur "data" à l'adresse donnée dans la condition que l'adresse soit valide.
+     * @param address : valeur qui repère où écrire dans la mémoire.
+     * @param data : valeur à écrire à l'adresse donnée.
+     */   
     void write(int address, int data);
     
     /**

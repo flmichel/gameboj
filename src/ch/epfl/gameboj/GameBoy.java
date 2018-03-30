@@ -30,6 +30,10 @@ public class GameBoy {
         bus.attach(minuteur);
     }
 
+    /**
+     * Retourne le bus du Game Boy.
+     * @return le bus du Game Boy.
+     */
     public Bus bus() {
         return bus;
     }
