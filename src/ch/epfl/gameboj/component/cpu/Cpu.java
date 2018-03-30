@@ -64,7 +64,8 @@ public final class Cpu implements Component, Clocked {
         if (cycle == nextNonIdleCycle) {
             reallyCycle();
         }
-    }    
+    }
+    
     public void reallyCycle() {
         int reg = IE & IF;
         if (IME && (Bits.clip(5, reg) != 0)) {
@@ -582,6 +583,10 @@ public final class Cpu implements Component, Clocked {
             highRam.write(address - AddressMap.HIGH_RAM_START, data);
     }
 
+    /**
+     * Retourne un tableau contenant, dans l'ordre, la valeur des registres PC, SP, A, F, B, C, D, E, H et L.
+     * @return un tableau tel que décrit ci-dessus.
+     */
     public int[] _testGetPcSpAFBCDEHL() {
         int[] tab = new int[10];
         tab[0] = PC;
