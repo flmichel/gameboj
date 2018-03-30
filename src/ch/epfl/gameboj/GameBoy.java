@@ -38,18 +38,34 @@ public class GameBoy {
         return bus;
     }
 
+    /**
+     * Retourne le processeur du Game Boy.
+     * @return le processeur du Game Boy.
+     */
     public Cpu cpu() {
         return cpu;
     }
 
+    /**
+     * Retourne le nombre de cycles déjà simulés.
+     * @return le nombre de cycles déjà simulés.
+     */
     public long cycles() {
         return cyclesNb;
     }
     
+    /**
+     * Retourne le minuteur du Game Boy.
+     * @return le minuteur du Game Boy.
+     */
     public Timer timer() {
         return minuteur;
     }
 
+    /**
+     * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1, ou lève l'exception IllegalArgumentException si un nombre (strictement) supérieur de cycles a déjà été simulé.
+     * @param cycle : la méthode simule jusqu'à ce nombre représentant un cycle.
+     */
     public void runUntil(long cycle) {
        Preconditions.checkArgument(cycles() <= cycle);        
        

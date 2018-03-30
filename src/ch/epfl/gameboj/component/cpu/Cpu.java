@@ -66,6 +66,9 @@ public final class Cpu implements Component, Clocked {
         }
     }
     
+    /**
+     * Regarde si les interruptions sont activées (c'est-à-dire si IME est vrai) et si une interruption est en attente, auquel cas elle la gère; sinon, elle exécute normalement la prochaine instruction.
+     */
     public void reallyCycle() {
         int reg = IE & IF;
         if (IME && (Bits.clip(5, reg) != 0)) {
@@ -554,6 +557,10 @@ public final class Cpu implements Component, Clocked {
         bus.attach(this);
     }
     
+    /**
+     * Lève l'interruption donnée, c'est-à-dire met à 1 le bit correspondant dans le registre IF.
+     * @param i : interruption à lever.
+     */
     public void requestInterrupt(Interrupt i) {
         IF = Bits.set(IF, i.index(), true);
     }
