@@ -9,14 +9,13 @@ import ch.epfl.gameboj.component.memory.Rom;
 public final class MBC0 implements Component {
     
     private Rom rom;
+    
+    private static final int ROM_SIZE = 0x8000; //taille de la mémoire morte
 
     public MBC0(Rom rom) {
-        if (Objects.isNull(rom))
-            throw new NullPointerException();
-        if (rom.size() != 32768)            
-            throw new IllegalArgumentException();
-        else
-            this.rom = rom;
+        Objects.requireNonNull(rom);
+        Preconditions.checkArgument(rom.size() == ROM_SIZE);
+        this.rom = rom;
     }
 
     @Override

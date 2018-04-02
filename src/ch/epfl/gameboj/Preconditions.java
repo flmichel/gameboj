@@ -18,7 +18,7 @@ public interface Preconditions {
      * @return v : l'argument lui-meme, si celui-ci peut s'écrire avec 8 bits.
      */
     static public int checkBits8(int v) {
-        if (v >= 0 && v <= 0xff)
+        if (v >= 0 && v <= 0xFF)
             return v;
         else
             throw new IllegalArgumentException();
@@ -30,7 +30,7 @@ public interface Preconditions {
      * @return v : l'argument lui-meme, si celui-ci peut s'écrire avec 16 bits.
      */
     static public int checkBits16(int v) {
-        if (v >= 0 && v <= 0xffff)
+        if (v >= 0 && v <= 0xFFFF)
             return v;
         else
             throw new IllegalArgumentException();

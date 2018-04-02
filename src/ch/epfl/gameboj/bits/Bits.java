@@ -50,7 +50,7 @@ public final class Bits {
         Objects.checkIndex(index, Integer.SIZE);
         if (newValue)
             return bits | (0x1 << index);
-        else return bits & ~(0x1 << index);
+        return bits & ~(0x1 << index);
     }
     
     /**
@@ -64,7 +64,6 @@ public final class Bits {
         if (size == Integer.SIZE)
             return bits;
         return ((0b1 << size) - 1) & bits;
-
     }
     
 /**

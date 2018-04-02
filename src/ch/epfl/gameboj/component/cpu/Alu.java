@@ -109,9 +109,7 @@ public final class Alu {
 
         int highB = add(Bits.extract(l, 8, 8), Bits.extract(r, 8, 8), c);
 
-        int flagB;
-        if (low) flagB = lowB;
-        else flagB = highB;
+        int flagB = low ? lowB : highB;
 
         int flags = Bits.set(unpackFlags(flagB), Flag.Z.index(), false);
 
@@ -183,9 +181,7 @@ public final class Alu {
         int fix = 0;
         if (fixL) fix += 0x06;
         if (fixH) fix += 0x60;
-        int val;
-        if (n) val = v - fix;
-        else val = v + fix;
+        int val = n ? v - fix : v + fix;
 
         return packValueZNHC(Bits.clip(8, val), Bits.clip(8, val) == 0, n, false, fixH);
     }
@@ -294,9 +290,7 @@ public final class Alu {
      */
     public static int rotate(RotDir d, int v, boolean c) {
         Preconditions.checkBits8(v);
-        int dir;
-        if (d.name() == "LEFT") dir = 1;
-        else dir = -1;
+        int dir = d.name() == "LEFT" ? 1 : -1;
 
         if (c) v = Bits.set(v, 8, true);
         v = Bits.rotate(9, v, dir);
@@ -324,8 +318,6 @@ public final class Alu {
      */
     public static int testBit(int v, int bitIndex) {
         Preconditions.checkBits8(v);
-//        if (bitIndex < 0 | bitIndex >= 8)
-//            throw new IndexOutOfBoundsException();
         Objects.checkIndex(bitIndex, 8);
         return packValueZNHC(0, !Bits.test(v, bitIndex), false, true, false);     
     } 

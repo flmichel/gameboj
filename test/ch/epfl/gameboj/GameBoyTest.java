@@ -18,6 +18,7 @@ class GameBoyTest {
         }
     }
 
+    @Disabled
     @Test
     void workRamCanBeReadAndWritten() {
         Bus b = new GameBoy(null).bus();
@@ -27,6 +28,7 @@ class GameBoyTest {
             assertEquals((a ^ 0xA5) & 0xFF, b.read(a));
     }
 
+    @Disabled
     @Test
     void echoAreaReflectsWorkRam() {
         Bus b = new GameBoy(null).bus();

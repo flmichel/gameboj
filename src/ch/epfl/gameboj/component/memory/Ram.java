@@ -29,8 +29,6 @@ final public class Ram {
      * @return L'octet se trouvant à l'index donné.
      */
     public int read(int index) {
-//        if (index < 0 || index >= data.length)
-//            throw new IndexOutOfBoundsException();
         Objects.checkIndex(index, data.length);
         return Byte.toUnsignedInt(data[index]);
     }
@@ -41,8 +39,6 @@ final public class Ram {
      * @param value : valeur à écrire dans la mémoire.
      */
     public void write(int index, int value) {
-//        if (index < 0 || index >= data.length)
-//            throw new IndexOutOfBoundsException();
         Objects.checkIndex(index, data.length);
         data[index] = (byte) Preconditions.checkBits8(value);
 

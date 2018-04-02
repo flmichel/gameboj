@@ -28,8 +28,6 @@ final public class Rom {
      * @return L'octet se trouvant à l'index donné.
      */
     public int read(int index) {
-//        if (index < 0 || index > this.size())
-//            throw new IndexOutOfBoundsException();
         Objects.checkIndex(index, this.size());
         return Byte.toUnsignedInt(data[index]);
     }
