@@ -5,46 +5,50 @@ import java.util.Objects;
 import ch.epfl.gameboj.Preconditions;
 
 public final class Bits {
-    
+
     private Bits() {} //Le constructeur fermé rend la classe non instanciable.
 
     /**
-     * Retourne un entier int dont seul le bit d'index donné vaut 1, ou lève IndexOutOfBoundsException si l'index est invalide.
+     * Retourne un entier int dont seul le bit d'index donné vaut 1. 
      * @param index compris entre 0 (inclus) et 32 (exclus).
      * @return un entier int dont seul le bit d'index donné vaut 1.
+     * @throws IndexOutOfBoundsException si l'index est invalide.
      */
     public static int mask(int index) {
         Objects.checkIndex(index, Integer.SIZE);
         return 0b1 << index;
     }
-    
+
     /**
      * Retourne vrai si et seulement si le bit d'index donné de l'entier donné vaut 1.
      * @param bits est l'entier à évaluer.
      * @param index compris entre 0 (inclus) et 32 (exclus) qui correspond au bit qu'il faut "regarder".
      * @return true si et seulement si le bit d'index donné de "bits" vaut 1.
+     * @throws IndexOutOfBoundsException si l'index est invalide.
      */
     public static boolean test(int bits, int index) {
         Objects.checkIndex(index, Integer.SIZE);
         return (mask(index) & bits) != 0;
     }
-    
+
     /**
      * Retourne vrai si et seulement si le bit d'index (donné par bit) de l'entier "bits" vaut 1.
      * @param bits est l'entier à évaluer.
      * @param bit est un entier. On obtient l'index à tester grace à ce bit.
-     * @return vrai si et seulement si le bit d'index donné de bits vaut 1
+     * @return vrai si et seulement si le bit d'index donné de bits vaut 1.
+     * @throws IndexOutOfBoundsException si l'index est invalide.
      */
     public static boolean test(int bits, Bit bit) {
         return test(bits, bit.index());
     }
-    
+
     /**
-     * Retourne une valeur dont tous les bits sont égaux à ceux de l'entier donné, sauf celui d'index donné, qui est égal à newValue (1 si newValue est true, 0 si false), lève IndexOutOfBoundsException si l'index est invalide.
+     * Retourne une valeur dont tous les bits sont égaux à ceux de l'entier donné, sauf celui d'index donné, qui est égal à newValue (1 si newValue est true, 0 si false).
      * @param bits est l'entier (int) utilisé.
      * @param index compris entre 0 (inclus) et 32 (exclus).
      * @param newValue est un boolean qui définit si le bit doit passer à 1 ou 0.
      * @return une valeur dont tous les bits sont égaux à ceux de bits, sauf celui d'index donné, qui est égal à newValue.
+     * @throws IndexOutOfBoundsException si l'index est invalide.
      */
     public static int set(int bits, int index, boolean newValue) {
         Objects.checkIndex(index, Integer.SIZE);
@@ -52,12 +56,13 @@ public final class Bits {
             return bits | (0x1 << index);
         else return bits & ~(0x1 << index);
     }
-    
+
     /**
-     * Retourne une valeur dont les "size" (argument) bits de poids faible sont égaux à ceux de "bits" (argument), les autres valant 0 ; lève IllegalArgumentException si "size" n'est pas compris entre 0 (inclus) et 32 (inclus).
+     * Retourne une valeur dont les "size" (argument) bits de poids faible sont égaux à ceux de "bits" (argument), les autres valant 0.
      * @param size : nombre de bits de poids faible à "garder".
      * @param bits : entier duquel on enlèvera des bits de poids fort.  
      * @return Un nouveau entier, qui correspond aux "size" bits de poids faible de "bits".
+     * @throws IllegalArgumentException si "size" n'est pas compris entre 0 (inclus) et 32 (inclus).
      */
     public static int clip(int size, int bits) {
         Preconditions.checkArgument(size >= 0 && size <= Integer.SIZE);
@@ -66,25 +71,27 @@ public final class Bits {
         return ((0b1 << size) - 1) & bits;
 
     }
-    
-/**
- * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits" allant de l'index "start" (inclus) à l'index (start + size) (exclus) ; lève IndexOutOfBoundsException si "start" et "size" ne désignent pas une plage de bits valide
- * @param bits : entier qui sera "tronqué".
- * @param start : index du premier bit (à gauche) du nouveau entier.
- * @param size : taille du nouveau entier.
- * @return Un nouveau entier, crée à partir de l'entier "bits", en le tronquant.
- */
+
+    /**
+     * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits" allant de l'index "start" (inclus) à l'index (start + size) (exclus). 
+     * @param bits : entier qui sera "tronqué".
+     * @param start : index du premier bit (à gauche) du nouveau entier.
+     * @param size : taille du nouveau entier.
+     * @return Un nouveau entier, crée à partir de l'entier "bits", en le tronquant.
+     * @throws IndexOutOfBoundsException si "start" et "size" ne désignent pas une plage de bits valide.
+     */
     public static int extract(int bits, int start, int size) {
         Objects.checkFromIndexSize(start, size, Integer.SIZE);
         return clip(size, bits >>> start);
     }
-    
+
     /**
-     * Retourne une valeur dont les "size" bits de poids faible sont ceux de "bits" mais auxquels une rotation de la distance donnée a été appliquée ; si la distance est positive, la rotation se fait vers la gauche, sinon elle se fait vers la droite ; lève IllegalArgumentException si "size" n'est pas compris entre 0 (exclus) et 32 (inclus), ou si la valeur donnée n'est pas une valeur de "size" bits.
+     * Retourne une valeur dont les "size" bits de poids faible sont ceux de "bits" mais auxquels une rotation de la distance donnée a été appliquée ; si la distance est positive, la rotation se fait vers la gauche, sinon elle se fait vers la droite. 
      * @param size : représente le nombre de bits qui seront affectés par la rotation.
      * @param bits : entier à manipuler.
      * @param distance : détermine la direction et quantité de la rotation. Par quantité, on entend le nombre de rotations unitaires. 
      * @return un entier crée suivant la description ci-dessus.
+     * @throws IllegalArgumentException si "size" n'est pas compris entre 0 (exclus) et 32 (inclus), ou si la valeur donnée n'est pas une valeur de "size" bits.
      */
     public static int rotate(int size, int bits, int distance) {
         Preconditions.checkArgument(size > 0 && size <= Integer.SIZE);
@@ -92,22 +99,24 @@ public final class Bits {
         bits = (bits << distance) | (bits >>> (size - distance));
         return clip(size, bits);
     }
-    
+
     /**
-     * étend le signe de la valeur 8 bits donnée, c'est-à-dire copie le bit d'index 7 dans les bits d'index 8 à 31 de la valeur retournée ; lève IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
+     * étend le signe de la valeur 8 bits donnée, c'est-à-dire copie le bit d'index 7 dans les bits d'index 8 à 31 de la valeur retournée.
      * @param b : entier dont on veut étendre le signe.
      * @return l'entier en question, signé.
+     * @throws IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
      */
     public static int signExtend8(int b) {
         Preconditions.checkBits8(b);
         b = (byte)b;
         return (int)b;
     }
-    
+
     /**
-     * Retourne une valeur égale à celle donnée, si ce n'est que les 8 bits de poids faible ont été renversés, c'est-à-dire que les bits d'index 0 et 7 ont été échangés, de même que ceux d'index 1 et 6, 2 et 5, et 3 et 4 ; lève IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
+     * Retourne une valeur égale à celle donnée, si ce n'est que les 8 bits de poids faible ont été renversés, c'est-à-dire que les bits d'index 0 et 7 ont été échangés, de même que ceux d'index 1 et 6, 2 et 5, et 3 et 4.
      * @param b : entier à manipuler. 
      * @return un entier suivant la manipulation décrite ci-dessus.
+     * @throws IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
      */
     public static int reverse8(int b) {
         Preconditions.checkBits8(b);
@@ -144,25 +153,27 @@ public final class Bits {
                 0x17, 0x97, 0x57, 0xD7, 0x37, 0xB7, 0x77, 0xF7,
                 0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF,
                 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF,
-              };
+        };
         return list[b];     
     }
-    
+
     /**
-     * Retourne une valeur égale à celle donnée, si ce n'est que les 8 bits de poids faible ont été inversés bit à bit, c'est-à-dire que les 0 et les 1 ont été échangés ; lève IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
+     * Retourne une valeur égale à celle donnée, si ce n'est que les 8 bits de poids faible ont été inversés bit à bit, c'est-à-dire que les 0 et les 1 ont été échangés.
      * @param b : entier à manipuler.
      * @return un entier suivant la manipulation décrite ci-dessus.
+     * @throws IllegalArgumentException si la valeur donnée n'est pas une valeur de 8 bits.
      */
     public static int complement8(int b) {
         Preconditions.checkBits8(b);
         return b ^ 0xFF;
     }
-    
+
     /**
-     * Retourne une valeur 16 bits dont les 8 bits de poids forts sont les 8 bits de poids faible de highB, et dont les 8 bits de poids faible sont ceux de lowB ; lève IllegalArgumentException si l'une des deux valeurs données n'est pas une valeur de 8 bits.
+     * Retourne une valeur 16 bits dont les 8 bits de poids forts sont les 8 bits de poids faible de highB, et dont les 8 bits de poids faible sont ceux de lowB.
      * @param highB : entier qui donnera les 8 bits de poids forts de celui qui sera retourné.
      * @param lowB : entier qui donnera les 8 bits de poids faible de celui qui sera retourné.
      * @return "Combinaison" des deux arguments, comme décrit ci-dessus.
+     * @throws IllegalArgumentException si l'une des deux valeurs données n'est pas une valeur de 8 bits.
      */
     public static int make16(int highB, int lowB) {
         Preconditions.checkBits8(highB);

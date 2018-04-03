@@ -17,6 +17,11 @@ public final class Timer implements Component, Clocked {
     private int TAC;
     private static final int BITS8_MAX_VALUE = 0xFF;
 
+    /**
+     * Construit un minuteur associé au processeur donné.
+     * @param cpu processeur auquel le minuteur sera associé
+     * @throws NullPointerException si le processeur vaut Null
+     */   
     public Timer (Cpu cpu) {
         Objects.requireNonNull(cpu);
         this.cpu = cpu;
@@ -29,6 +34,9 @@ public final class Timer implements Component, Clocked {
         incIfChange(status);
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
+     */
     @Override
     public int read(int address) {
         Preconditions.checkBits16(address);
@@ -55,6 +63,9 @@ public final class Timer implements Component, Clocked {
         }
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
+     */
     @Override
     public void write(int address, int data) {
         Preconditions.checkBits16(address);

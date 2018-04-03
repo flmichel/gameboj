@@ -5,9 +5,13 @@ import ch.epfl.gameboj.bits.Bits;
 
 public final class RegisterFile<E extends Register> {
     
-    E[] allRegs;
-    byte[] values;
+    private E[] allRegs;
+    private byte[] values;
     
+    /**
+     * Construit un banc de registres 8 bits dont la taille (c'est-à-dire le nombre de registres) est égale à la taille du tableau donné.
+     * @param allRegs tableau avec les registres.
+     */
     public RegisterFile(E[] allRegs) {
         this.allRegs = allRegs;
         values = new byte[allRegs.length];
@@ -23,9 +27,10 @@ public final class RegisterFile<E extends Register> {
     }
     
     /**
-     * Modifie le contenu du registre donné pour qu'il soit égal à la valeur 8 bits donnée ; lève IllegalArgumentException si la valeur n'est pas une valeur 8 bits valide.
+     * Modifie le contenu du registre donné pour qu'il soit égal à la valeur 8 bits donnée.
      * @param reg : registre à modifier le contenu.
      * @param newValue : nouvelle valeur à etre stockée dans le registre.
+     * @throws IllegalArgumentException si la valeur n'est pas une valeur 8 bits valide.
      */
     public void set(E reg, int newValue) {
         Preconditions.checkBits8(newValue);
@@ -37,6 +42,7 @@ public final class RegisterFile<E extends Register> {
      * @param reg : registre à analyser
      * @param b : on obtient l'index à tester grace à ce bit.
      * @return true si et seulement si le bit donné du registre donné vaut 1.
+     * @throws IndexOutOfBoundsException si l'index n'est pas valide.
      */
     public boolean testBit(E reg, Bit b) {
         return Bits.test(values[reg.index()], b);
@@ -47,6 +53,7 @@ public final class RegisterFile<E extends Register> {
      * @param reg : registre à modifier.
      * @param bit : bit à modifier.
      * @param newValue : nouvelle valeur du bit en question.
+     * @throws IndexOutOfBoundsException si l'index n'est pas valide.
      */
     public void setBit(E reg, Bit bit, boolean newValue) {
         Bits.set(values[reg.index()], bit.index(), newValue);

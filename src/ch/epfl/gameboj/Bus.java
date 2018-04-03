@@ -13,17 +13,19 @@ public final class Bus {
     private ArrayList<Component> components = new ArrayList<Component>();
 
     /**
-     * Attache le composant donné au bus, ou lève l'exception NullPointerException si le composant vaut null.
+     * Attache le composant donné au bus.
      * @param component : Composant qu'il faut attacher au bus.
+     * @throws NullPointerException si le composant vaut null.
      */
     public void attach(Component component) {
         Objects.requireNonNull(component);
         components.add(component);
     }
     /**
-     * Retourne la valeur stockée à l'adresse donnée si au moins un des composants attaché au bus possède une valeur à cette adresse, ou FF (en base 16) sinon; lève l'exception IllegalArgumentException si l'adresse n'est pas une valeur 16 bits.
+     * Retourne la valeur stockée à l'adresse donnée si au moins un des composants attaché au bus possède une valeur à cette adresse, ou FF (en base 16) sinon.
      * @param address : valeur qui repère où lire dans la mémoire. 
      * @return valeur stockée à l'adresse donnée.
+     * @throws IllegalArgumentException si l'adresse n'est pas une valeur 16 bits.
      */
     public int read(int address) {
         Preconditions.checkBits16(address);
@@ -35,9 +37,10 @@ public final class Bus {
     }
     
     /**
-     * écrit la valeur "data" à l'adresse donnée dans tous les composants connectés au bus ; lève l'exception IllegalArgumentException si l'adresse n'est pas une valeur 16 bits ou si la donnée n'est pas une valeur 8 bits.
+     * écrit la valeur "data" à l'adresse donnée dans tous les composants connectés au bus.
      * @param address : valeur qui repère où écrire dans la mémoire.
      * @param data : valeur à écrire à l'adresse donnée.
+     * @throws IllegalArgumentException si l'adresse n'est pas une valeur 16 bits ou si la donnée n'est pas une valeur 8 bits.
      */   
     public void write(int address, int data) {
         Preconditions.checkBits16(address);

@@ -6,13 +6,25 @@ import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 
-
+/**
+ * Un composant contrôlant l'accès à une mémoire vive.
+ * @author Riand Andre
+ *
+ */
 public class RamController implements Component {
     
     private Ram ram;
     private int startAddress;
     private int endAddress;
     
+    /**
+     * Construit un contrôleur pour la mémoire vive donnée, accessible entre l'adresse startAddress (inclue) et endAddress (exclue).
+     * @param ram mémoire vive
+     * @param startAddress adresse initiale
+     * @param endAddress adresse de fin
+     * @throws NullPointerException si la mémoire donnée est nulle
+     * @throws IllegalArgumentException si l'une des deux adresses n'est pas une valeur 16 bits, ou si l'intervalle qu'elles décrivent a une taille négative ou supérieure à celle de la mémoire
+     */
     public RamController(Ram ram, int startAddress, int endAddress) {
         Objects.requireNonNull(ram);
         Preconditions.checkBits16(startAddress);
@@ -23,10 +35,19 @@ public class RamController implements Component {
         this.endAddress = endAddress;
     }
     
+    /**
+     * Appelle le premier constructeur en lui passant une adresse de fin telle que la totalité de la mémoire vive soit accessible au travers du contrôleur.
+     * @param ram mémoire vive
+     * @param startAddress adresse initiale
+     */
     public RamController(Ram ram, int startAddress) {
         this(ram, startAddress, startAddress + ram.size());
     }
     
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
+     */
+    @Override
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (!isAccessible(address))
@@ -34,6 +55,10 @@ public class RamController implements Component {
         return ram.read(address-startAddress);
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
+     */
+    @Override
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);

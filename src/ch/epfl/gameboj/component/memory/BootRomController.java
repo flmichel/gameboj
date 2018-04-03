@@ -7,17 +7,30 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 
+/**
+ * Un contrôleur de la mémoire morte de démarrage. 
+ * @author Riand Andre
+ *
+ */
 public final class BootRomController implements Component {
 
-    Cartridge cartridge;
-    boolean bootRomDisabled = false;
-    Rom bootRom = new Rom(BootRom.DATA);
+    private Cartridge cartridge;
+    private boolean bootRomDisabled = false;
+    private Rom bootRom = new Rom(BootRom.DATA);
 
+    /**
+     * Construit un contrôleur de mémoire de démarrage auquel la cartouche donnée est attachée.
+     * @param cartridge cartouche à attacher.
+     * @throws NullPointerException si la cartouche est nulle.
+     */
     public BootRomController(Cartridge cartridge) {
         Objects.requireNonNull(cartridge);
         this.cartridge = cartridge;
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
+     */
     @Override
     public int read(int address) {
         Preconditions.checkBits16(address);
@@ -28,6 +41,9 @@ public final class BootRomController implements Component {
         }
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
+     */
     @Override
     public void write(int address, int data) {
         Preconditions.checkBits16(address);

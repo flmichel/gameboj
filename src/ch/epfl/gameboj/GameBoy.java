@@ -17,6 +17,11 @@ public class GameBoy {
     private long cyclesNb = 0;
     private Timer minuteur;
 
+    /**
+     * Construit un Game Boy avec la cartouche (cartridge) donnée, en créant tous les composants nécessaires pour le bon fonctionnement de celui-ci (Processeur, Ram...) et les attachant à un bus commum.
+     * @param cartridge la cartouche du Game Boy.
+     * @throws NullPointerException si la cartouche passée en argument vaut null.
+     */
     public GameBoy(Cartridge cartridge) {
         Objects.requireNonNull(cartridge);
         workRam = new Ram(AddressMap.WORK_RAM_SIZE);
@@ -63,8 +68,9 @@ public class GameBoy {
     }
 
     /**
-     * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1, ou lève l'exception IllegalArgumentException si un nombre (strictement) supérieur de cycles a déjà été simulé.
+     * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1.
      * @param cycle : la méthode simule jusqu'à ce nombre représentant un cycle.
+     * @throws IllegalArgumentException si un nombre (strictement) supérieur de cycles a déjà été simulé.
      */
     public void runUntil(long cycle) {
        Preconditions.checkArgument(cycles() <= cycle);        

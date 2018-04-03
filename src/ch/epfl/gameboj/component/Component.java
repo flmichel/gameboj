@@ -4,6 +4,9 @@ import ch.epfl.gameboj.Bus;
 
 public interface Component {
 
+    /**
+     * Signale le fait qu'il n'y a aucune donnée à lire à l'adresse reçue.
+     */
     public static final int NO_DATA = 0x100;
     
     /**
@@ -23,6 +26,7 @@ public interface Component {
     /**
      * Attache le composant au bus donné.
      * @param bus : Bus auquel il faut attacher le composant.
+     * @throws NullPointerException si le bus donné vaut Null.
      */   
     default void attachTo(Bus bus) {
         bus.attach(this);

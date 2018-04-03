@@ -6,6 +6,7 @@ public interface Preconditions {
     /**
      * Vérifie si la condition passée en argument est remplie.
      * @param b : boolean qui représente la condition à remplir.
+     * @throws IllegalArgumentException si la condition n'est pas remplie.
      */
     static public void checkArgument(boolean b) {
         if (!b)
@@ -13,9 +14,10 @@ public interface Preconditions {
     }
     
     /**
-     * Vérifie si l'entier passé en argument peut s'écrire avec 8 bits, lance une exception dans le cas contraire.
+     * Vérifie si l'entier passé en argument peut s'écrire avec 8 bits.
      * @param v : entier à vérifier
      * @return v : l'argument lui-meme, si celui-ci peut s'écrire avec 8 bits.
+     * @throws IllegalArgumentException si l'entier ne peut pas s'écrire avec 8 bits.
      */
     static public int checkBits8(int v) {
         if (v >= 0 && v <= 0xff)
@@ -25,9 +27,10 @@ public interface Preconditions {
     }
     
     /**
-     * Vérifie si l'entier passé en argument peut s'écrire avec 16 bits, lance une exception dans le cas contraire.
+     * Vérifie si l'entier passé en argument peut s'écrire avec 16 bits.
      * @param v : entier à vérifier
      * @return v : l'argument lui-meme, si celui-ci peut s'écrire avec 16 bits.
+     * @throws IllegalArgumentException si l'entier ne peut pas s'écrire avec 16 bits.
      */
     static public int checkBits16(int v) {
         if (v >= 0 && v <= 0xffff)
