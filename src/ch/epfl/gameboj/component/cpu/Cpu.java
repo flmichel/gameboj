@@ -42,6 +42,9 @@ public final class Cpu implements Component, Clocked {
         V0, V1, ALU, CPU
     }
     
+    /**
+     * Interruptions
+     */
     public enum Interrupt implements Bit {
         VBLANK, LCD_STAT, TIMER, SERIAL, JOYPAD
       }
@@ -551,6 +554,10 @@ public final class Cpu implements Component, Clocked {
         }        
     }
 
+    /**
+     * @throws NullPointerException si le bus est null.
+     */
+    @Override
     public void attachTo(Bus bus) {
         this.bus = bus;
         bus.attach(this);
@@ -564,6 +571,9 @@ public final class Cpu implements Component, Clocked {
         IF = Bits.set(IF, i.index(), true);
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
+     */
     @Override
     public int read(int address) {
         Preconditions.checkBits16(address);
@@ -577,6 +587,9 @@ public final class Cpu implements Component, Clocked {
             return NO_DATA;
     }
 
+    /**
+     * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
+     */
     @Override
     public void write(int address, int data) {
         Preconditions.checkBits16(address);

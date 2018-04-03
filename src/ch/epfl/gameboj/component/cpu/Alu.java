@@ -11,10 +11,16 @@ public final class Alu {
 
     private Alu() {}
 
+    /**
+     * Fanions
+     */
     public enum Flag implements Bit {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, C, H, N, Z
     }
 
+    /**
+     * Directions de rotation
+     */
     public enum RotDir {
         LEFT, RIGHT
     }
@@ -64,6 +70,7 @@ public final class Alu {
      * @param r : deuxieme valeur à additionner.
      * @param c0 : retenue initiale.
      * @return somme des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int add(int l, int r, boolean c0) {
         Preconditions.checkBits8(l);
@@ -93,6 +100,7 @@ public final class Alu {
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
      * @return somme des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int add(int l, int r) {
         return add(l, r, false);
@@ -121,6 +129,7 @@ public final class Alu {
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
      * @return somme des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 16 bits.
      */
     public static int add16L(int l, int r) {
         return add16(l, r, true);
@@ -131,6 +140,7 @@ public final class Alu {
      * @param l : premiere valeur à additionner.
      * @param r : deuxieme valeur à additionner.
      * @return somme des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 16 bits.
      */
     public static int add16H(int l, int r) {
         return add16(l, r, false);
@@ -142,6 +152,7 @@ public final class Alu {
      * @param r : valeur à soustraire à "l"
      * @param b0 : emprunt initial
      * @return la différence des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int sub(int l, int r, boolean b0) {
         Preconditions.checkBits8(l);
@@ -161,6 +172,7 @@ public final class Alu {
      * @param l : valeur initiale
      * @param r : valeur à soustraire à "l"
      * @return la différence des arguments, et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int sub(int l, int r) {
         return sub(l, r, false);
@@ -173,6 +185,7 @@ public final class Alu {
      * @param h : fanion h
      * @param c : fanion c
      * @return la valeur donnée en format DCB.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int bcdAdjust(int v, boolean n, boolean h, boolean c) {
         Preconditions.checkBits8(v);
@@ -191,6 +204,7 @@ public final class Alu {
      * @param l : entier à utiliser
      * @param r : entier à utiliser
      * @return entier dont les bits proviennent du "et" entre les bits de "l" et "r", et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int and(int l, int r) {
         Preconditions.checkBits8(l);
@@ -204,6 +218,7 @@ public final class Alu {
      * @param l : entier à utiliser
      * @param r : entier à utiliser
      * @return entier dont les bits proviennent du "ou inclusif" entre les bits de "l" et "r", et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int or(int l, int r) {
         Preconditions.checkBits8(l);
@@ -217,6 +232,7 @@ public final class Alu {
      * @param l : entier à utiliser
      * @param r : entier à utiliser
      * @return entier dont les bits proviennent du "ou exclusif" entre les bits de "l" et "r", et fanions correspondants.
+     * @throws IllegalArgumentException si "l" ou "r" ne peuvent pas s'écrire avec 8 bits.
      */
     public static int xor(int l, int r) {
         Preconditions.checkBits8(l);
@@ -229,6 +245,7 @@ public final class Alu {
      * Retourne la valeur 8 bits donnée décalée à gauche d'un bit, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
      * @param v : entier à effectuer le décalage
      * @return entier apres décalage, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int shiftLeft(int v) {
         Preconditions.checkBits8(v);
@@ -241,6 +258,7 @@ public final class Alu {
      * Retourne la valeur 8 bits donnée décalée droite d'un bit, de manière arithmétique, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
      * @param v : entier à effectuer le décalage
      * @return entier apres décalage, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int shiftRightA(int v) {
         Preconditions.checkBits8(v);
@@ -253,6 +271,7 @@ public final class Alu {
      * Retourne la valeur 8 bits donnée décalée droite d'un bit, de manière logique, et les fanions Z00C où le fanion C contient le bit éjecté par le décalage (c'est-à-dire que C est vrai si et seulement si le bit en question valait 1).
      * @param v : entier à effectuer le décalage
      * @return entier apres décalage, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int shiftRightL(int v) {
         Preconditions.checkBits8(v);
@@ -266,6 +285,7 @@ public final class Alu {
      * @param d : direction de rotation
      * @param v : entier à subir la rotation
      * @return entier apres rotation, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int rotate(RotDir d, int v) {
         Preconditions.checkBits8(v);
@@ -287,6 +307,7 @@ public final class Alu {
      * @param v : entier à subir la rotation
      * @param c : fanion c
      * @return Entier suivant le procédé expliqué ci-dessus, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int rotate(RotDir d, int v, boolean c) {
         Preconditions.checkBits8(v);
@@ -303,6 +324,7 @@ public final class Alu {
      * Retourne la valeur obtenue en échangeant les 4 bits de poids faible et de poids fort de la valeur 8 bits donnée, et les fanions Z000.
      * @param v : entier à manipuler.
      * @return entier apres manipulation et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int swap(int v) {
         Preconditions.checkBits8(v);
@@ -315,6 +337,7 @@ public final class Alu {
      * @param v : valeur 8 bits
      * @param bitIndex : index compris entre 0 et 7 (inclus).
      * @return 0 si la condition décrite ci-dessus est remplie, et fanions correspondants.
+     * @throws IllegalArgumentException si "v" ne peut pas s'écrire avec 8 bits.
      */
     public static int testBit(int v, int bitIndex) {
         Preconditions.checkBits8(v);
