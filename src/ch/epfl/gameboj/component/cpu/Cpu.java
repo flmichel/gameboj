@@ -26,6 +26,7 @@ public final class Cpu implements Component, Clocked {
     private boolean IME;
     private int IE;
     private int IF;
+    private boolean addTotalByte;
     private Ram highRam = new Ram(AddressMap.HIGH_RAM_SIZE);
 
     private enum Reg implements Register {
@@ -44,7 +45,7 @@ public final class Cpu implements Component, Clocked {
     public enum Interrupt implements Bit {
         VBLANK, LCD_STAT, TIMER, SERIAL, JOYPAD
       }
-
+    
     private static Opcode[] buildOpcodeTable(Kind direct) {
         Opcode a[] = new Opcode[256];
         for (Opcode o: Opcode.values()) {
@@ -55,8 +56,9 @@ public final class Cpu implements Component, Clocked {
         return a;
     }
     
+    @Override
     public void cycle(long cycle) {
-        if(nextNonIdleCycle == Long.MAX_VALUE) {
+        if (nextNonIdleCycle == Long.MAX_VALUE) {
             int reg = IE & IF;
             if (Bits.clip(5, reg) != 0)
                 nextNonIdleCycle = cycle;
@@ -69,26 +71,24 @@ public final class Cpu implements Component, Clocked {
     /**
      * Regarde si les interruptions sont activées (c'est-à-dire si IME est vrai) et si une interruption est en attente, auquel cas elle la gère; sinon, elle exécute normalement la prochaine instruction.
      */
-    public void reallyCycle() {
+    private void reallyCycle() {
         int reg = IE & IF;
         if (IME && (Bits.clip(5, reg) != 0)) {
             IME = false;
             int i = Integer.lowestOneBit(reg);
             IF -= i;
             push16(PC);
-            PC = AddressMap.INTERRUPTS[(int) (Math.log(i) / Math.log(2))];
+            PC = AddressMap.INTERRUPTS[Integer.numberOfTrailingZeros(i)];
             nextNonIdleCycle += 5;
         }
         else {            
             int opcodeValue = read8(PC);
-            Opcode opcode;
-            if (opcodeValue == 0xCB)
-                opcode = PREFIXED_OPCODE_TABLE[read8AfterOpcode()]; 
-            else
-                opcode = DIRECT_OPCODE_TABLE[opcodeValue];
+            Opcode opcode = opcodeValue == 0xCB ? PREFIXED_OPCODE_TABLE[read8AfterOpcode()] : DIRECT_OPCODE_TABLE[opcodeValue];
             nextPC = PC + opcode.totalBytes;
+            addTotalByte = true;
             dispatch(opcode);
-            PC += opcode.totalBytes;
+            if (addTotalByte)
+                PC += opcode.totalBytes;
             nextNonIdleCycle += opcode.cycles;
         }
     }
@@ -220,21 +220,13 @@ public final class Cpu implements Component, Clocked {
         } break;
         case INC_R16SP: {
             Reg16 reg16 = extractReg16(opcode);
-            int vf;
-            if (reg16.name() == "AF")
-                vf = Alu.add16H(SP, 1);
-            else
-                vf = Alu.add16H(reg16(reg16), 1);
+            int vf = reg16.name() == "AF" ? Alu.add16H(SP, 1) : Alu.add16H(reg16(reg16), 1);
             int v = Alu.unpackValue(vf);
             setReg16SP(reg16, v);
         } break;
         case ADD_HL_R16SP: {
             Reg16 reg16 = extractReg16(opcode);
-            int vf;
-            if (reg16.name() == "AF")
-                vf = Alu.add16H(reg16(Reg16.HL), SP);
-            else
-                vf = Alu.add16H(reg16(Reg16.HL), reg16(reg16));
+            int vf = reg16.name() == "AF" ? Alu.add16H(reg16(Reg16.HL), SP) : Alu.add16H(reg16(Reg16.HL), reg16(reg16));
             int v = Alu.unpackValue(vf);
             setReg16(Reg16.HL, v);
             combineAluFlags(vf, FlagSrc.CPU, FlagSrc.V0, FlagSrc.ALU, FlagSrc.ALU);
@@ -298,11 +290,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case DEC_R16SP: {          
             Reg16 reg16 = extractReg16(opcode);
-            int v;
-            if (reg16.name() == "AF")
-                v = Bits.clip(16, SP - 1);
-            else
-                v = Bits.clip(16, reg16(reg16) - 1);
+            int v = reg16.name() == "AF" ? Bits.clip(16, SP - 1) : Bits.clip(16, reg16(reg16) - 1);
             setReg16SP(reg16, v);
         } break;
 
@@ -367,7 +355,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case ROTA: {
             RotDir dir = rotDirection(opcode);
-            boolean c = Bits.test(registerFile.get(Reg.F), Flag.C.index());
+            boolean c = registerFile.testBit(Reg.F, Flag.C);
             int vf = Alu.rotate(dir, registerFile.get(Reg.A), c);
             setRegFromAlu(Reg.A, vf);
             combineAluFlags(vf, FlagSrc.V0, FlagSrc.V0, FlagSrc.V0, FlagSrc.ALU);
@@ -380,7 +368,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case ROT_R8: {
             RotDir dir = rotDirection(opcode);
-            boolean c = Bits.test(registerFile.get(Reg.F), Flag.C.index());
+            boolean c = registerFile.testBit(Reg.F, Flag.C);
             Reg reg = extractReg(opcode, 0);
             int vf = Alu.rotate(dir, registerFile.get(reg), c);
             setRegFlags(reg, vf);
@@ -392,7 +380,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case ROT_HLR: {
             RotDir dir = rotDirection(opcode);
-            boolean c = Bits.test(registerFile.get(Reg.F), Flag.C.index());
+            boolean c = registerFile.testBit(Reg.F, Flag.C);
             int vf = Alu.rotate(dir, read8AtHl(), c);
             write8AtHlAndSetFlags(vf);
         } break;
@@ -467,9 +455,9 @@ public final class Cpu implements Component, Clocked {
         case DAA: {
             int regAValue = registerFile.get(Reg.A);
             int regFValue = registerFile.get(Reg.F);
-            boolean n = Bits.test(regFValue, Flag.N.index());
-            boolean h = Bits.test(regFValue, Flag.H.index());
-            boolean c = Bits.test(regFValue, Flag.C.index());
+            boolean n = Bits.test(regFValue, Flag.N);
+            boolean h = Bits.test(regFValue, Flag.H);
+            boolean c = Bits.test(regFValue, Flag.C);
 
             int vf = Alu.bcdAdjust(regAValue, n,  h, c);
             setRegFromAlu(Reg.A, vf);
@@ -483,25 +471,30 @@ public final class Cpu implements Component, Clocked {
         
         // Jumps
         case JP_HL: {
-            PC = reg16(Reg16.HL) - opcode.totalBytes;
+            PC = reg16(Reg16.HL);
+            addTotalByte = false;
         } break;
         case JP_N16: {
-            PC = read16AfterOpcode() - opcode.totalBytes;
+            PC = read16AfterOpcode();
+            addTotalByte = false;
         } break;
         case JP_CC_N16: {
             if (checkCondition(opcode)) {
-                PC = read16AfterOpcode() - opcode.totalBytes;
+                PC = read16AfterOpcode();
+                addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
             }   
         } break;
         case JR_E8: {
             int e8 = Bits.signExtend8(read8AfterOpcode());
-            PC = Bits.clip(16, nextPC + e8) - opcode.totalBytes;
+            PC = Bits.clip(16, nextPC + e8);
+            addTotalByte = false;
         } break;
         case JR_CC_E8: {
             if (checkCondition(opcode)) {
                 int e8 = Bits.signExtend8(read8AfterOpcode());
-                PC = Bits.clip(16, nextPC + e8) - opcode.totalBytes;
+                PC = Bits.clip(16, nextPC + e8);
+                addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
@@ -509,25 +502,30 @@ public final class Cpu implements Component, Clocked {
         // Calls and returns
         case CALL_N16: {
             push16(nextPC);
-            PC = read16AfterOpcode() - opcode.totalBytes;
+            PC = read16AfterOpcode();
+            addTotalByte = false;
         } break;
         case CALL_CC_N16: {
             if (checkCondition(opcode)) {
                 push16(nextPC);
-                PC = read16AfterOpcode() - opcode.totalBytes;
+                PC = read16AfterOpcode();
+                addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
         case RST_U3: {
             push16(nextPC);
-            PC = AddressMap.RESETS[extractIndex(opcode)] - opcode.totalBytes;
+            PC = AddressMap.RESETS[extractIndex(opcode)];
+            addTotalByte = false;
         } break;
         case RET: {
-            PC = pop16() - opcode.totalBytes;
+            PC = pop16();
+            addTotalByte = false;
         } break;
         case RET_CC: {
             if (checkCondition(opcode)) {
-                PC = pop16() - opcode.totalBytes;
+                PC = pop16();
+                addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
             }
         } break;
@@ -538,7 +536,8 @@ public final class Cpu implements Component, Clocked {
         } break;
         case RETI: {
             IME = true;
-            PC = pop16() - opcode.totalBytes;
+            PC = pop16();
+            addTotalByte = false;
         } break;
 
         // Misc control
@@ -732,37 +731,33 @@ public final class Cpu implements Component, Clocked {
     
     private void combineAluFlags(int vf, FlagSrc z, FlagSrc n, FlagSrc h, FlagSrc c) {
         FlagSrc[] flags = {z, n, h, c};
-        boolean[] tab = new boolean[4];
+        Flag[] flagList = Flag.values();
+        //On détermine la valeure de chaque fanion selon la valeur de FlagSrc.
         for (int i = 0; i < flags.length; i++) {
-            if (flags[i].name() == "V1")
-                tab[i] = true;
-            else if (flags[i].name() == "ALU")
-                tab[i] = Bits.test(vf, 7 - i); //On choisit l'index correspondant au bon fanions dans vf
-            else if (flags[i].name() == "CPU")
-                tab[i] = Bits.test(registerFile.get(Reg.F), 7 - i); //On choisit l'index correspondant au bon fanions dans le registre F.
+            int index = 7 - i; //On choisit l'index correspondant au bon fanions
+            switch (flags[i].name()) {
+            case ("V1") : registerFile.setBit(Reg.F, flagList[index], true); break;
+            case ("V0") : registerFile.setBit(Reg.F, flagList[index], false); break;
+            case ("ALU") : {
+                boolean flag = Bits.test(vf, index);
+                registerFile.setBit(Reg.F, flagList[index], flag);
+                } break;
+            }
         }
-        int newValue = Alu.maskZNHC(tab[0], tab[1], tab[2], tab[3]);
-        registerFile.set(Reg.F, newValue);
     }
 
     private boolean combineBit3AndC(Opcode opcode) {
-        int fValue = registerFile.get(Reg.F);
-        int opcodeValue = opcode.encoding;
-        if (Bits.test(opcodeValue, 3) && Bits.test(fValue, Flag.C.index()))
-            return true;
-        return false;
+        return Bits.test(opcode.encoding, 3) && registerFile.testBit(Reg.F, Flag.C);
+
     }
     
     private boolean checkCondition(Opcode opcode) {
         int cc = Bits.extract(opcode.encoding, 3, 2);
-        int regF = registerFile.get(Reg.F);
-        if (cc == 0b00)
-            return !Bits.test(regF, Flag.Z) ? true : false;
-        else if (cc == 0b01)
-            return Bits.test(regF, Flag.Z) ? true : false;
-        else if (cc == 0b10)
-            return !Bits.test(regF, Flag.C) ? true : false;
-        else
-            return Bits.test(regF, Flag.C) ? true : false;
+        switch (cc) {     
+            case (0b00) : return !registerFile.testBit(Reg.F, Flag.Z) ? true : false;
+            case (0b01) : return registerFile.testBit(Reg.F, Flag.Z) ? true : false;
+            case (0b10) : return !registerFile.testBit(Reg.F, Flag.C) ? true : false;
+            default : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        }
     }   
 }

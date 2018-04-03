@@ -74,7 +74,7 @@ public final class Timer implements Component, Clocked {
 
         case AddressMap.REG_DIV: {
             boolean status = state();
-            mainCounter = data;
+            mainCounter = 0;
             incIfChange(status);
         } break;
 

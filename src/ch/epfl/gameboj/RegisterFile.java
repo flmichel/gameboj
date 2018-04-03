@@ -56,6 +56,6 @@ public final class RegisterFile<E extends Register> {
      * @throws IndexOutOfBoundsException si l'index n'est pas valide.
      */
     public void setBit(E reg, Bit bit, boolean newValue) {
-        Bits.set(values[reg.index()], bit.index(), newValue);
+        values[reg.index()] = (byte) Bits.set(values[reg.index()], bit.index(), newValue);
     }
 }

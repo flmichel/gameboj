@@ -28,8 +28,7 @@ public final class Cartridge implements Component {
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
         byte[] data = stream.readAllBytes();
-        if (data[0x147] != 0)
-            throw new IllegalArgumentException();
+        Preconditions.checkArgument(data[0x147] == 0); //0x147 correspond au type de la cartouche.
         MBC0 bc = new MBC0(new Rom(data));
         return new Cartridge(bc);
         }
