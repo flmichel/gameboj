@@ -10,14 +10,19 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Rom;
 
+/**
+ * Une cartouche
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Cartridge implements Component {
     private Component bankController;
-    
+
     private Cartridge(Component bankController) {
         this.bankController = bankController;
-        
+
     }
-    
+
     /**
      * Retourne une cartouche dont la mémoire morte contient les octets du fichier donné. 
      * @param romFile fichier à lire.
@@ -27,13 +32,13 @@ public final class Cartridge implements Component {
      */
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
-        byte[] data = stream.readAllBytes();
-        Preconditions.checkArgument(data[0x147] == 0); //0x147 correspond au type de la cartouche.
-        MBC0 bc = new MBC0(new Rom(data));
-        return new Cartridge(bc);
+            byte[] data = stream.readAllBytes();
+            Preconditions.checkArgument(data[0x147] == 0); //0x147 correspond au type de la cartouche.
+            MBC0 bc = new MBC0(new Rom(data));
+            return new Cartridge(bc);
         }
     }
-    
+
     /**
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
      */

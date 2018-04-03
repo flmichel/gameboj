@@ -9,14 +9,14 @@ import ch.epfl.gameboj.Preconditions;
 /**
  * Un composant contrôlant l'accès à une mémoire vive.
  * @author Riand Andre
- *
+ * @author Michel François
  */
 public class RamController implements Component {
-    
+
     private Ram ram;
     private int startAddress;
     private int endAddress;
-    
+
     /**
      * Construit un contrôleur pour la mémoire vive donnée, accessible entre l'adresse startAddress (inclue) et endAddress (exclue).
      * @param ram mémoire vive
@@ -34,7 +34,7 @@ public class RamController implements Component {
         this.startAddress = startAddress;
         this.endAddress = endAddress;
     }
-    
+
     /**
      * Appelle le premier constructeur en lui passant une adresse de fin telle que la totalité de la mémoire vive soit accessible au travers du contrôleur.
      * @param ram mémoire vive
@@ -43,7 +43,7 @@ public class RamController implements Component {
     public RamController(Ram ram, int startAddress) {
         this(ram, startAddress, startAddress + ram.size());
     }
-    
+
     /**
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
      */
@@ -65,7 +65,7 @@ public class RamController implements Component {
         if (isAccessible(address))
             ram.write(address-startAddress, data);  
     }
-    
+
     /**
      * Vérifie que l'adresse donnée est accessible (valide) pour l'objet en question.
      * @param address : adresse à vérifier.

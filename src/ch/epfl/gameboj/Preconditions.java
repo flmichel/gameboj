@@ -1,8 +1,12 @@
 package ch.epfl.gameboj;
 
+/**
+ * Assure la validité des arguments vérifiant des conditions pré-determinées.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public interface Preconditions {
-    
-    
+
     /**
      * Vérifie si la condition passée en argument est remplie.
      * @param b : boolean qui représente la condition à remplir.
@@ -12,7 +16,7 @@ public interface Preconditions {
         if (!b)
             throw new IllegalArgumentException();
     }
-    
+
     /**
      * Vérifie si l'entier passé en argument peut s'écrire avec 8 bits.
      * @param v : entier à vérifier
@@ -25,7 +29,7 @@ public interface Preconditions {
         else
             throw new IllegalArgumentException();
     }
-    
+
     /**
      * Vérifie si l'entier passé en argument peut s'écrire avec 16 bits.
      * @param v : entier à vérifier

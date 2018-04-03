@@ -4,6 +4,11 @@ import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 
+/**
+ * Représente un ensemble de bits.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Bits {
 
     private Bits() {} //Le constructeur fermé rend la classe non instanciable.

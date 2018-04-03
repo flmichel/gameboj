@@ -6,10 +6,15 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Rom;
 
+/**
+ * Représente un contrôleur de banque mémoire de type 0, c'est-à-dire doté uniquement d'une mémoire morte de 32 768 octets.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class MBC0 implements Component {
-    
+
     private Rom rom;
-    
+
     private static final int ROM_SIZE = 0x8000; //taille de la mémoire morte
 
     /**

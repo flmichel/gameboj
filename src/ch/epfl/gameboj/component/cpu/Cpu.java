@@ -14,6 +14,11 @@ import ch.epfl.gameboj.component.cpu.Alu.RotDir;
 import ch.epfl.gameboj.component.cpu.Opcode.Kind;
 import ch.epfl.gameboj.component.memory.Ram;
 
+/**
+ * Le processeur du Game Boy
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Cpu implements Component, Clocked {
 
     private Bus bus;
@@ -33,22 +38,22 @@ public final class Cpu implements Component, Clocked {
         A, F, B, C, D, E, H, L
     }
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
-    
+
     private enum Reg16 implements Register {
         AF, BC, DE, HL
     }
-    
+
     private enum FlagSrc {
         V0, V1, ALU, CPU
     }
-    
+
     /**
      * Interruptions
      */
     public enum Interrupt implements Bit {
         VBLANK, LCD_STAT, TIMER, SERIAL, JOYPAD
-      }
-    
+    }
+
     private static Opcode[] buildOpcodeTable(Kind direct) {
         Opcode a[] = new Opcode[256];
         for (Opcode o: Opcode.values()) {
@@ -58,7 +63,7 @@ public final class Cpu implements Component, Clocked {
         }
         return a;
     }
-    
+
     @Override
     public void cycle(long cycle) {
         if (nextNonIdleCycle == Long.MAX_VALUE) {
@@ -70,7 +75,7 @@ public final class Cpu implements Component, Clocked {
             reallyCycle();
         }
     }
-    
+
     /**
      * Regarde si les interruptions sont activées (c'est-à-dire si IME est vrai) et si une interruption est en attente, auquel cas elle la gère; sinon, elle exécute normalement la prochaine instruction.
      */
@@ -98,7 +103,7 @@ public final class Cpu implements Component, Clocked {
 
 
     private void dispatch(Opcode opcode) {
-        
+
         switch (opcode.family) {
 
         case NOP: {
@@ -189,7 +194,7 @@ public final class Cpu implements Component, Clocked {
             Reg16 reg16 = extractReg16(opcode);
             push16(reg16(reg16));
         } break;
-        
+
         // Add
         case ADD_A_R8: {
             boolean c = combineBit3AndC(opcode);
@@ -471,7 +476,7 @@ public final class Cpu implements Component, Clocked {
             if (c) combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V1);
             else combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V0);
         } break;
-        
+
         // Jumps
         case JP_HL: {
             PC = reg16(Reg16.HL);
@@ -548,7 +553,7 @@ public final class Cpu implements Component, Clocked {
             nextNonIdleCycle = Long.MAX_VALUE;
         } break;
         case STOP:
-          throw new Error("STOP is not implemented");
+            throw new Error("STOP is not implemented");
         default: 
             throw new IllegalArgumentException();
         }        
@@ -562,7 +567,7 @@ public final class Cpu implements Component, Clocked {
         this.bus = bus;
         bus.attach(this);
     }
-    
+
     /**
      * Lève l'interruption donnée, c'est-à-dire met à 1 le bit correspondant dans le registre IF.
      * @param i : interruption à lever.
@@ -666,15 +671,15 @@ public final class Cpu implements Component, Clocked {
         return val;
 
     }
-    
+
     // GESTION DES PAIRES DE REGISTRES
-    
+
     private int reg16(Reg16 r) {
         int h = registerFile.get(Reg.values()[r.index() * 2]);
         int l = registerFile.get(Reg.values()[r.index() * 2 + 1]);
         return Bits.make16(h, l);
     }
-    
+
     private void setReg16(Reg16 r, int newV) {
         if (r.name() == "AF")
             newV = newV & 0xFFF0;
@@ -682,7 +687,7 @@ public final class Cpu implements Component, Clocked {
         registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.clip(8, newV));
     }
 
-    
+
     private void setReg16SP(Reg16 r, int newV) {
         if (r.name() == "AF")
             SP = newV;
@@ -691,57 +696,57 @@ public final class Cpu implements Component, Clocked {
     }
 
     // Extraction de paramètres
-    
+
     private Reg extractReg(Opcode opcode, int startBit) {
         int a = Bits.extract(opcode.encoding, startBit, 3);
         if (a < 6) return Reg.values()[a+2];
         else if (a == 7) return Reg.A;
         else return null;
     }
-    
+
     private Reg16 extractReg16(Opcode opcode) {
         int a = Bits.extract(opcode.encoding, 4, 2);
         a = Bits.clip(2, a+1);
         return Reg16.values()[a];
     }
-    
+
     private int extractHlIncrement(Opcode opcode) {
         return (Bits.test(opcode.encoding, 4)) ? -1 : 1;
     }
-    
+
     private RotDir rotDirection(Opcode opcode) {
         if (Bits.test(opcode.encoding, 3)) return RotDir.RIGHT;
         return RotDir.LEFT;
     }
-    
+
     private int extractIndex(Opcode opcode) {
         return Bits.extract(opcode.encoding, 3, 3); 
     }
-    
+
     private boolean bitResSet(Opcode opcode) {
         return Bits.test(opcode.encoding, 6);   
     }
 
     // Gestion des fanions
-    
+
     private void setRegFromAlu(Reg r, int vf) {
         registerFile.set(r, Alu.unpackValue(vf));
     }
-    
+
     private void setFlags(int valueFlags) {
         registerFile.set(Reg.F, Alu.unpackFlags(valueFlags));
     }
-    
+
     private void setRegFlags(Reg r, int vf) {
         setRegFromAlu(r, vf);
         setFlags(vf);
     }
-    
+
     private void write8AtHlAndSetFlags(int vf) {
         write8AtHl(Alu.unpackValue(vf));
         setFlags(vf);
     }
-    
+
     private void combineAluFlags(int vf, FlagSrc z, FlagSrc n, FlagSrc h, FlagSrc c) {
         FlagSrc[] flags = {z, n, h, c};
         Flag[] flagList = Flag.values();
@@ -754,7 +759,7 @@ public final class Cpu implements Component, Clocked {
             case ("ALU") : {
                 boolean flag = Bits.test(vf, index);
                 registerFile.setBit(Reg.F, flagList[index], flag);
-                } break;
+            } break;
             }
         }
     }
@@ -763,14 +768,14 @@ public final class Cpu implements Component, Clocked {
         return Bits.test(opcode.encoding, 3) && registerFile.testBit(Reg.F, Flag.C);
 
     }
-    
+
     private boolean checkCondition(Opcode opcode) {
         int cc = Bits.extract(opcode.encoding, 3, 2);
         switch (cc) {     
-            case (0b00) : return !registerFile.testBit(Reg.F, Flag.Z) ? true : false;
-            case (0b01) : return registerFile.testBit(Reg.F, Flag.Z) ? true : false;
-            case (0b10) : return !registerFile.testBit(Reg.F, Flag.C) ? true : false;
-            default : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        case (0b00) : return !registerFile.testBit(Reg.F, Flag.Z) ? true : false;
+        case (0b01) : return registerFile.testBit(Reg.F, Flag.Z) ? true : false;
+        case (0b10) : return !registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        default : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
         }
     }   
 }

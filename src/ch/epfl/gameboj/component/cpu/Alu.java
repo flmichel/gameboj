@@ -7,6 +7,11 @@ import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 
+/**
+ * Unité arithmétique et logique (UAL)
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Alu {
 
     private Alu() {}

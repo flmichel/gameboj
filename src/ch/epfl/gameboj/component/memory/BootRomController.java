@@ -10,7 +10,7 @@ import ch.epfl.gameboj.component.cartridge.Cartridge;
 /**
  * Un contrôleur de la mémoire morte de démarrage. 
  * @author Riand Andre
- *
+ * @author Michel François
  */
 public final class BootRomController implements Component {
 

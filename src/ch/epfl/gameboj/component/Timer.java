@@ -8,6 +8,11 @@ import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 
+/**
+ * Représente le minuteur du Game Boy
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Timer implements Component, Clocked {
 
     private Cpu cpu;

@@ -9,6 +9,11 @@ import ch.epfl.gameboj.component.memory.BootRomController;
 import ch.epfl.gameboj.component.memory.Ram;
 import ch.epfl.gameboj.component.memory.RamController;
 
+/**
+ * Modélise un Game Boy, avec tous ces composants.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public class GameBoy {
 
     private Bus bus;
@@ -58,7 +63,7 @@ public class GameBoy {
     public long cycles() {
         return cyclesNb;
     }
-    
+
     /**
      * Retourne le minuteur du Game Boy.
      * @return le minuteur du Game Boy.
@@ -73,9 +78,9 @@ public class GameBoy {
      * @throws IllegalArgumentException si un nombre (strictement) supérieur de cycles a déjà été simulé.
      */
     public void runUntil(long cycle) {
-       Preconditions.checkArgument(cycles() <= cycle);        
-       
-       if (cycles() < cycle) {
+        Preconditions.checkArgument(cycles() <= cycle);        
+
+        if (cycles() < cycle) {
             for (long i = cycles() ; i < cycle ; i++) {
                 minuteur.cycle(i);
                 cpu.cycle(i);

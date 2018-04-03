@@ -7,6 +7,11 @@ import java.util.Objects;
 
 import ch.epfl.gameboj.component.Component;
 
+/**
+ * Bus d'adresses et de données connectant les composants du Game Boy entre eux.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class Bus {
 
     private final static int VALUE_TO_RETURN = 0xFF;
@@ -35,7 +40,7 @@ public final class Bus {
         }
         return VALUE_TO_RETURN;
     }
-    
+
     /**
      * écrit la valeur "data" à l'adresse donnée dans tous les composants connectés au bus.
      * @param address : valeur qui repère où écrire dans la mémoire.

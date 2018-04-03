@@ -1,5 +1,10 @@
 package ch.epfl.gameboj.component;
 
+/**
+ * Représente un composant piloté par l'horloge du système
+ * @author Riand Andre
+ * @author Michel François
+ */
 public interface Clocked {
 
     /**
