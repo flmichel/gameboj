@@ -69,6 +69,7 @@ public final class Timer implements Component, Clocked {
     }
 
     /**
+     * écrit la valeur "data" à l'adresse donnée dans la condition que l'adresse soit valide. Si l'adresse correspond à FF04 (en base 16), le compteur principal est remis à 0. 
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
      */
     @Override

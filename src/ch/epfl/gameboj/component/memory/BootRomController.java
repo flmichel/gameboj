@@ -29,6 +29,7 @@ public final class BootRomController implements Component {
     }
 
     /**
+     * Intercepte les lectures dans la plage 0 à FF (en base 16) tant et aussi longtemps que la mémoire de démarrage n'a pas été désactivée, et y répond avec l'octet correspondant de la mémoire de démarrage. Toutes les autres lectures (sans exception aucune) sont transmises à la cartouche, en appelant sa méthode read à elle.
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
      */
     @Override
@@ -42,6 +43,7 @@ public final class BootRomController implements Component {
     }
 
     /**
+     * Détecte les écritures à l'adresse FF50 (en base 16) et désactive la mémoire de démarrage à la première d'entre elles, indépendemment de la valeur écrite. Toutes les autres écritures, sans exception aucune, sont transmises à la cartouche, en appelant sa méthode write.
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits ou data ne peut pas s'écrire avec 8 bits.
      */
     @Override
