@@ -48,7 +48,7 @@ public final class Timer implements Component, Clocked {
         switch (address) {
 
         case AddressMap.REG_DIV: {
-            return mainCounter;
+            return Bits.extract(mainCounter, 8, 8);
         } 
 
         case AddressMap.REG_TIMA: {
