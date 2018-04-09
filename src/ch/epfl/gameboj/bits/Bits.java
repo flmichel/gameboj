@@ -99,7 +99,7 @@ public final class Bits {
      */
     public static int rotate(int size, int bits, int distance) {
         Preconditions.checkArgument(size > 0 && size <= Integer.SIZE);
-        //Preconditions.checkArgument(bits >>> size == 0 || size == 32);
+        Preconditions.checkArgument((bits >>> size == 0) || size == Integer.SIZE);
         distance = Math.floorMod(distance, size);
         bits = (bits << distance) | (bits >>> (size - distance));
         return clip(size, bits);
