@@ -17,6 +17,8 @@ import ch.epfl.gameboj.component.memory.Rom;
  */
 public final class Cartridge implements Component {
     private Component bankController;
+    
+    private static final int POSITION_MBC_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
@@ -33,7 +35,7 @@ public final class Cartridge implements Component {
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
             byte[] data = stream.readAllBytes();
-            Preconditions.checkArgument(data[0x147] == 0); //0x147 correspond au type de la cartouche.
+            Preconditions.checkArgument(data[POSITION_MBC_TYPE] == 0);
             MBC0 bc = new MBC0(new Rom(data));
             return new Cartridge(bc);
         }
