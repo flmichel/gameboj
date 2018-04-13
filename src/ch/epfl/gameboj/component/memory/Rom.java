@@ -11,7 +11,7 @@ import java.lang.Byte;
  */
 public final class Rom {
 
-    private byte[] data;
+    private final byte[] data;
 
     /**
      * Construit une mémoire morte dont le contenu et la taille sont ceux du tableau d'octets donné en argument.

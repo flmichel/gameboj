@@ -16,11 +16,11 @@ import ch.epfl.gameboj.component.memory.RamController;
  */
 public final class GameBoy {
 
-    private Bus bus;
-    private Ram workRam;
-    private Cpu cpu;
+    private final Bus bus;
+    private final Ram workRam;
+    private final Cpu cpu;
     private long cyclesNb = 0;
-    private Timer minuteur;
+    private final Timer minuteur;
 
     /**
      * Construit un Game Boy avec la cartouche (cartridge) donnée, en créant tous les composants nécessaires pour le bon fonctionnement de celui-ci (Processeur, Ram...) et les attachant à un bus commum.

@@ -11,7 +11,6 @@ import ch.epfl.gameboj.bits.Bits;
  */
 public final class RegisterFile<E extends Register> {
 
-    private E[] allRegs;
     private byte[] values;
 
     /**
@@ -19,7 +18,6 @@ public final class RegisterFile<E extends Register> {
      * @param allRegs tableau avec les registres.
      */
     public RegisterFile(E[] allRegs) {
-        this.allRegs = allRegs;
         values = new byte[allRegs.length];
     }
 

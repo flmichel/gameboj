@@ -10,9 +10,9 @@ import ch.epfl.gameboj.Preconditions;
  * @author Riand Andre
  * @author Michel François
  */
-final public class Ram {
+public final class Ram {
 
-    private byte[] data;
+    private final byte[] data;
 
     /**
      * Construit une nouvelle mémoire vive de taille donnée (en octets). 

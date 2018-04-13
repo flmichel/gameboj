@@ -14,9 +14,9 @@ import ch.epfl.gameboj.component.cartridge.Cartridge;
  */
 public final class BootRomController implements Component {
 
-    private Cartridge cartridge;
+    private final Cartridge cartridge;
     private boolean bootRomDisabled = false;
-    private Rom bootRom = new Rom(BootRom.DATA);
+    private final Rom bootRom = new Rom(BootRom.DATA);
 
     /**
      * Construit un contrôleur de mémoire de démarrage auquel la cartouche donnée est attachée.

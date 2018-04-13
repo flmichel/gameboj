@@ -116,15 +116,15 @@ public final class Alu {
         Preconditions.checkBits16(r);
 
         boolean c = false;
-        int lowB = add(Bits.clip(8, r), Bits.clip(8, l));
+        final int lowB = add(Bits.clip(8, r), Bits.clip(8, l));
 
         if (Bits.test(lowB, Flag.C.index())) c = true;
 
-        int highB = add(Bits.extract(l, 8, 8), Bits.extract(r, 8, 8), c);
+        final int highB = add(Bits.extract(l, 8, 8), Bits.extract(r, 8, 8), c);
 
-        int flagB = low ? lowB : highB;
+        final int flagB = low ? lowB : highB;
 
-        int flags = Bits.set(unpackFlags(flagB), Flag.Z.index(), false);
+        final int flags = Bits.set(unpackFlags(flagB), Flag.Z.index(), false);
 
         return Bits.make16(unpackValue(highB), unpackValue(lowB)) << 8 | flags;
     }
@@ -162,12 +162,11 @@ public final class Alu {
     public static int sub(int l, int r, boolean b0) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
-        int borrow = 0;
-        if (b0) borrow = 1;
-        boolean c = l - borrow < r;
-        boolean h = Bits.clip(4, l) - borrow < Bits.clip(4, r);
-        int value = Bits.clip(8, l - r - borrow);
-        boolean z = (value == 0);
+        final int borrow = b0 ? 1 : 0;
+        final boolean c = l - borrow < r;
+        final boolean h = Bits.clip(4, l) - borrow < Bits.clip(4, r);
+        final int value = Bits.clip(8, l - r - borrow);
+        final boolean z = (value == 0);
 
         return packValueZNHC(value, z, true, h, c);    
     }
@@ -194,12 +193,12 @@ public final class Alu {
      */
     public static int bcdAdjust(int v, boolean n, boolean h, boolean c) {
         Preconditions.checkBits8(v);
-        boolean fixL = h || (!n && Bits.clip(4, v) > 9);
-        boolean fixH = c || (!n && v > 0x99);
+        final boolean fixL = h || (!n && Bits.clip(4, v) > 9);
+        final boolean fixH = c || (!n && v > 0x99);
         int fix = 0;
         if (fixL) fix += 0x06;
         if (fixH) fix += 0x60;
-        int val = n ? v - fix : v + fix;
+        final int val = n ? v - fix : v + fix;
 
         return packValueZNHC(Bits.clip(8, val), Bits.clip(8, val) == 0, n, false, fixH);
     }
@@ -214,7 +213,7 @@ public final class Alu {
     public static int and(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
-        int val = l & r;
+        final int val = l & r;
         return packValueZNHC(val, val == 0, false, true, false);
     }
 
@@ -228,7 +227,7 @@ public final class Alu {
     public static int or(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
-        int val = l | r;
+        final int val = l | r;
         return packValueZNHC(val, val == 0, false, false, false);
     }
 
@@ -242,7 +241,7 @@ public final class Alu {
     public static int xor(int l, int r) {
         Preconditions.checkBits8(l);
         Preconditions.checkBits8(r);
-        int val = l ^ r;
+        final int val = l ^ r;
         return packValueZNHC(val, val == 0, false, false, false);
     }
 
@@ -294,7 +293,7 @@ public final class Alu {
      */
     public static int rotate(RotDir d, int v) {
         Preconditions.checkBits8(v);
-        int dir, index;
+        final int dir, index;
         if (d.name() == "LEFT") {
             dir = 1;
             index = 0;
@@ -316,11 +315,11 @@ public final class Alu {
      */
     public static int rotate(RotDir d, int v, boolean c) {
         Preconditions.checkBits8(v);
-        int dir = d.name() == "LEFT" ? 1 : -1;
+        final int dir = d.name() == "LEFT" ? 1 : -1;
 
         if (c) v = Bits.set(v, 8, true);
         v = Bits.rotate(9, v, dir);
-        int val = Bits.clip(8, v);
+        final int val = Bits.clip(8, v);
         return packValueZNHC(val, val == 0, false, false, Bits.test(v, 8));
 
     }
