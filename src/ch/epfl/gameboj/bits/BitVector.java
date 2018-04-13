@@ -1,6 +1,7 @@
 package ch.epfl.gameboj.bits;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 /**
@@ -66,45 +67,70 @@ public final class BitVector {
     public boolean testBit (int index) {
         return Bits.test(index / Integer.SIZE , index % Integer.SIZE);
     }
-    
+
     /**
      * Retourne le complement du vecteur de bits
      * @return le complement du vecteur de bits
      */
-    public int[] not () {
+    public BitVector not () {
         int[] tab = new int[size];
         for (int i = 0 ; i < size ; i++) {
-           tab[i] = vect[i] ^ Integer.MAX_VALUE;
+            tab[i] = vect[i] ^ Integer.MAX_VALUE;
         }
-        return tab;
+        return new BitVector(tab);
     }
-    
+
     /**
      * Calcule la conjonction de deux vecteurs de bits
      * @param that : un vecteur de bits
      * @return la conjonction bit à bit de "this" et "that".
+     * * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
-    public int[] and (BitVector that) {
+    public BitVector and (BitVector that) {
         Preconditions.checkArgument(that.size() == this.size);
         int[] tab = new int[size];
         for (int i = 0 ; i < size ; i++) {
-           tab[i] = vect[i] & that.vect[i];
+            tab[i] = vect[i] & that.vect[i];
         }
-        return tab;
+        return new BitVector(tab);
     }
-    
+
     /**
      * Calcule la disjonction de deux vecteurs de bits
      * @param that : un vecteur de bits
      * @return la disjonction bit à bit de "this" et "that".
+     * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
-    public int[] or (BitVector that) {
+    public BitVector or (BitVector that) {
         Preconditions.checkArgument(that.size() == this.size);
         int[] tab = new int[size];
         for (int i = 0 ; i < size ; i++) {
-           tab[i] = vect[i] | that.vect[i];
+            tab[i] = vect[i] | that.vect[i];
         }
-        return tab;
+        return new BitVector(tab);
     }
 
+    public BitVector extractZeroExtended (int start, int size) {
+        int[] tab = new int[size];
+
+        return new BitVector(tab);
+    }
+
+    private BitVector extract (int start, int size, boolean type) {
+        int[] tab = new int[size/Integer.SIZE];
+        for (int i = 0 ; i < tab.length ; i++) {
+            
+        }        
+        return new BitVector(tab);
+    }
+
+    private int InfiniteElem (int index, boolean type) {
+        if(type) {
+            return vect[index % size]; 
+        } else {            
+            if(index >= 0 && index < size) {
+                return vect[index];               
+            } else {return 0;}       
+        }
+    }
 }
