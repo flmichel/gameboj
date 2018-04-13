@@ -9,7 +9,7 @@ import java.lang.Byte;
  * @author Riand Andre
  * @author Michel François
  */
-final public class Rom {
+public final class Rom {
 
     private byte[] data;
 
