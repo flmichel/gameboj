@@ -34,7 +34,7 @@ public final class BitVector {
     }
 
     private BitVector (int[] elements) {
-        size = elements.length;
+        size = elements.length; // x32 ?
         vect = elements;
     }
 
@@ -110,27 +110,35 @@ public final class BitVector {
         return new BitVector(tab);
     }
 
-    public BitVector extractZeroExtended (int start, int size) {
-        int[] tab = new int[size];
+    public BitVector extractZeroExtended (int start, int size) {        
+        return extract(start, size, false);
+    }
 
-        return new BitVector(tab);
+    public BitVector extractWrapped (int start, int size) {        
+        return extract(start, size, true);
     }
 
     private BitVector extract (int start, int size, boolean type) {
-        int[] tab = new int[size/Integer.SIZE];
-        for (int i = 0 ; i < tab.length ; i++) {
-            
+        int[] tab = new int[size/Integer.SIZE]; // ?
+        int j = 0;
+        for (int i = start ; i < size ; i += Integer.SIZE) {
+            tab[j] = InfiniteElem(i, type); // ?
+            j++;
         }        
         return new BitVector(tab);
     }
 
     private int InfiniteElem (int index, boolean type) {
-        if(type) {
-            return vect[index % size]; 
-        } else {            
-            if(index >= 0 && index < size) {
-                return vect[index];               
-            } else {return 0;}       
+        if (index % Integer.SIZE == 0) {
+
+            if(type) {
+                return vect[index % Integer.SIZE]; 
+            } else {            
+                if(index >= 0 && index < size) {
+                    return vect[index % Integer.SIZE];               
+                } else {return 0;}       
+            }
         }
+        return index; //...
     }
 }
