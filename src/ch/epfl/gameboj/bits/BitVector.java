@@ -34,7 +34,7 @@ public final class BitVector {
     }
 
     private BitVector (int[] elements) {
-        size = elements.length; // x32 ?
+        size = elements.length * Integer.SIZE;
         vect = elements;
     }
 
