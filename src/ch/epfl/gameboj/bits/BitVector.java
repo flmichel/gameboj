@@ -183,9 +183,9 @@ public final class BitVector {
             tab = checkAndFill(vectSize, false);
         }
         
-        public Builder setByte(int index, byte value) {
-            Preconditions.checkArgument(index >= 0 && index < tab.length);
-            tab[index] = value;
+        public Builder setByte(int index, int value) {
+            Preconditions.checkArgument(index >= 0 && index < tab.length * 4);
+            tab[index/4] = value << (index % 4) * Byte.SIZE;
             return this;
         }
         
