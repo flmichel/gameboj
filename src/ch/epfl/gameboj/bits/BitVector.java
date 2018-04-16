@@ -69,8 +69,8 @@ public final class BitVector {
      * @return le complement du vecteur de bits
      */
     public BitVector not() {
-        final int[] tab = new int[size];
-        for (int i = 0 ; i < size ; i++) {
+        final int[] tab = new int[vect.length];
+        for (int i = 0 ; i < vect.length ; i++) {
             tab[i] = vect[i] ^ Integer.MAX_VALUE;
         }
         return new BitVector(tab);
@@ -84,8 +84,8 @@ public final class BitVector {
      */
     public BitVector and(BitVector that) {
         Preconditions.checkArgument(that.size() == this.size);
-        final int[] tab = new int[size];
-        for (int i = 0 ; i < size ; i++) {
+        final int[] tab = new int[vect.length];
+        for (int i = 0 ; i < vect.length ; i++) {
             tab[i] = vect[i] & that.vect[i];
         }
         return new BitVector(tab);
@@ -99,8 +99,8 @@ public final class BitVector {
      */
     public BitVector or(BitVector that) {
         Preconditions.checkArgument(that.size() == this.size);
-        final int[] tab = new int[size];
-        for (int i = 0 ; i < size ; i++) {
+        final int[] tab = new int[vect.length];
+        for (int i = 0; i < vect.length; i++) {
             tab[i] = vect[i] | that.vect[i];
         }
         return new BitVector(tab);
@@ -115,11 +115,11 @@ public final class BitVector {
     }
     
     public BitVector shift(int distance) {
-        return extractZeroExtended(distance, size * 32);
+        return extractZeroExtended(distance, size);
     }
 
     private BitVector extract(int start, int size, boolean type) {
-        int tabLength = size/Integer.SIZE;
+        int tabLength = vect.length;
         final int[] tab = new int[tabLength];
         
         for (int i = 0 ; i < tabLength ; i++) {
@@ -130,17 +130,17 @@ public final class BitVector {
 
     private int getExtractedValue(int index, int start, boolean type) {
         int number = 0;
-        int cut = Math.floorMod(start, 32);
-        if (index > -1 && index < size) {
-            int i = Math.floorDiv(start, 32) + index;
-            if (number != size)
+        int cut = Math.floorMod(start, Integer.SIZE);
+        if (index > -1 && index < vect.length) {
+            int i = Math.floorDiv(start, Integer.SIZE) + index;
+            if (index != size)
                 number = Bits.clip(cut, vect[i+1]);
-            if (number != -1) 
-                number |= Bits.extract(vect[i], cut, 32-cut) << cut;
+            if (index != -1) 
+                number |= Bits.extract(vect[i], cut, Integer.SIZE-cut) << cut;
         }
-        if (type && (index < 0 || index > size-1)) {
-            int i = (Math.floorDiv(start, 32) + index) % size;
-            int afterI = i == size ? 0 : i+1;
+        if (type && (index < 0 || index > vect.length - 1)) {
+            int i = (Math.floorDiv(start, 32) + index) % vect.length;
+            int afterI = i == vect.length ? 0 : i+1;
             number |= Bits.extract(vect[i], cut, 32-cut) << cut;
             number = Bits.clip(cut, vect[afterI]);
         }
@@ -154,7 +154,7 @@ public final class BitVector {
         final BitVector thatVec = (BitVector)that;
         if (this.size != thatVec.size)
             return false;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < vect.length; i++) {
             if (this.vect[i] != thatVec.vect[i])
                 return false;
         }  
