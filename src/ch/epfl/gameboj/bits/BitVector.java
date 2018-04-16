@@ -8,7 +8,6 @@ import ch.epfl.gameboj.Preconditions;
  */
 public final class BitVector {
 
-    private final int size;
     private final int[] vect;
 
     //Constructeurs
@@ -30,8 +29,7 @@ public final class BitVector {
         this(taille, false);
     }
 
-    private BitVector (int[] elements) {
-        size = elements.length * Integer.SIZE;
+    private BitVector(int[] elements) {
         vect = elements;
     }
 
@@ -52,7 +50,7 @@ public final class BitVector {
      * @return la taille du vecteur de bits
      */
     public int size() { 
-        return size;
+        return vect.length * Integer.SIZE;
     }
 
     /**
@@ -83,7 +81,7 @@ public final class BitVector {
      * * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
     public BitVector and(BitVector that) {
-        Preconditions.checkArgument(that.size() == this.size);
+        Preconditions.checkArgument(that.size() == this.vect.length * Integer.SIZE);
         final int[] tab = new int[vect.length];
         for (int i = 0 ; i < vect.length ; i++) {
             tab[i] = vect[i] & that.vect[i];
@@ -98,7 +96,7 @@ public final class BitVector {
      * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
     public BitVector or(BitVector that) {
-        Preconditions.checkArgument(that.size() == this.size);
+        Preconditions.checkArgument(that.size() == this.vect.length * Integer.SIZE);
         final int[] tab = new int[vect.length];
         for (int i = 0; i < vect.length; i++) {
             tab[i] = vect[i] | that.vect[i];
@@ -115,10 +113,11 @@ public final class BitVector {
     }
     
     public BitVector shift(int distance) {
-        return extractZeroExtended(distance, size);
+        return extractZeroExtended(distance, vect.length * Integer.SIZE);
     }
 
     private BitVector extract(int start, int size, boolean type) {
+        Preconditions.checkArgument(size > 0);
         int tabLength = vect.length;
         final int[] tab = new int[tabLength];
         
@@ -133,7 +132,7 @@ public final class BitVector {
         int cut = Math.floorMod(start, Integer.SIZE);
         if (index > -1 && index < vect.length) {
             int i = Math.floorDiv(start, Integer.SIZE) + index;
-            if (index != size)
+            if (index != vect.length * Integer.SIZE)
                 number = Bits.clip(cut, vect[i+1]);
             if (index != -1) 
                 number |= Bits.extract(vect[i], cut, Integer.SIZE-cut) << cut;
@@ -152,7 +151,7 @@ public final class BitVector {
         if (!(that instanceof BitVector))
             return false;
         final BitVector thatVec = (BitVector)that;
-        if (this.size != thatVec.size)
+        if (this.vect.length!= thatVec.vect.length)
             return false;
         for (int i = 0; i < vect.length; i++) {
             if (this.vect[i] != thatVec.vect[i])
@@ -177,10 +176,23 @@ public final class BitVector {
 
     public final static class Builder {
 
-        private final int vectSize;
-
+        private final int[] tab;
+        private final BitVector vector = null;
+        
         public Builder(int vectSize) {
-            this.vectSize = vectSize;
+            tab = checkAndFill(vectSize, false);
+        }
+        
+        public Builder setByte(int index, byte value) {
+            Preconditions.checkArgument(index >= 0 && index < tab.length);
+            tab[index] = value;
+            return this;
+        }
+        
+        public BitVector build() {
+            if (vector != null)
+                throw new IllegalStateException();
+        return new BitVector(tab);
         }
     }
 }
