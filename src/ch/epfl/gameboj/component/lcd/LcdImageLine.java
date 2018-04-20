@@ -85,6 +85,7 @@ public final class LcdImageLine {
      * Transforme les couleurs de la ligne en fonction d'une palette, donnée sous la forme d'un octet encodé, qui, à chaque couleur, en associe une autre. 
      * @param map : palette de transformation des couleurs
      * @return Une nouvelle ligne, avec les couleurs tranformées.
+     * @throws IllegalArgumentException si "map" a plus de 8 bits (ce qui correspondrait à une palette incorrecte).
      */
     public LcdImageLine mapColors (int map) {
         Preconditions.checkBits8(map);
