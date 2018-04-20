@@ -1,5 +1,8 @@
 package ch.epfl.gameboj.component.lcd;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.bits.BitVector;
 
@@ -102,5 +105,20 @@ public final class LcdImageLine {
         BitVector nLsb = lsb.and(mask).or(that.lsb.and(mask.not()));
         BitVector nOpac = opac.and(mask).or(that.opac.and(mask.not()));        
         return new LcdImageLine(nMsb, nLsb, nOpac);
+    }
+    
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof LcdImageLine))
+            return false;
+        LcdImageLine thatImageLine = (LcdImageLine)that;
+        return this.msb.equals(thatImageLine.msb) &&
+               this.lsb.equals(thatImageLine.lsb) &&
+               this.opac.equals(thatImageLine.opac);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(msb, lsb, opac);
     }
 }
