@@ -18,6 +18,7 @@ public final class BitVector {
      * Construit un vecteur de Bits.
      * @param size : taille du vecteur
      * @param v : valeur des Bits (pour false tout les bits sont initialisé à zéro et true à un)
+     * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
      */
     public BitVector(int size, boolean v) {
         this(checkAndFill(size, v));
@@ -26,6 +27,8 @@ public final class BitVector {
     /**
      * Construit un vecteur de Bits nuls
      * @param size : taille du vecteur
+     * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+
      */
     public BitVector(int size) {
         this(size, false);
@@ -78,7 +81,7 @@ public final class BitVector {
      * Calcule la conjonction de deux vecteurs de bits
      * @param that : un vecteur de bits
      * @return la conjonction bit à bit de "this" et "that".
-     * * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
+     * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
     public BitVector and(BitVector that) {
         Preconditions.checkArgument(that.size() == this.vect.length * Integer.SIZE);
@@ -104,23 +107,50 @@ public final class BitVector {
         return new BitVector(tab);
     }
 
-    private enum Extract {ZERO_EXTENDED, WARPED};
-
+    //liste des types d'extraction
+    private enum Extract {ZERO_EXTENDED, WRAPPED}; 
+    
+    /**
+     * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits"
+     * allant de l'index "start" (inclus) à l'index (start + size) (exclus). Si l'index "start"
+     * ou "start + size" sort du vecteur, on retourne de zéro en dehors du vecteur.
+     * @param start : index du premier bit (à gauche) du nouveau entier.
+     * @param size : taille du nouveau entier.
+     * @return Un nouveau entier, crée à partir de l'entier "bits", en le tronquant et en placant
+     * des zéros aux index dépassant le vecteur.
+     * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+     */
     public BitVector extractZeroExtended(int start, int size) {
         return extract(start, size, Extract.ZERO_EXTENDED);
     }
     
+    /**
+     * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits"
+     * allant de l'index "start" (inclus) à l'index (start + size) (exclus). Si l'index "start"
+     * ou "start + size" sort du vecteur, on retourne l'extension par enroulement du vecteur.
+     * @param start : index du premier bit (à gauche) du nouveau entier.
+     * @param size : taille du nouveau entier.
+     * @return un nouveau entier, crée à partir de l'entier "bits", en le tronquant et l'extension
+     * est faite par enroulement du vecteur si des index dépassent les bornes du vecteur.
+     * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+     */
     public BitVector extractWrapped(int start, int size) {
-        return extract(start, size, Extract.WARPED);
+        return extract(start, size, Extract.WRAPPED);
     }
     
+    /**
+     * Décale logiquement le vecteur d'une distance quelconque, en utilisant la convention qu'une distance positive 
+     * représente un décalage à gauche, une distance négative un décalage à droite (shift).
+     * @param distance du décalage à effectuer
+     * @return le résultat du décalage logic par la distance donnée.
+     */
     public BitVector shift(int distance) {
         return extractZeroExtended(-distance, vect.length * Integer.SIZE);
     }
 
     private BitVector extract(int start, int size, Extract type ) {
         Preconditions.checkArgument(size > 0 && (size % Integer.SIZE == 0));
-        final int[] tab = new int[size/32];
+        final int[] tab = new int[size/Integer.SIZE];
        
         for (int i = 0 ; i < tab.length ; i++) {
            tab[i] = getExtractedValue(i, start, type);
@@ -136,7 +166,7 @@ public final class BitVector {
             if (i >= 0 && i < vect.length) {
                 a = vect[i];
             }
-            else if (type == Extract.WARPED)
+            else if (type == Extract.WRAPPED)
                 a = vect[i % vect.length];
         } else {
             int cut = Math.floorMod(start, Integer.SIZE);
@@ -155,8 +185,6 @@ public final class BitVector {
 
     @Override
     public int hashCode() {
-        
-        
         return Arrays.hashCode(vect);
     }
 
@@ -168,15 +196,32 @@ public final class BitVector {
         }
         return sb.toString();
     }
-
+    
+    /**
+     * Bâtisseur du vector de bit
+     * @author Riand Andre
+     * @author Michel François
+     */
     public final static class Builder {
 
         private int[] tab;
         
+        /**
+         * Construit un vecteurs initialisé à zéro et de taille "vectSize"
+         * @param vectSize : taille du vecteur
+         * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+         */
         public Builder(int vectSize) {
             tab = checkAndFill(vectSize, false);
         }
         
+        /**
+         * 
+         * @param index correspond à la position ou la valeur 8 bit est insérée. Par exemple les valeur
+         * de 0-3 sont celle qui place la valeur dans la première case du tableau de BitVector.
+         * @param value est la vauleur 8 bit que l'on donne à notre vecteur.
+         * @return le batisseur avec la valeur 8 bit ajoutée.
+         */
         public Builder setByte(int index, int value) {
             if (tab == null)
                 throw new IllegalStateException();
@@ -190,6 +235,10 @@ public final class BitVector {
             return this;
         }
         
+        /**
+         * Retourne le vecteur de vector 
+         * @return
+         */
         public BitVector build() {
             if (tab == null)
                 throw new IllegalStateException();
