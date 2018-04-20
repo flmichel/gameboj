@@ -1,5 +1,7 @@
 package ch.epfl.gameboj.bits;
 
+import java.util.Arrays;
+
 import ch.epfl.gameboj.Preconditions;
 /**
  * Représente un vecteur de bits
@@ -9,38 +11,36 @@ import ch.epfl.gameboj.Preconditions;
 public final class BitVector {
 
     private final int[] vect;
-
+    
     //Constructeurs
 
     /**
      * Construit un vecteur de Bits.
-     * @param taille : taille du vecteur
+     * @param size : taille du vecteur
      * @param v : valeur des Bits (pour false tout les bits sont initialisé à zéro et true à un)
      */
-    public BitVector(int taille, boolean v) {
-        this(checkAndFill(taille, v));
+    public BitVector(int size, boolean v) {
+        this(checkAndFill(size, v));
     }
 
     /**
      * Construit un vecteur de Bits nuls
-     * @param taille : taille du vecteur
+     * @param size : taille du vecteur
      */
-    public BitVector(int taille) {
-        this(taille, false);
+    public BitVector(int size) {
+        this(size, false);
     }
 
     private BitVector(int[] elements) {
         vect = elements;
     }
 
-    private static int[] checkAndFill(int taille, boolean v) {
-        Preconditions.checkArgument(taille >= 0 && (taille % Integer.SIZE == 0));
-        final int val = v ? Integer.MAX_VALUE : 0;
-        final int[] temp = new int[taille/Integer.SIZE];
-        for (int i = 0 ; i < temp.length ; i++) {
-            temp[i] = val;
-        }
-        return temp;         
+    private static int[] checkAndFill(int size, boolean v) {
+        Preconditions.checkArgument(size >= 0 && (size % Integer.SIZE == 0));
+        final int val = v ? -1 : 0; //-1 en complément à 2 est composé de 32 1 en binaire.
+        final int[] tab = new int[size/Integer.SIZE];
+        Arrays.fill(tab, val);
+        return tab;         
     }
 
     //Méthodes publiques
@@ -59,7 +59,7 @@ public final class BitVector {
      * @return true si le bit vaut 1 et false si le vaut 0
      */
     public boolean testBit(int index) {
-        return Bits.test(index / Integer.SIZE , index % Integer.SIZE);
+        return Bits.test(vect[index / Integer.SIZE] , index % Integer.SIZE);
     }
 
     /**
@@ -69,7 +69,7 @@ public final class BitVector {
     public BitVector not() {
         final int[] tab = new int[vect.length];
         for (int i = 0 ; i < vect.length ; i++) {
-            tab[i] = vect[i] ^ Integer.MAX_VALUE;
+            tab[i] = ~vect[i];
         }
         return new BitVector(tab);
     }
@@ -88,7 +88,7 @@ public final class BitVector {
         }
         return new BitVector(tab);
     }
-
+    
     /**
      * Calcule la disjonction de deux vecteurs de bits
      * @param that : un vecteur de bits
@@ -104,95 +104,98 @@ public final class BitVector {
         return new BitVector(tab);
     }
 
+    private enum Extract {ZERO_EXTENDED, WARPED};
+
     public BitVector extractZeroExtended(int start, int size) {
-        return extract(start, size, false);
+        return extract(start, size, Extract.ZERO_EXTENDED);
     }
     
     public BitVector extractWrapped(int start, int size) {
-        return extract(start, size, true);
+        return extract(start, size, Extract.WARPED);
     }
     
     public BitVector shift(int distance) {
-        return extractZeroExtended(distance, vect.length * Integer.SIZE);
+        return extractZeroExtended(-distance, vect.length * Integer.SIZE);
     }
 
-    private BitVector extract(int start, int size, boolean type) {
-        Preconditions.checkArgument(size > 0);
-        int tabLength = vect.length;
-        final int[] tab = new int[tabLength];
-        
-        for (int i = 0 ; i < tabLength ; i++) {
+    private BitVector extract(int start, int size, Extract type ) {
+        Preconditions.checkArgument(size > 0 && (size % Integer.SIZE == 0));
+        final int[] tab = new int[size/32];
+       
+        for (int i = 0 ; i < tab.length ; i++) {
            tab[i] = getExtractedValue(i, start, type);
-        }        
+        }
         return new BitVector(tab);
     }
-
-    private int getExtractedValue(int index, int start, boolean type) {
-        int number = 0;
-        int cut = Math.floorMod(start, Integer.SIZE);
-        if (index > -1 && index < vect.length) {
-            int i = Math.floorDiv(start, Integer.SIZE) + index;
-            if (index != vect.length * Integer.SIZE)
-                number = Bits.clip(cut, vect[i+1]);
-            if (index != -1) 
-                number |= Bits.extract(vect[i], cut, Integer.SIZE-cut) << cut;
+  
+    private int getExtractedValue(int index, int start, Extract type) {
+        final int i = Math.floorDiv(start, Integer.SIZE) + index;
+        final int start32 = Math.floorDiv(start, Integer.SIZE) * Integer.SIZE;
+        int a = 0;
+        if (start % Integer.SIZE == 0) {
+            if (i >= 0 && i < vect.length) {
+                a = vect[i];
+            }
+            else if (type == Extract.WARPED)
+                a = vect[i % vect.length];
+        } else {
+            int cut = Math.floorMod(start, Integer.SIZE);
+            a = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut;
+            a |= Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
         }
-        if (type && (index < 0 || index > vect.length - 1)) {
-            int i = (Math.floorDiv(start, 32) + index) % vect.length;
-            int afterI = i == vect.length ? 0 : i+1;
-            number |= Bits.extract(vect[i], cut, 32-cut) << cut;
-            number = Bits.clip(cut, vect[afterI]);
-        }
-        return number;
+        return a;
     }
 
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof BitVector))
             return false;
-        final BitVector thatVec = (BitVector)that;
-        if (this.vect.length!= thatVec.vect.length)
-            return false;
-        for (int i = 0; i < vect.length; i++) {
-            if (this.vect[i] != thatVec.vect[i])
-                return false;
-        }  
-        return true;
+        return Arrays.equals(this.vect, ((BitVector)that).vect);
     } 
 
     @Override
     public int hashCode() {
-        return vect.hashCode();
+        
+        
+        return Arrays.hashCode(vect);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        for (int val : vect) {
-            sb.append(Integer.toBinaryString(val));
+        for (int i = vect.length - 1; i >= 0; i--) {
+            sb.append(String.format("%32s", Integer.toBinaryString(vect[i])).replace(' ', '0'));
         }
         return sb.toString();
     }
 
     public final static class Builder {
 
-        private final int[] tab;
-        private final BitVector vector = null;
+        private int[] tab;
         
         public Builder(int vectSize) {
             tab = checkAndFill(vectSize, false);
         }
         
         public Builder setByte(int index, int value) {
+            if (tab == null)
+                throw new IllegalStateException();
             Preconditions.checkArgument(index >= 0 && index < tab.length * 4);
-            tab[index/4] = value << (index % 4) * Byte.SIZE;
+            final int shift = (index % 4) * Byte.SIZE;
+            final int i = index/4;
+            final int mask = 0b11111111 << shift; // Biggest value of a byte.
+            final int inverseMask = ~mask;
+            tab[i] &= inverseMask; // We clear the part with we want to set.
+            tab[i] |= value << shift;
             return this;
         }
         
         public BitVector build() {
-            if (vector != null)
+            if (tab == null)
                 throw new IllegalStateException();
-        return new BitVector(tab);
+            BitVector vector = new BitVector(tab);
+            tab = null;
+            return vector;
         }
     }
 }
