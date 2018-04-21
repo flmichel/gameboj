@@ -221,6 +221,7 @@ public final class BitVector {
          * de 0-3 sont celle qui place la valeur dans la première case du tableau de BitVector.
          * @param value est la vauleur 8 bit que l'on donne à notre vecteur.
          * @return le batisseur avec la valeur 8 bit ajoutée.
+         * @throws IllegalStateException si on appelle la méthode après avoir appelé la méthode build.
          */
         public Builder setByte(int index, int value) {
             if (tab == null)
@@ -236,8 +237,9 @@ public final class BitVector {
         }
         
         /**
-         * Retourne le vecteur de vector 
-         * @return
+         * Retourne le vecteur construit 
+         * @return le vecteur construit
+         * @throws IllegalStateException si on appelle la méthode après avoir appelé la méthode build.
          */
         public BitVector build() {
             if (tab == null)

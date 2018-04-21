@@ -1,10 +1,14 @@
 package ch.epfl.gameboj.component.lcd;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.bits.BitVector;
+import ch.epfl.gameboj.component.LcdImage.Builder;
 
 /**
  * Représente une ligne d'image Game Boy.
@@ -97,7 +101,7 @@ public final class LcdImageLine {
      * @param that
      * @return Nouvelle ligne composée d'une partie 
      */
-    public LcdImageLine join (int cut, LcdImageLine that) {
+    public LcdImageLine join(int cut, LcdImageLine that) {
         Preconditions.checkArgument(this.size() == that.size());
         Preconditions.checkArgument(cut >= 0 && cut < this.size());
         BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut);
@@ -120,5 +124,34 @@ public final class LcdImageLine {
     @Override
     public int hashCode() {
         return Objects.hash(msb, lsb, opac);
+    }
+    
+    public final static class Builder {
+        
+        private BitVector.Builder msbLine;
+        private BitVector.Builder lsbLine;
+        
+        public Builder(int size) {
+            msbLine = new BitVector.Builder(size);
+            lsbLine = new BitVector.Builder(size);
+        }
+
+        public Builder setBytes(int index, int value) {
+            if (msbLine == null)
+                throw new IllegalStateException();
+            msbLine.setByte(index, value);
+            msbLine.setByte(index, value);
+            return this;
+        }
+        
+        public LcdImageLine build() {      
+            if (msbLine == null)
+                throw new IllegalStateException();
+            BitVector msb = msbLine.build();
+            BitVector lsb = lsbLine.build();
+            BitVector opacity = msb.and(lsb);
+            msbLine = null;
+            return new LcdImageLine(msb, lsb, opacity);        
+        }
     }
 }
