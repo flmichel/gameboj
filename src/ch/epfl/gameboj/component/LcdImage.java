@@ -15,21 +15,43 @@ public final class LcdImage {
     private final int height;
     private final List<LcdImageLine> lines;
 
+    /**
+     * Construit une image Game Boy.
+     * @param width représente la largeur de l'image.
+     * @param height représente la hauteur de l'image.
+     * @param lines contient la liste de toutes les ligne de l'image.
+     * @throws IllegalArgumentException si la largeur de l'image est négative ou si 
+     * la hauteur est différente du nombre de line (de lines).
+     */
     public LcdImage(int width, int height, List<LcdImageLine> lines) {
-        Preconditions.checkArgument(height > 0 && height == lines.size());
+        Preconditions.checkArgument(width > 0 && height == lines.size());
         this.width = width;
         this.height = height;
-        this.lines = lines;           
+        this.lines = new ArrayList<>(lines);           
     }
     
+    /**
+     * Retourne la largeur de l'image.
+     * @return la largeur de l'image.
+     */
     public int widht() {
         return width;
     }
     
+    /**
+     * Retourne la hauteur de l'image.
+     * @return la hauteur de l'image.
+     */
     public int height() {
         return height;
     }
     
+    /**
+     * Retourne un entier composé de 2 bits représantant la couleur à l'index (x,y) donné.
+     * @param x corresond à l'axe horizontal de l'image.
+     * @param y corresond à l'axe vertical de l'image.
+     * @return un entier composé de 2 bits représantant la couleur à l'index (x,y) donné.
+     */
     public int get(int x, int y) {
         Preconditions.checkArgument(x < width && x >= 0 && y < height && y >= 0);
         LcdImageLine line = lines.get(y);
@@ -39,25 +61,53 @@ public final class LcdImage {
         return color;
     }
     
+    /**
+     * Bâtisseur d'image GameBoy
+     * @author Riand Andre
+     * @author Michel François
+     */
     public final static class Builder {
 
-        private final List<LcdImageLine> linesList;
+        private List<LcdImageLine> linesList;
         
         /**
-         * Construit un vecteurs initialisé à zéro et de taille "vectSize"
-         * @param vectSize : taille du vecteur
-         * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+         * Construit le bâtisseur d'image et tous ses pixels ont la couleur 0.
+         * @param width représente la largeur de l'image.
+         * @param height représente la hauteur de l'image.
          */
         public Builder(int width, int height) {
-            BitVector line = new BitVector(width);
-            linesList = new ArrayList<>(Collections.nCopies(height, 0));
+            BitVector ZeroLine = new BitVector(width);
+            linesList = new ArrayList<>(Collections.nCopies(height, new LcdImageLine(ZeroLine, ZeroLine, ZeroLine)));
         }
 
-        public Builder setLine(int index, int value) {
-            
+        /**
+         * Modifie une ligne de l'image à l'index donné.
+         * @param index auquel la ligne va être remplacée.
+         * @param line est la ligne qui modifie l'image.
+         * @return le bâtisseur avec la ligne d'index "index" modifiée.
+         * @throws IllegalStateException si on appelle la méthode après avoir appelé la méthode build.
+
+         */
+        public Builder setLine(int index, LcdImageLine line) {
+            if (linesList == null)
+                throw new IllegalStateException();
+            linesList.set(index, line);
+            return this;
         }
         
-        public BitVector build() {
+        /**
+         * Retourne l'image construite.
+         * @return l'image construite.
+         * @throws IllegalStateException si on appelle la méthode après avoir appelé la méthode build.
+         */
+        public LcdImage build() {
+            if (linesList == null)
+                throw new IllegalStateException();
+            int height = linesList.size();
+            int width = linesList.get(0).size();
+            LcdImage image = new LcdImage(width, height, linesList);
+            linesList = null;
+            return image;
         }
     }
 }

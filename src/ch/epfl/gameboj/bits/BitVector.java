@@ -216,7 +216,7 @@ public final class BitVector {
         }
         
         /**
-         * 
+         * Modifie 8 bit dans le vecteur.
          * @param index correspond à la position ou la valeur 8 bit est insérée. Par exemple les valeur
          * de 0-3 sont celle qui place la valeur dans la première case du tableau de BitVector.
          * @param value est la vauleur 8 bit que l'on donne à notre vecteur.

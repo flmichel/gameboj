@@ -1,15 +1,8 @@
 package ch.epfl.gameboj.component.lcd;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
-import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.BitVector;
-import ch.epfl.gameboj.component.LcdImage.Builder;
 import ch.epfl.gameboj.bits.Bits;
 
 /**
@@ -164,16 +157,32 @@ public final class LcdImageLine {
         return Objects.hash(msb, lsb, opac);
     }
     
+    /**
+     * Bâtisseur d'une ligne d'image GameBoy
+     * @author Riand Andre
+     * @author Michel François
+     */
     public final static class Builder {
         
         private BitVector.Builder msbLine;
         private BitVector.Builder lsbLine;
         
+        /**
+         * Construit la ligne avec une longuer size et met la couleur à 0.
+         * @param size : taille de la ligne.
+         * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
+         */
         public Builder(int size) {
             msbLine = new BitVector.Builder(size);
             lsbLine = new BitVector.Builder(size);
         }
 
+        /**
+         * Définir la valeur des octets de poids fort et de poids faible de la ligne, à un index donné.
+         * @param index auquel la valeur 8 bits est modifiée.
+         * @param value est la nouvelle valeur 8 bit de la ligne.
+         * @return
+         */
         public Builder setBytes(int index, int value) {
             if (msbLine == null)
                 throw new IllegalStateException();
@@ -182,6 +191,11 @@ public final class LcdImageLine {
             return this;
         }
         
+        /**
+         * Retourne la ligne construite. Les pixels de couleur 0 sont transparents, les autres opaques.
+         * @return la ligne construite.
+         * @throws IllegalStateException si on appelle la méthode après avoir appelé la méthode build.
+         */
         public LcdImageLine build() {      
             if (msbLine == null)
                 throw new IllegalStateException();
