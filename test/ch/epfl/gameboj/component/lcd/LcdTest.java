@@ -113,9 +113,9 @@ public class LcdTest {
 
         LcdImageLine v1 = a.join(d, 4);
 
-//        assertEquals("11111000000000000000000000000000", v1.msb().toString());
-        assertEquals("00000111111111111111111111111111", v1.lsb().toString());
-        assertEquals("11111000000000000000000000000000",
+        assertEquals("11110000000000000000000000000000", v1.msb().toString());
+        assertEquals("00001111111111111111111111111111", v1.lsb().toString());
+        assertEquals("11110000000000000000000000000000",
                 v1.opacity().toString());
 
     }

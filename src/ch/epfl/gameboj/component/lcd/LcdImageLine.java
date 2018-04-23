@@ -135,7 +135,7 @@ public final class LcdImageLine {
     public LcdImageLine join(LcdImageLine that, int cut) {
         Preconditions.checkArgument(this.size() == that.size());
         Preconditions.checkArgument(cut >= 0 && cut < this.size());
-        BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut-1);
+        BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut);
         BitVector nMsb = msb.and(mask).or(that.msb.and(mask.not()));
         BitVector nLsb = lsb.and(mask).or(that.lsb.and(mask.not()));
         BitVector nOpac = opac.and(mask).or(that.opac.and(mask.not()));        
@@ -201,7 +201,7 @@ public final class LcdImageLine {
                 throw new IllegalStateException();
             BitVector msb = msbLine.build();
             BitVector lsb = lsbLine.build();
-            BitVector opacity = msb.and(lsb);
+            BitVector opacity = msb.or(lsb);
             msbLine = null;
             return new LcdImageLine(msb, lsb, opacity);        
         }
