@@ -34,11 +34,12 @@ public final class BitVector {
         this(size, false);
     }
 
-    private BitVector(int[] elements) {
+    private BitVector(int[] elements) { 
         vect = elements;
     }
 
-    private static int[] checkAndFill(int size, boolean v) {
+    private 
+    static int[] checkAndFill(int size, boolean v) {
         Preconditions.checkArgument(size >= 0 && (size % Integer.SIZE == 0));
         final int val = v ? -1 : 0; //-1 en complément à 2 est composé de 32 1 en binaire.
         final int[] tab = new int[size/Integer.SIZE];
