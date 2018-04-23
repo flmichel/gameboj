@@ -132,10 +132,10 @@ public final class LcdImageLine {
      * @return Nouvelle ligne selon la description ci-dessus.
      * @throws IllegalArgumentException si les deux lignes n'ont pas la meme taille (longueur/ nombre de pixels) ou si l'argument "cut" n'est pas valide
      */
-    public LcdImageLine join (LcdImageLine that, int cut) {
+    public LcdImageLine join(LcdImageLine that, int cut) {
         Preconditions.checkArgument(this.size() == that.size());
         Preconditions.checkArgument(cut >= 0 && cut < this.size());
-        BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut);
+        BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut-1);
         BitVector nMsb = msb.and(mask).or(that.msb.and(mask.not()));
         BitVector nLsb = lsb.and(mask).or(that.lsb.and(mask.not()));
         BitVector nOpac = opac.and(mask).or(that.opac.and(mask.not()));        
@@ -183,11 +183,11 @@ public final class LcdImageLine {
          * @param value est la nouvelle valeur 8 bit de la ligne.
          * @return
          */
-        public Builder setBytes(int index, int value) {
+        public Builder setBytes(int index, int highValue, int lowValue) {
             if (msbLine == null)
                 throw new IllegalStateException();
-            msbLine.setByte(index, value);
-            msbLine.setByte(index, value);
+            msbLine.setByte(index, highValue);
+            lsbLine.setByte(index, lowValue);
             return this;
         }
         
