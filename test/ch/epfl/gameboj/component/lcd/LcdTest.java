@@ -108,7 +108,6 @@ public class LcdTest {
     }
 
     @Test
-
     void join() {
 
         LcdImageLine v1 = a.join(d, 4);
@@ -117,7 +116,6 @@ public class LcdTest {
         assertEquals("00001111111111111111111111111111", v1.lsb().toString());
         assertEquals("11110000000000000000000000000000",
                 v1.opacity().toString());
-
     }
     
     @Test

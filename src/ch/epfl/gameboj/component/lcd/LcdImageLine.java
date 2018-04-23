@@ -133,12 +133,10 @@ public final class LcdImageLine {
      * @throws IllegalArgumentException si les deux lignes n'ont pas la meme taille (longueur/ nombre de pixels) ou si l'argument "cut" n'est pas valide
      */
     public LcdImageLine join(LcdImageLine that, int cut) {
-        Preconditions.checkArgument(this.size() == that.size());
-        Preconditions.checkArgument(cut >= 0 && cut < this.size());
-        BitVector mask = new BitVector(this.size(), true).shift(this.size()-cut);
-        BitVector nMsb = msb.and(mask).or(that.msb.and(mask.not()));
-        BitVector nLsb = lsb.and(mask).or(that.lsb.and(mask.not()));
-        BitVector nOpac = opac.and(mask).or(that.opac.and(mask.not()));        
+        BitVector mask = (new BitVector(this.size(), true).shift(cut));
+        BitVector nMsb = msb.and(mask.not()).or(that.msb.and(mask));
+        BitVector nLsb = lsb.and(mask.not()).or(that.lsb.and(mask));
+        BitVector nOpac = opac.and(mask.not()).or(that.opac.and(mask));        
         return new LcdImageLine(nMsb, nLsb, nOpac);
     }
     

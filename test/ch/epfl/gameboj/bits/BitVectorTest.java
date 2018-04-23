@@ -514,5 +514,6 @@ public class BitVectorTest {
             assertEquals("11111111111111111111111111111111", v6.toString());
             assertEquals("00000000000000000000000000000000", v8.toString());
         }
+        
     
 }
