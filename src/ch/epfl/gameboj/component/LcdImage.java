@@ -2,7 +2,9 @@ package ch.epfl.gameboj.component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.bits.BitVector;
@@ -59,6 +61,21 @@ public final class LcdImage {
         color = Bits.set(color, 0, line.lsb().testBit(x));
         color = Bits.set(color, 1, line.msb().testBit(x));
         return color;
+    }
+    
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof LcdImage))
+            return false;
+        LcdImage thatImage = (LcdImage)that;
+        if (this.height != thatImage.height || this.width != thatImage.width)
+            return false;
+        return this.lines.equals(thatImage.lines);
+    }
+    
+    @Override
+    public int hashCode() {
+        return this.lines.hashCode();
     }
     
     /**
