@@ -24,11 +24,10 @@ public class LcdController implements Component, Clocked {
     public static final int NB_CYCLES_LCD = 17556;
     public static final int ENTER_MODE2 = 0;
     public static final int ENTER_MODE3 = 20;
-    public static final int ENTER_MODE0 = 43;
+    public static final int ENTER_MODE0 = 63;
 
 
     private long nextNonIdleCycle = 0;
-    private long lcdOnCycle;
 
     public final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
@@ -55,76 +54,43 @@ public class LcdController implements Component, Clocked {
     @Override
     public void cycle(long cycle) {
         if ((nextNonIdleCycle == Long.MAX_VALUE) && registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
-            lcdOnCycle = cycle;
             nextNonIdleCycle = cycle;
+            reallyCycle(cycle);
         }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
-        }       
+        }
     }
 
     private void reallyCycle(long cycle) {
-        if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
-
-            int r = (int) cycle % NB_CYCLES_LINE;
-            int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE; //division entiere
-
-            if (line < LCD_HEIGHT) {
-                switch (r) {
-
+        int r = (int) cycle % NB_CYCLES_LINE;
+        int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
+        if (line < LCD_HEIGHT) {
+            switch (r) {    
                 case ENTER_MODE2 : {
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, true);
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
-                    
-                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
-                        cpu.requestInterrupt(Interrupt.LCD_STAT);
-                    }
-                    registerFile.set(Reg.LY, line);
-                    if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
-                        registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
-                        if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
-                            cpu.requestInterrupt(Interrupt.LCD_STAT);
-                        }
-                    } else {
-                        registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
-                    }
+                    setMode(2);             
+                    needInterrupt(RegSTAT.INT_MODE2);
+                    LycEqLyAndSetLy(line);
                     nextNonIdleCycle += NB_CYCLES_MODE2;  
                 } break;
-
+    
                 case ENTER_MODE3 : {
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, true);
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, true);
-                    //dessinera la ligne ici
+                    setMode(3);
                     nextNonIdleCycle += NB_CYCLES_MODE3;  
                 } break;
-
+    
                 case ENTER_MODE0 : {
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
-                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
-                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE0)) {
-                        cpu.requestInterrupt(Interrupt.LCD_STAT);
-                    }
+                    setMode(0);
+                    needInterrupt(RegSTAT.INT_MODE1);
                     nextNonIdleCycle += NB_CYCLES_MODE0;  
                 } break;
-                }
-            } else {
-                registerFile.set(Reg.LY, line);
-                if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
-                    registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
-                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
-                        cpu.requestInterrupt(Interrupt.LCD_STAT);
-                    }
-                } else {
-                    registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
-                }
-                registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
-                registerFile.setBit(Reg.STAT, RegSTAT.MODE1, true);
-                if(line == LCD_HEIGHT) cpu.requestInterrupt(Interrupt.VBLANK);
-                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE1)) {
-                    cpu.requestInterrupt(Interrupt.LCD_STAT);
-                }
-                nextNonIdleCycle += NB_CYCLES_MODE1; 
             }
+        } else {
+            LycEqLyAndSetLy(line);
+            setMode(1);
+            if (line == LCD_HEIGHT) cpu.requestInterrupt(Interrupt.VBLANK);
+            needInterrupt(RegSTAT.INT_MODE1);
+            nextNonIdleCycle += NB_CYCLES_MODE1; 
         }
     }
 
@@ -158,10 +124,9 @@ public class LcdController implements Component, Clocked {
                 final int mask = ~maskReadOnly;
                 data &= mask;
             }
-            registerFile.set(reg , data);
-            if (reg == Reg.LY || reg == Reg.LY) {
-                updateStatelycEqLy();
-            }
+            registerFile.set(reg, data);
+            if (reg == Reg.LYC)
+                updateStateLycEqLy();            
             if (reg == Reg.LCDC && !Bits.test(data, RegLCDC.LCD_STATUS.index())) {
                 registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
                 registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
@@ -171,11 +136,30 @@ public class LcdController implements Component, Clocked {
         }
     }
 
-    private void updateStatelycEqLy() {
+    private void updateStateLycEqLy() {
         final Boolean lycEqLy = registerFile.get(Reg.LY) == registerFile.get(Reg.LYC);
         registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, lycEqLy);
         if (registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC) && lycEqLy) {
             cpu.requestInterrupt(Interrupt.LCD_STAT);
+        }
+    }
+    
+    private void LycEqLyAndSetLy(int line) {
+        registerFile.set(Reg.LY, line);
+        updateStateLycEqLy();
+    }
+    
+    private void setMode(int i) {
+        Preconditions.checkArgument(i >= 0 && i < 4);
+        registerFile.setBit(Reg.STAT, RegSTAT.MODE0, Bits.test(i, 0));
+        registerFile.setBit(Reg.STAT, RegSTAT.MODE1, Bits.test(i, 1));
+    }
+    
+    private void needInterrupt(RegSTAT mode) {
+        if (mode.index() >= RegSTAT.INT_MODE0.index() && mode.index() <= RegSTAT.INT_MODE2.index()) {
+            if (registerFile.testBit(Reg.STAT, mode)) {
+                cpu.requestInterrupt(Interrupt.LCD_STAT);
+            }
         }
     }
 }
