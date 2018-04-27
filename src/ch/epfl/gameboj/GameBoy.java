@@ -5,6 +5,7 @@ import java.util.Objects;
 import ch.epfl.gameboj.component.Timer;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.cpu.Cpu;
+import ch.epfl.gameboj.component.lcd.LcdController;
 import ch.epfl.gameboj.component.memory.BootRomController;
 import ch.epfl.gameboj.component.memory.Ram;
 import ch.epfl.gameboj.component.memory.RamController;
@@ -94,7 +95,7 @@ public class GameBoy {
         if (cycles() < cycle) {
             for (long i = cycles() ; i < cycle ; i++) {
                 minuteur.cycle(i);
-                //lcdC.cycle(i);
+                lcdC.cycle(i);
                 cpu.cycle(i);
                 cyclesNb++;
             }

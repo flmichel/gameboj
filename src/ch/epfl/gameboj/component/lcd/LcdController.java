@@ -14,6 +14,8 @@ public class LcdController implements Component, Clocked {
     public static final int LCD_WIDTH = 160;
     public static final int LCD_HEIGHT = 144;
     
+    private long nextNonIdleCycle = 0;
+    
     public final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
 
@@ -40,12 +42,12 @@ public class LcdController implements Component, Clocked {
     @Override
     public int read(int address) {
         Preconditions.checkBits16(address);
-        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END) {
+        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
             return videoRam.read(address - AddressMap.HIGH_RAM_START);
-        }
-        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
+        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END)
             return registerFile.get(Reg.values()[address - AddressMap.REGS_LCDC_START]);
-        }
+        else
+            return NO_DATA;
     }
 
     /**
@@ -55,12 +57,10 @@ public class LcdController implements Component, Clocked {
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data); 
-        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END) {
+        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
             videoRam.write(address - AddressMap.HIGH_RAM_START, data);
-        }
-        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
+        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END)
             registerFile.set(Reg.values()[address - AddressMap.REGS_LCDC_START], data);
-        }
     }
 
 }
