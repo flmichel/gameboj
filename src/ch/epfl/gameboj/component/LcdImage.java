@@ -10,7 +10,11 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.bits.BitVector;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.lcd.LcdImageLine;
-
+/**
+ * Une image dans l'écran du Game Boy.
+ * @author Riand Andre
+ * @author Michel François
+ */
 public final class LcdImage {
     
     private final int width;
@@ -36,7 +40,7 @@ public final class LcdImage {
      * Retourne la largeur de l'image.
      * @return la largeur de l'image.
      */
-    public int widht() {
+    public int width() {
         return width;
     }
     
