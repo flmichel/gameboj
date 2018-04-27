@@ -21,6 +21,7 @@ public class GameBoy {
     private Cpu cpu;
     private long cyclesNb = 0;
     private Timer minuteur;
+    private LcdController lcdC;
 
     /**
      * Construit un Game Boy avec la cartouche (cartridge) donnée, en créant tous les composants nécessaires pour le bon fonctionnement de celui-ci (Processeur, Ram...) et les attachant à un bus commum.
@@ -38,6 +39,8 @@ public class GameBoy {
         bus.attach(new BootRomController(cartridge));
         minuteur = new Timer(cpu) ;
         bus.attach(minuteur);
+        lcdC = new LcdController(cpu);
+        lcdC.attachTo(bus);        
     }
 
     /**
@@ -71,6 +74,14 @@ public class GameBoy {
     public Timer timer() {
         return minuteur;
     }
+    
+    /**
+     * Retourne le controleur LCD du Game Boy
+     * @return le controleur LCD du Game Boy
+     */
+    public LcdController lcdController() {
+        return lcdC;
+    }
 
     /**
      * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1.
@@ -83,6 +94,7 @@ public class GameBoy {
         if (cycles() < cycle) {
             for (long i = cycles() ; i < cycle ; i++) {
                 minuteur.cycle(i);
+                //lcdC.cycle(i);
                 cpu.cycle(i);
                 cyclesNb++;
             }
