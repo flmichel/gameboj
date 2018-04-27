@@ -22,6 +22,9 @@ public class LcdController implements Component, Clocked {
     public static final int NB_CYCLES_MODE2 = 20;
     public static final int NB_CYCLES_MODE3 = 43;
     public static final int NB_CYCLES_LCD = 17556;
+    public static final int ENTER_MODE2 = 0;
+    public static final int ENTER_MODE3 = 20;
+    public static final int ENTER_MODE0 = 43;
 
 
     private long nextNonIdleCycle = 0;
@@ -66,10 +69,13 @@ public class LcdController implements Component, Clocked {
             int r = (int) cycle % NB_CYCLES_LINE;
             int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE; //division entiere
 
-            if (line<144) {
+            if (line < LCD_HEIGHT) {
                 switch (r) {
 
-                case 0 : {
+                case ENTER_MODE2 : {
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, true);
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
+                    
                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
                         cpu.requestInterrupt(Interrupt.LCD_STAT);
                     }
@@ -85,12 +91,16 @@ public class LcdController implements Component, Clocked {
                     nextNonIdleCycle += NB_CYCLES_MODE2;  
                 } break;
 
-                case 20 : {
+                case ENTER_MODE3 : {
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, true);
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, true);
                     //dessinera la ligne ici
                     nextNonIdleCycle += NB_CYCLES_MODE3;  
                 } break;
 
-                case 63 : {
+                case ENTER_MODE0 : {
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
+                    registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE0)) {
                         cpu.requestInterrupt(Interrupt.LCD_STAT);
                     }
@@ -98,6 +108,8 @@ public class LcdController implements Component, Clocked {
                 } break;
                 }
             } else {
+                registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
+                registerFile.setBit(Reg.STAT, RegSTAT.MODE1, true);
                 cpu.requestInterrupt(Interrupt.VBLANK);
                 if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE1)) {
                     cpu.requestInterrupt(Interrupt.LCD_STAT);
