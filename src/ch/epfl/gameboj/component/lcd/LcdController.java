@@ -5,9 +5,11 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
 import ch.epfl.gameboj.bits.Bit;
+import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.cpu.Cpu;
+import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.memory.Ram;
 
 public class LcdController implements Component, Clocked {
@@ -15,6 +17,11 @@ public class LcdController implements Component, Clocked {
     public static final int LCD_WIDTH = 160;
     public static final int LCD_HEIGHT = 144;
     public static final int NB_CYCLES_LINE = 114;
+    public static final int NB_CYCLES_MODE0 = 51;
+    public static final int NB_CYCLES_MODE1 = 1140;
+    public static final int NB_CYCLES_MODE2 = 20;
+    public static final int NB_CYCLES_MODE3 = 43;
+    
 
     private long nextNonIdleCycle = 0;
     private long lcdOnCycle;
@@ -55,22 +62,37 @@ public class LcdController implements Component, Clocked {
     private void reallyCycle(long cycle) {
         if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
             
-            int r = (int) cycle % NB_CYCLES_LINE;
+            int r = (int) cycle % NB_CYCLES_LINE; //mod 17556 ?
             int line = (int) cycle / NB_CYCLES_LINE; //division entiere
 
             switch (r) {
 
             case 0 : {
-                Reg.LY = 
-                nextNonIdleCycle += 20;  
+                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
+                    cpu.requestInterrupt(Interrupt.LCD_STAT);
+                }
+                 registerFile.set(Reg.LY, line+1);
+                 if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
+                     registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
+                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
+                         cpu.requestInterrupt(Interrupt.LCD_STAT);
+                     }
+                 } else {
+                     registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
+                 }
+                nextNonIdleCycle += NB_CYCLES_MODE2;  
             } break;
-
+            
             case 20 : {
-
+                //dessinera la ligne ici
+                nextNonIdleCycle += NB_CYCLES_MODE3;  
             } break;
 
             case 63 : {
-
+                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE0)) {
+                    cpu.requestInterrupt(Interrupt.LCD_STAT);
+                }
+                nextNonIdleCycle += NB_CYCLES_MODE0;  
             } break;
 
             }
@@ -97,11 +119,34 @@ public class LcdController implements Component, Clocked {
     @Override
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
-        Preconditions.checkBits8(data); 
+        Preconditions.checkBits8(data);
         if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
             videoRam.write(address - AddressMap.HIGH_RAM_START, data);
-        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END)
-            registerFile.set(Reg.values()[address - AddressMap.REGS_LCDC_START], data);
+        if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
+            Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
+            if (reg == Reg.STAT) {
+                final int maskReadOnly = RegSTAT.MODE0.mask() | RegSTAT.MODE1.mask() | RegSTAT.LYC_EQ_LY.mask();
+                final int mask = ~maskReadOnly;
+                data &= mask;
+            }
+            registerFile.set(reg , data);
+            if (reg == Reg.LY || reg == Reg.LY) {
+                updateStatelycEqLy();
+            }
+            if (reg == Reg.LCDC && !Bits.test(data, RegLCDC.LCD_STATUS.index())) {
+                registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
+                registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
+                registerFile.set(Reg.LY, 0);
+                nextNonIdleCycle = Long.MAX_VALUE;
+            }
+        }
     }
-
+    
+    private void updateStatelycEqLy() {
+        final Boolean lycEqLy = registerFile.get(Reg.LY) == registerFile.get(Reg.LYC);
+        registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, lycEqLy);
+        if (registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC) && lycEqLy) {
+            cpu.requestInterrupt(Interrupt.LCD_STAT);
+        }
+    }
 }
