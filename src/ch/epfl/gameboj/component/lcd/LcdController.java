@@ -43,6 +43,14 @@ public class LcdController implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
+        if (nextNonIdleCycle == Long.MAX_VALUE) {
+        }       
+        if (cycle == nextNonIdleCycle) {
+            reallyCycle();
+        }       
+    }
+    
+    private void reallyCycle() {
     }
     
     /**
