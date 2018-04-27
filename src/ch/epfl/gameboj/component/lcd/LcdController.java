@@ -21,7 +21,8 @@ public class LcdController implements Component, Clocked {
     public static final int NB_CYCLES_MODE1 = 1140;
     public static final int NB_CYCLES_MODE2 = 20;
     public static final int NB_CYCLES_MODE3 = 43;
-    
+    public static final int NB_CYCLES_LCD = 17556;
+
 
     private long nextNonIdleCycle = 0;
     private long lcdOnCycle;
@@ -61,42 +62,49 @@ public class LcdController implements Component, Clocked {
 
     private void reallyCycle(long cycle) {
         if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
-            
-            int r = (int) cycle % NB_CYCLES_LINE; //mod 17556 ?
-            int line = (int) cycle / NB_CYCLES_LINE; //division entiere
 
-            switch (r) {
+            int r = (int) cycle % NB_CYCLES_LINE;
+            int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE; //division entiere
 
-            case 0 : {
-                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
+            if (line<144) {
+                switch (r) {
+
+                case 0 : {
+                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
+                        cpu.requestInterrupt(Interrupt.LCD_STAT);
+                    }
+                    registerFile.set(Reg.LY, line+1);
+                    if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
+                        registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
+                        if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
+                            cpu.requestInterrupt(Interrupt.LCD_STAT);
+                        }
+                    } else {
+                        registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
+                    }
+                    nextNonIdleCycle += NB_CYCLES_MODE2;  
+                } break;
+
+                case 20 : {
+                    //dessinera la ligne ici
+                    nextNonIdleCycle += NB_CYCLES_MODE3;  
+                } break;
+
+                case 63 : {
+                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE0)) {
+                        cpu.requestInterrupt(Interrupt.LCD_STAT);
+                    }
+                    nextNonIdleCycle += NB_CYCLES_MODE0;  
+                } break;
+                }
+            } else {
+                cpu.requestInterrupt(Interrupt.VBLANK);
+                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE1)) {
                     cpu.requestInterrupt(Interrupt.LCD_STAT);
                 }
-                 registerFile.set(Reg.LY, line+1);
-                 if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
-                     registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
-                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
-                         cpu.requestInterrupt(Interrupt.LCD_STAT);
-                     }
-                 } else {
-                     registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
-                 }
-                nextNonIdleCycle += NB_CYCLES_MODE2;  
-            } break;
-            
-            case 20 : {
-                //dessinera la ligne ici
-                nextNonIdleCycle += NB_CYCLES_MODE3;  
-            } break;
-
-            case 63 : {
-                if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE0)) {
-                    cpu.requestInterrupt(Interrupt.LCD_STAT);
-                }
-                nextNonIdleCycle += NB_CYCLES_MODE0;  
-            } break;
-
+                nextNonIdleCycle += NB_CYCLES_MODE1; 
             }
-        }   
+        }
     }
 
     /**
@@ -141,7 +149,7 @@ public class LcdController implements Component, Clocked {
             }
         }
     }
-    
+
     private void updateStatelycEqLy() {
         final Boolean lycEqLy = registerFile.get(Reg.LY) == registerFile.get(Reg.LYC);
         registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, lycEqLy);
