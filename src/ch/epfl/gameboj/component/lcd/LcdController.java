@@ -14,6 +14,7 @@ public class LcdController implements Component, Clocked {
 
     public static final int LCD_WIDTH = 160;
     public static final int LCD_HEIGHT = 144;
+    public static final int NB_CYCLES_LINE = 114;
 
     private long nextNonIdleCycle = 0;
     private long lcdOnCycle;
@@ -47,12 +48,33 @@ public class LcdController implements Component, Clocked {
             nextNonIdleCycle = cycle;
         }       
         if (cycle == nextNonIdleCycle) {
-            reallyCycle();
+            reallyCycle(cycle);
         }       
     }
 
-    private void reallyCycle() {
+    private void reallyCycle(long cycle) {
+        if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
+            
+            int r = (int) cycle % NB_CYCLES_LINE;
+            int line = (int) cycle / NB_CYCLES_LINE; //division entiere
 
+            switch (r) {
+
+            case 0 : {
+                Reg.LY = 
+                nextNonIdleCycle += 20;  
+            } break;
+
+            case 20 : {
+
+            } break;
+
+            case 63 : {
+
+            } break;
+
+            }
+        }   
     }
 
     /**
