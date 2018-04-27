@@ -4,7 +4,7 @@ import ch.epfl.gameboj.AddressMap;
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
-import ch.epfl.gameboj.bits.Bits;
+import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.cpu.Cpu;
@@ -24,6 +24,14 @@ public class LcdController implements Component, Clocked {
         LCDC, STAT, SCY, SCX, LY, LYC, DMA, BGP, OBP0, OBP1, WY, WX;
     }
     
+    private enum RegLCDC implements Bit {
+        BG, OBJ, OBJ_SIZE, BG_AREA, TILE_SOURCE, WIN, WIN_AREA, LCD_STATUS;
+    }
+    
+    private enum RegSTAT implements Bit {
+        MODE0, MODE1, LYC_EQ_LY, INT_MODE0, INT_MODE1, INT_MODE2, INT_LYC, UNUSED;
+    }
+    
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     
@@ -33,7 +41,7 @@ public class LcdController implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
-        if (nextNonIdleCycle == Long.MAX_VALUE)
+        if (nextNonIdleCycle == Long.MAX_VALUE) {
         }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle();
