@@ -126,7 +126,7 @@ public class LcdController implements Component, Clocked {
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
-            return videoRam.read(address - AddressMap.HIGH_RAM_START);
+            return videoRam.read(address - AddressMap.VIDEO_RAM_START);
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END)
             return registerFile.get(Reg.values()[address - AddressMap.REGS_LCDC_START]);
         else
@@ -141,7 +141,7 @@ public class LcdController implements Component, Clocked {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
         if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
-            videoRam.write(address - AddressMap.HIGH_RAM_START, data);
+            videoRam.write(address - AddressMap.VIDEO_RAM_START, data);
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
             Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
             if (reg == Reg.STAT) {
