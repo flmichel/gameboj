@@ -18,7 +18,7 @@ public class LcdController implements Component, Clocked {
     public static final int LCD_HEIGHT = 144;
     public static final int NB_CYCLES_LINE = 114;
     public static final int NB_CYCLES_MODE0 = 51;
-    public static final int NB_CYCLES_MODE1 = 1140;
+    public static final int NB_CYCLES_MODE1 = 114;
     public static final int NB_CYCLES_MODE2 = 20;
     public static final int NB_CYCLES_MODE3 = 43;
     public static final int NB_CYCLES_LCD = 17556;
@@ -79,7 +79,7 @@ public class LcdController implements Component, Clocked {
                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
                         cpu.requestInterrupt(Interrupt.LCD_STAT);
                     }
-                    registerFile.set(Reg.LY, line+1);
+                    registerFile.set(Reg.LY, line);
                     if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
                         registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
                         if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
@@ -108,9 +108,18 @@ public class LcdController implements Component, Clocked {
                 } break;
                 }
             } else {
+                registerFile.set(Reg.LY, line);
+                if (registerFile.get(Reg.LY) == registerFile.get(Reg.LYC)) {
+                    registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, true);
+                    if(registerFile.testBit(Reg.STAT, RegSTAT.INT_LYC)) {
+                        cpu.requestInterrupt(Interrupt.LCD_STAT);
+                    }
+                } else {
+                    registerFile.setBit(Reg.STAT, RegSTAT.LYC_EQ_LY, false);
+                }
                 registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
                 registerFile.setBit(Reg.STAT, RegSTAT.MODE1, true);
-                cpu.requestInterrupt(Interrupt.VBLANK);
+                if(line == LCD_HEIGHT) cpu.requestInterrupt(Interrupt.VBLANK);
                 if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE1)) {
                     cpu.requestInterrupt(Interrupt.LCD_STAT);
                 }
