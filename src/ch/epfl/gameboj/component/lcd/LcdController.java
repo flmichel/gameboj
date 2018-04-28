@@ -64,8 +64,8 @@ public class LcdController implements Component, Clocked {
     }
 
     private void reallyCycle(long cycle) {
-        if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
-
+//        if(registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
+System.out.println(Bits.extract(registerFile.get(Reg.STAT), 0, 2));
             int r = (int) cycle % NB_CYCLES_LINE;
             int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE; //division entiere
 
@@ -75,7 +75,7 @@ public class LcdController implements Component, Clocked {
                 case ENTER_MODE2 : {
                     registerFile.setBit(Reg.STAT, RegSTAT.MODE0, true);
                     registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
-                    
+
                     if(registerFile.testBit(Reg.STAT, RegSTAT.INT_MODE2)) {
                         cpu.requestInterrupt(Interrupt.LCD_STAT);
                     }
@@ -126,7 +126,7 @@ public class LcdController implements Component, Clocked {
                 nextNonIdleCycle += NB_CYCLES_MODE1; 
             }
         }
-    }
+    //}
 
     /**
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
