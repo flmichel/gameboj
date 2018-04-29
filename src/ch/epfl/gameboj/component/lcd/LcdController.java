@@ -82,7 +82,7 @@ public class LcdController implements Component, Clocked {
 
             case ENTER_MODE0 : {
                 setMode(0);
-                needInterrupt(RegSTAT.INT_MODE1);
+                needInterrupt(RegSTAT.INT_MODE0);
                 nextNonIdleCycle += NB_CYCLES_MODE0;  
             } break;
             }
