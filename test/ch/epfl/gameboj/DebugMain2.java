@@ -11,27 +11,28 @@ import ch.epfl.gameboj.component.cartridge.Cartridge;
 
 public final class DebugMain2 {
     private static final int[] COLOR_MAP = new int[] {
-      0xFF_FF_FF, 0xD3_D3_D3, 0xA9_A9_A9, 0x00_00_00
+            0xFF_FF_FF, 0xD3_D3_D3, 0xA9_A9_A9, 0x00_00_00
     };
 
     public static void main(String[] args) throws IOException {
-      File romFile = new File(args[0]);
-      long cycles = Long.parseLong(args[1]);
+        for (int i = 1; i < args.length; i++) {
+            File romFile = new File(args[i]);
+            long cycles = Long.parseLong(args[0]);
 
-      GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
-      gb.runUntil(cycles);
+            GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
+            gb.runUntil(cycles);
 
-      System.out.println("+--------------------+");
-      for (int y = 0; y < 18; ++y) {
-        System.out.print("|");
-        for (int x = 0; x < 20; ++x) {
-      char c = (char) gb.bus().read(0x9800 + 32*y + x);
-      System.out.print(Character.isISOControl(c) ? " " : c);
-        }
-        System.out.println("|");
-      }
-      System.out.println("+--------------------+");
-/*
+            System.out.println("+--------------------+");
+            for (int y = 0; y < 18; ++y) {
+                System.out.print("|");
+                for (int x = 0; x < 20; ++x) {
+                    char c = (char) gb.bus().read(0x9800 + 32*y + x);
+                    System.out.print(Character.isISOControl(c) ? " " : c);
+                }
+                System.out.println("|");
+            }
+            System.out.println("+--------------------+");
+            /*
       LcdImage li = gb.lcdController().currentImage();
       BufferedImage i =
         new BufferedImage(li.width(),
@@ -41,6 +42,7 @@ public final class DebugMain2 {
         for (int x = 0; x < li.width(); ++x)
       i.setRGB(x, y, COLOR_MAP[li.get(x, y)]);
       ImageIO.write(i, "png", new File("gb.png"));
-      */
+             */
+        }
     }
-  }
+}
