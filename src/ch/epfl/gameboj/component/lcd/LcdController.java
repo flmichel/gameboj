@@ -195,16 +195,16 @@ public class LcdController implements Component, Clocked {
     private LcdImageLine computeLine(int indexLine) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
         final int tileSourceIndex = registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) ? 1 : 0;
-        final int vesionUsed = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? 1 : 0;
-        final int Scx = registerFile.get(Reg.SCY);
-        final int Scy = registerFile.get(Reg.SCX);
+        final int versionUsed = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? 1 : 0;
+        final int Scx = registerFile.get(Reg.SCX);
+        final int Scy = registerFile.get(Reg.SCY);
         final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
         
-        final int tileIndexY = indexY % Integer.SIZE;
-        final int tileLineIndex = indexY % 8;
+        final int tileIndexY = indexY / 8;
+        final int tileLineIndex = indexY % 8; // NOMBREs MAGIQUE
         
         for (int i = 0; i < Integer.SIZE; i++) {
-            int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[vesionUsed] + tileIndexY * Integer.SIZE + i);
+            int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[versionUsed] + tileIndexY * Integer.SIZE + i);
             final int address;
             if (numberOfTheTile >= 0x80)
                 address = AddressMap.TILE_SOURCE[1] + (numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2);
@@ -214,7 +214,7 @@ public class LcdController implements Component, Clocked {
                 address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
             }
                 
-            System.out.println(Integer.toHexString(indexY));
+            //System.out.println(Integer.toHexString(indexY));
             
             int lsb = read(address);
             int msb = read(address + 1);
