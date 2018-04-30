@@ -39,7 +39,7 @@ public class LcdController implements Component, Clocked {
 
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
-    
+
     private LcdImage.Builder nextImageBuilder;
     private LcdImage currentImage;
     private boolean firstLine = true;
@@ -65,7 +65,7 @@ public class LcdController implements Component, Clocked {
     public LcdController(Cpu cpu) {
         this.cpu = cpu;
     }
-    
+
     public LcdImage currentImage() {
         return currentImage;
     }
@@ -86,29 +86,29 @@ public class LcdController implements Component, Clocked {
         int lineIndex = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
         if (lineIndex < LCD_HEIGHT) {
             switch (r) {    
-                case ENTER_MODE2 : {
-                    if (firstLine) {
-                        nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
-                        firstLine = false;
-                    }
-                    setMode(2);             
-                    needInterrupt(RegSTAT.INT_MODE2);
-                    LycEqLyAndSetLy(lineIndex);
-                    nextNonIdleCycle += NB_CYCLES_MODE2;  
-                } break;
-    
-                case ENTER_MODE3 : {
-                    LcdImageLine line = computeLine(lineIndex);
-                    nextImageBuilder.setLine(lineIndex, line);
-                    setMode(3);
-                    nextNonIdleCycle += NB_CYCLES_MODE3;  
-                } break;
-    
-                case ENTER_MODE0 : {
-                    setMode(0);
-                    needInterrupt(RegSTAT.INT_MODE0);
-                    nextNonIdleCycle += NB_CYCLES_MODE0;  
-                } break;
+            case ENTER_MODE2 : {
+                if (firstLine) {
+                    nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
+                    firstLine = false;
+                }
+                setMode(2);             
+                needInterrupt(RegSTAT.INT_MODE2);
+                LycEqLyAndSetLy(lineIndex);
+                nextNonIdleCycle += NB_CYCLES_MODE2;  
+            } break;
+
+            case ENTER_MODE3 : {
+                LcdImageLine line = computeLine(lineIndex);
+                nextImageBuilder.setLine(lineIndex, line);
+                setMode(3);
+                nextNonIdleCycle += NB_CYCLES_MODE3;  
+            } break;
+
+            case ENTER_MODE0 : {
+                setMode(0);
+                needInterrupt(RegSTAT.INT_MODE0);
+                nextNonIdleCycle += NB_CYCLES_MODE0;  
+            } break;
             }
         } else {
             currentImage = nextImageBuilder.build();
@@ -190,56 +190,53 @@ public class LcdController implements Component, Clocked {
             }
         }
     }
-    
+
     private LcdImageLine computeLine(int indexLine) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
-<<<<<<< HEAD
+
         final int tileSourceIndex = registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) ? 1 : 0;
         final int versionUsed = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? 1 : 0;
-=======
+
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA)
                 ? AddressMap.BG_DISPLAY_DATA[1]
-                : AddressMap.BG_DISPLAY_DATA[0];
->>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
-        final int Scx = registerFile.get(Reg.SCX);
-        final int Scy = registerFile.get(Reg.SCY);
-        final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
-        
-        final int tileIndexY = indexY / 8;
-<<<<<<< HEAD
-        final int tileLineIndex = indexY % 8; // NOMBREs MAGIQUE
-        
-        for (int i = 0; i < Integer.SIZE; i++) {
-            int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[versionUsed] + tileIndexY * Integer.SIZE + i);
-=======
-        final int tileLineIndex = indexY % 8;
-        
-        for (int i = 0; i < Integer.SIZE; i++) {
-            int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
->>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
-            final int address;
-            if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= 0x80)
-                address = AddressMap.TILE_SOURCE[1] + (numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2);
-<<<<<<< HEAD
-            else if (tileSourceIndex == 0) {
-                address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
-            } else {
-                address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
-            }
-                
-            //System.out.println(Integer.toHexString(indexY));
-            
-            int lsb = read(address);
-            int msb = read(address + 1);
-=======
-            else
-                address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;                        
-            int lsb = Bits.reverse8(read(address));
-            int msb = Bits.reverse8(read(address + 1));
->>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
-            lineBuilder.setBytes(i, msb, lsb);
-        }
-        LcdImageLine line = lineBuilder.build();
-        return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
+                        : AddressMap.BG_DISPLAY_DATA[0];
+
+                final int Scx = registerFile.get(Reg.SCX);
+                final int Scy = registerFile.get(Reg.SCY);
+                final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
+
+                final int tileIndexY = indexY / 8;
+
+                final int tileLineIndex = indexY % 8; // NOMBREs MAGIQUE
+
+                for (int i = 0; i < Integer.SIZE; i++) {
+                    int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[versionUsed] + tileIndexY * Integer.SIZE + i);
+
+                    //        for (int i = 0; i < Integer.SIZE; i++) {
+                    //            int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
+
+                    final int address;
+                    if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= 0x80)
+                        address = AddressMap.TILE_SOURCE[1] + (numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2);
+
+                    else if (tileSourceIndex == 0) {
+                        address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+                    } else {
+                        //                address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+                        //            }
+
+                        //System.out.println(Integer.toHexString(indexY));
+
+                        //            int lsb = read(address);
+                        //            int msb = read(address + 1);
+                        //            else
+                        address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;                        
+                        int lsb = Bits.reverse8(read(address));
+                        int msb = Bits.reverse8(read(address + 1));
+                        lineBuilder.setBytes(i, msb, lsb);
+                    } // ajoute
+                }
+                LcdImageLine line = lineBuilder.build();
+                return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
 }
