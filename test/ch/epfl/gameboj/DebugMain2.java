@@ -15,8 +15,8 @@ public final class DebugMain2 {
     };
 
     public static void main(String[] args) throws IOException {
-        for (int i = 1; i < args.length; i++) {
-            File romFile = new File(args[i]);
+        for (int j = 1; j < args.length; j++) {
+            File romFile = new File(args[j]);
             long cycles = Long.parseLong(args[0]);
 
             GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
@@ -32,17 +32,17 @@ public final class DebugMain2 {
                 System.out.println("|");
             }
             System.out.println("+--------------------+");
-            /*
-      LcdImage li = gb.lcdController().currentImage();
-      BufferedImage i =
-        new BufferedImage(li.width(),
-              li.height(),
-              BufferedImage.TYPE_INT_RGB);
-      for (int y = 0; y < li.height(); ++y)
-        for (int x = 0; x < li.width(); ++x)
-      i.setRGB(x, y, COLOR_MAP[li.get(x, y)]);
-      ImageIO.write(i, "png", new File("gb.png"));
-             */
+
+            LcdImage li = gb.lcdController().currentImage();
+            BufferedImage i =
+                    new BufferedImage(li.width(),
+                            li.height(),
+                            BufferedImage.TYPE_INT_RGB);
+            for (int y = 0; y < li.height(); ++y)
+                for (int x = 0; x < li.width(); ++x)
+                    i.setRGB(x, y, COLOR_MAP[li.get(x, y)]);
+            ImageIO.write(i, "png", new File("gb.png"));
+
         }
     }
 }

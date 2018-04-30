@@ -8,6 +8,8 @@ import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
+import ch.epfl.gameboj.component.LcdImage;
+
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.memory.Ram;
@@ -18,19 +20,25 @@ public class LcdController implements Component, Clocked {
     public static final int LCD_HEIGHT = 144;
     public static final int NB_CYCLES_LINE = 114;
     public static final int NB_CYCLES_MODE0 = 51;
-    public static final int NB_CYCLES_MODE1 = 114;
+    public static final int NB_CYCLES_MODE1 = 1140;
     public static final int NB_CYCLES_MODE2 = 20;
     public static final int NB_CYCLES_MODE3 = 43;
     public static final int NB_CYCLES_LCD = 17556;
     public static final int ENTER_MODE2 = 0;
     public static final int ENTER_MODE3 = 20;
     public static final int ENTER_MODE0 = 63;
+    public static final int BACKGROUND_IMAGE_SIZE = 256;
+    public static final int TILE_SIZE_IN_MEMORY = 16;
 
 
     private long nextNonIdleCycle = 0;
 
     public final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
+    
+    private LcdImage.Builder nextImageBuilder;
+    private LcdImage currentImage;
+    private boolean firstLine = true;
 
     private enum Reg implements Register {
         LCDC, STAT, SCY, SCX, LY, LYC, DMA, BGP, OBP0, OBP1, WY, WX;
@@ -50,12 +58,15 @@ public class LcdController implements Component, Clocked {
     public LcdController(Cpu cpu) {
         this.cpu = cpu;
     }
+    
+    public LcdImage currentImage() {
+        return currentImage;
+    }
 
     @Override
     public void cycle(long cycle) {
         if ((nextNonIdleCycle == Long.MAX_VALUE) && registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
             nextNonIdleCycle = cycle;
-            reallyCycle(cycle);
         }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
@@ -64,31 +75,39 @@ public class LcdController implements Component, Clocked {
 
     private void reallyCycle(long cycle) {
         int r = (int) cycle % NB_CYCLES_LINE;
-        int line = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
-        if (line < LCD_HEIGHT) {
+        int lineIndex = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
+        if (lineIndex < LCD_HEIGHT) {
             switch (r) {    
                 case ENTER_MODE2 : {
+                    if (firstLine) {
+                        nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
+                        firstLine = false;
+                    }
                     setMode(2);             
                     needInterrupt(RegSTAT.INT_MODE2);
-                    LycEqLyAndSetLy(line);
+                    LycEqLyAndSetLy(lineIndex);
                     nextNonIdleCycle += NB_CYCLES_MODE2;  
                 } break;
     
                 case ENTER_MODE3 : {
+                    LcdImageLine line = computeLine(lineIndex);
+                    nextImageBuilder.setLine(lineIndex, line);
                     setMode(3);
                     nextNonIdleCycle += NB_CYCLES_MODE3;  
                 } break;
     
                 case ENTER_MODE0 : {
                     setMode(0);
-                    needInterrupt(RegSTAT.INT_MODE1);
+                    needInterrupt(RegSTAT.INT_MODE0);
                     nextNonIdleCycle += NB_CYCLES_MODE0;  
                 } break;
             }
         } else {
-            LycEqLyAndSetLy(line);
+            currentImage = nextImageBuilder.build();
+            firstLine = true;
+            LycEqLyAndSetLy(lineIndex);
             setMode(1);
-            if (line == LCD_HEIGHT) cpu.requestInterrupt(Interrupt.VBLANK);
+            cpu.requestInterrupt(Interrupt.VBLANK);
             needInterrupt(RegSTAT.INT_MODE1);
             nextNonIdleCycle += NB_CYCLES_MODE1; 
         }
@@ -115,8 +134,10 @@ public class LcdController implements Component, Clocked {
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
-        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END)
+        if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END) {
             videoRam.write(address - AddressMap.VIDEO_RAM_START, data);
+            //System.out.println("data : " + Integer.toBinaryString(data) + " at address : " + Integer.toHexString(address));
+        }
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
             Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
             if (reg == Reg.STAT) {
@@ -128,8 +149,7 @@ public class LcdController implements Component, Clocked {
             if (reg == Reg.LYC)
                 updateStateLycEqLy();            
             if (reg == Reg.LCDC && !Bits.test(data, RegLCDC.LCD_STATUS.index())) {
-                registerFile.setBit(Reg.STAT, RegSTAT.MODE0, false);
-                registerFile.setBit(Reg.STAT, RegSTAT.MODE1, false);
+                setMode(0);
                 registerFile.set(Reg.LY, 0);
                 nextNonIdleCycle = Long.MAX_VALUE;
             }
@@ -161,5 +181,38 @@ public class LcdController implements Component, Clocked {
                 cpu.requestInterrupt(Interrupt.LCD_STAT);
             }
         }
+    }
+    
+    private LcdImageLine computeLine(int indexLine) {
+        LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
+        final int tileSourceIndex = registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) ? 1 : 0;
+        final int vesionUsed = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? 1 : 0;
+        final int Scx = registerFile.get(Reg.SCY);
+        final int Scy = registerFile.get(Reg.SCX);
+        final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
+        
+        final int tileIndexY = indexY % Integer.SIZE;
+        final int tileLineIndex = indexY % 8;
+        
+        for (int i = 0; i < Integer.SIZE; i++) {
+            int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[vesionUsed] + tileIndexY * Integer.SIZE + i);
+            final int address;
+            if (numberOfTheTile >= 0x80)
+                address = AddressMap.TILE_SOURCE[1] + (numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2);
+            else if (tileSourceIndex == 0) {
+                address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+            } else {
+                address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+            }
+                
+            System.out.println(Integer.toHexString(indexY));
+            
+            int lsb = read(address);
+            int msb = read(address + 1);
+            lineBuilder.setBytes(i, msb, lsb);
+        }
+        LcdImageLine line = lineBuilder.build();
+        line = line.extractWrapped(Scx, LCD_WIDTH);
+        return line;
     }
 }
