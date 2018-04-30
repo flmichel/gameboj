@@ -13,7 +13,11 @@ import ch.epfl.gameboj.component.LcdImage;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.memory.Ram;
-
+/**
+ * Représente un contrôleur LCD
+ * @author Riand Andre
+ * @author Michel François
+ */
 public class LcdController implements Component, Clocked {
 
     public static final int LCD_WIDTH = 160;
@@ -54,7 +58,10 @@ public class LcdController implements Component, Clocked {
 
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
-
+    /**
+     * Construit un contrôleur LCD associé à un processeur (cpu)
+     * @param cpu : processeur du Game Boy auquel appartient ce contrôleur LCD
+     */
     public LcdController(Cpu cpu) {
         this.cpu = cpu;
     }
@@ -74,6 +81,7 @@ public class LcdController implements Component, Clocked {
     }
 
     private void reallyCycle(long cycle) {
+
         int r = (int) cycle % NB_CYCLES_LINE;
         int lineIndex = ((int) cycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
         if (lineIndex < LCD_HEIGHT) {
@@ -112,6 +120,7 @@ public class LcdController implements Component, Clocked {
             nextNonIdleCycle += NB_CYCLES_MODE1; 
         }
     }
+
 
     /**
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
@@ -163,18 +172,18 @@ public class LcdController implements Component, Clocked {
             cpu.requestInterrupt(Interrupt.LCD_STAT);
         }
     }
-    
+
     private void LycEqLyAndSetLy(int line) {
         registerFile.set(Reg.LY, line);
         updateStateLycEqLy();
     }
-    
+
     private void setMode(int i) {
         Preconditions.checkArgument(i >= 0 && i < 4);
         registerFile.setBit(Reg.STAT, RegSTAT.MODE0, Bits.test(i, 0));
         registerFile.setBit(Reg.STAT, RegSTAT.MODE1, Bits.test(i, 1));
     }
-    
+
     private void needInterrupt(RegSTAT mode) {
         if (mode.index() >= RegSTAT.INT_MODE0.index() && mode.index() <= RegSTAT.INT_MODE2.index()) {
             if (registerFile.testBit(Reg.STAT, mode)) {
