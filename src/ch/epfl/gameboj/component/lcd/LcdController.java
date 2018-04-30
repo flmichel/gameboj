@@ -145,7 +145,6 @@ public class LcdController implements Component, Clocked {
         Preconditions.checkBits8(data);
         if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END) {
             videoRam.write(address - AddressMap.VIDEO_RAM_START, data);
-            //System.out.println("data : " + Integer.toBinaryString(data) + " at address : " + Integer.toHexString(address));
         }
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
             Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
@@ -194,20 +193,34 @@ public class LcdController implements Component, Clocked {
     
     private LcdImageLine computeLine(int indexLine) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
+<<<<<<< HEAD
         final int tileSourceIndex = registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) ? 1 : 0;
         final int versionUsed = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? 1 : 0;
+=======
+        final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA)
+                ? AddressMap.BG_DISPLAY_DATA[1]
+                : AddressMap.BG_DISPLAY_DATA[0];
+>>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
         final int Scx = registerFile.get(Reg.SCX);
         final int Scy = registerFile.get(Reg.SCY);
         final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
         
         final int tileIndexY = indexY / 8;
+<<<<<<< HEAD
         final int tileLineIndex = indexY % 8; // NOMBREs MAGIQUE
         
         for (int i = 0; i < Integer.SIZE; i++) {
             int numberOfTheTile = read(AddressMap.BG_DISPLAY_DATA[versionUsed] + tileIndexY * Integer.SIZE + i);
+=======
+        final int tileLineIndex = indexY % 8;
+        
+        for (int i = 0; i < Integer.SIZE; i++) {
+            int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
+>>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
             final int address;
-            if (numberOfTheTile >= 0x80)
+            if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= 0x80)
                 address = AddressMap.TILE_SOURCE[1] + (numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2);
+<<<<<<< HEAD
             else if (tileSourceIndex == 0) {
                 address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
             } else {
@@ -218,10 +231,15 @@ public class LcdController implements Component, Clocked {
             
             int lsb = read(address);
             int msb = read(address + 1);
+=======
+            else
+                address = 0x9000 + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;                        
+            int lsb = Bits.reverse8(read(address));
+            int msb = Bits.reverse8(read(address + 1));
+>>>>>>> a4913ef73b5c7cc3ec4d8decf302204d5d27baaf
             lineBuilder.setBytes(i, msb, lsb);
         }
         LcdImageLine line = lineBuilder.build();
-        line = line.extractWrapped(Scx, LCD_WIDTH);
-        return line;
+        return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
 }
