@@ -215,7 +215,6 @@ public class LcdController implements Component, Clocked {
             lineBuilder.setBytes(i, msb, lsb);
         }
         LcdImageLine line = lineBuilder.build();
-        line = line.extractWrapped(Scx, LCD_WIDTH);
-        return line;
+        return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
 }
