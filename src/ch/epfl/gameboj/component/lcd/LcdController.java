@@ -37,7 +37,7 @@ public class LcdController implements Component, Clocked {
 
     private long nextNonIdleCycle = 0;
 
-    public final Cpu cpu;
+    private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
     
     private LcdImage.Builder nextImageBuilder;
