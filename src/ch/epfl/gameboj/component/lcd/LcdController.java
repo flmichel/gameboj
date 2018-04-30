@@ -11,7 +11,11 @@ import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.memory.Ram;
-
+/**
+ * Représente un contrôleur LCD
+ * @author Riand Andre
+ * @author Michel François
+ */
 public class LcdController implements Component, Clocked {
 
     public static final int LCD_WIDTH = 160;
@@ -46,7 +50,10 @@ public class LcdController implements Component, Clocked {
 
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
-
+    /**
+     * Construit un contrôleur LCD associé à un processeur (cpu)
+     * @param cpu : processeur du Game Boy auquel appartient ce contrôleur LCD
+     */
     public LcdController(Cpu cpu) {
         this.cpu = cpu;
     }
