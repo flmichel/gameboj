@@ -56,19 +56,18 @@ public class Joypad implements Component {
     }
 
     /**
-     * DOC
-     * @param K
+     * Simule la pression d'une touche
+     * @param K : touche concernée
      */
-    public void keyPressed(Key K) {
-        
+    public void keyPressed(Key K) {        
         int line = K.index() < 4 ? line0 : line1;
         keyAction(line, K, false);
         cpu.requestInterrupt(Interrupt.JOYPAD);
     }
 
     /**
-     * DOC
-     * @param K
+     * Simule le relâchement d'une touche
+     * @param K : touche concernée
      */
     public void keyReleased(Key K) {
         int line = K.index() < 4 ? line0 : line1;

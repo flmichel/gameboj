@@ -26,4 +26,5 @@ public interface AddressMap {
     int REGS_LCDC_START = 0xFF40, REGS_LCDC_END = 0xFF4C;
     int REG_BOOT_ROM_DISABLE = 0xFF50;
     int REG_IE = 0xFFFF;
+    int REG_DMA = 0xFF46;
 }

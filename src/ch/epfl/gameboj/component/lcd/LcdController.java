@@ -1,6 +1,7 @@
 package ch.epfl.gameboj.component.lcd;
 
 import ch.epfl.gameboj.AddressMap;
+import ch.epfl.gameboj.Bus;
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
@@ -42,9 +43,11 @@ public class LcdController implements Component, Clocked {
     private long lcdOnCycle;
     private long nextNonIdleCycle = Long.MAX_VALUE;
     private boolean firstLine = true;
+    private boolean dmaOn;
 
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
+    private Ram oam = new Ram(AddressMap.OAM_RAM_SIZE);
 
     private static final LcdImageLine WHITE_LINE = new LcdImageLine(
             new BitVector(LCD_WIDTH),
@@ -91,6 +94,9 @@ public class LcdController implements Component, Clocked {
         }       
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
+        }
+        if(dmaOn) {
+            // copier le prochain octet vers la mémoire d'attributs d'objets
         }
     }
 
@@ -145,6 +151,8 @@ public class LcdController implements Component, Clocked {
             return videoRam.read(address - AddressMap.VIDEO_RAM_START);
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END)
             return registerFile.get(Reg.values()[address - AddressMap.REGS_LCDC_START]);
+        if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) 
+            return oam.read(address - AddressMap.OAM_START);
         else
             return NO_DATA;
     }
@@ -175,6 +183,26 @@ public class LcdController implements Component, Clocked {
                 nextNonIdleCycle = Long.MAX_VALUE;
             }
         }
+        if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) {
+            if (address == AddressMap.REG_DMA) {
+                dmaCopyProcess(data);
+                dmaOn = false; // le mettre dans la methode ?
+            }
+            oam.write(address - AddressMap.OAM_START, data);
+        }
+    }
+
+    private void dmaCopyProcess(int data) {
+        dmaOn = true;
+        //...
+    }
+
+    /**
+     * @throws NullPointerException si le bus est null.
+     */
+    @Override
+    public void attachTo(Bus bus) {
+        bus.attach(this); //??
     }
 
     private void updateStateLycEqLy() {
