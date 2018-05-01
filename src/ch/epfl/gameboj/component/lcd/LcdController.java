@@ -30,7 +30,7 @@ public class LcdController implements Component, Clocked {
     public static final int ENTER_MODE2 = 0;
     public static final int ENTER_MODE3 = 20;
     public static final int ENTER_MODE0 = 63;
-    
+
     public static final int BACKGROUND_IMAGE_SIZE = 256;
     public static final int TILE_SIZE_IN_MEMORY = 16;
     public static final int NUMBER_OF_TILE_ACCESSIBLE = 256;
@@ -38,14 +38,14 @@ public class LcdController implements Component, Clocked {
     public static final int NUMBER_OF_TILES_PER_LINE = 32;
     public static final int NUMBER_OF_TILES = NUMBER_OF_TILES_PER_LINE * NUMBER_OF_TILES_PER_LINE;
 
-    
+
     private long lcdOnCycle;
     private long nextNonIdleCycle = Long.MAX_VALUE;
     private boolean firstLine = true;
 
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
-    
+
     private static final LcdImageLine WHITE_LINE = new LcdImageLine(
             new BitVector(LCD_WIDTH),
             new BitVector(LCD_WIDTH),
@@ -75,6 +75,10 @@ public class LcdController implements Component, Clocked {
         this.cpu = cpu;
     }
 
+    /**
+     * Retourne l'image courante de l'écran
+     * @return l'image courante de l'écran
+     */
     public LcdImage currentImage() {
         return currentImage;
     }
@@ -91,32 +95,32 @@ public class LcdController implements Component, Clocked {
     }
 
     private void reallyCycle(long cycle) {
-       
+
         int cycleInLine = (int) ((cycle - lcdOnCycle) % NB_CYCLES_LINE);
         int lineIndex = ((int) (cycle - lcdOnCycle) % NB_CYCLES_LCD) / NB_CYCLES_LINE;
         if (lineIndex < LCD_HEIGHT) {
             switch (cycleInLine) {    
-                case ENTER_MODE2 : {
-                    if (firstLine) {
-                        nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
-                        firstLine = false;
-                    }
-                    setMode(2);             
-                    LycEqLyAndSetLy(lineIndex);
-                    nextNonIdleCycle += NB_CYCLES_MODE2;  
-                } break;
-    
-                case ENTER_MODE3 : {
-                    LcdImageLine line = computeLine(lineIndex);
-                    nextImageBuilder.setLine(lineIndex, line);
-                    setMode(3);
-                    nextNonIdleCycle += NB_CYCLES_MODE3;  
-                } break;
-    
-                case ENTER_MODE0 : {
-                    setMode(0);
-                    nextNonIdleCycle += NB_CYCLES_MODE0;  
-                } break;
+            case ENTER_MODE2 : {
+                if (firstLine) {
+                    nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
+                    firstLine = false;
+                }
+                setMode(2);             
+                LycEqLyAndSetLy(lineIndex);
+                nextNonIdleCycle += NB_CYCLES_MODE2;  
+            } break;
+
+            case ENTER_MODE3 : {
+                LcdImageLine line = computeLine(lineIndex);
+                nextImageBuilder.setLine(lineIndex, line);
+                setMode(3);
+                nextNonIdleCycle += NB_CYCLES_MODE3;  
+            } break;
+
+            case ENTER_MODE0 : {
+                setMode(0);
+                nextNonIdleCycle += NB_CYCLES_MODE0;  
+            } break;
             }
         } else {
             if (!firstLine) {
@@ -195,7 +199,7 @@ public class LcdController implements Component, Clocked {
         registerFile.setBit(Reg.STAT, RegSTAT.MODE0, Bits.test(mode, 0));
         registerFile.setBit(Reg.STAT, RegSTAT.MODE1, Bits.test(mode, 1));
     }
-    
+
     private LcdImageLine computeLine(int indexLine) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
         if (!registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
@@ -203,27 +207,27 @@ public class LcdController implements Component, Clocked {
         }
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA)
                 ? AddressMap.BG_DISPLAY_DATA[1]
-                : AddressMap.BG_DISPLAY_DATA[0];
-        final int Scx = registerFile.get(Reg.SCX);
-        final int Scy = registerFile.get(Reg.SCY);
-        final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
-        
-        final int tileIndexY = indexY / PIXEL_PER_TILE_LINE;
-        final int tileLineIndex = indexY % PIXEL_PER_TILE_LINE;
-        
-        for (int i = 0; i < Integer.SIZE; i++) {
-            int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
-            final int begin;
-            if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= NUMBER_OF_TILE_ACCESSIBLE / 2)
-                begin = AddressMap.TILE_SOURCE[1];
-            else
-                begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
-            final int address = begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
-            int lsb = Bits.reverse8(read(address));
-            int msb = Bits.reverse8(read(address + 1));
-            lineBuilder.setBytes(i, msb, lsb);
-        }
-        LcdImageLine line = lineBuilder.build();
-        return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
+                        : AddressMap.BG_DISPLAY_DATA[0];
+                final int Scx = registerFile.get(Reg.SCX);
+                final int Scy = registerFile.get(Reg.SCY);
+                final int indexY = (indexLine + Scy) % BACKGROUND_IMAGE_SIZE;
+
+                final int tileIndexY = indexY / PIXEL_PER_TILE_LINE;
+                final int tileLineIndex = indexY % PIXEL_PER_TILE_LINE;
+
+                for (int i = 0; i < Integer.SIZE; i++) {
+                    int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
+                    final int begin;
+                    if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= NUMBER_OF_TILE_ACCESSIBLE / 2)
+                        begin = AddressMap.TILE_SOURCE[1];
+                    else
+                        begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
+                    final int address = begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+                    int lsb = Bits.reverse8(read(address));
+                    int msb = Bits.reverse8(read(address + 1));
+                    lineBuilder.setBytes(i, msb, lsb);
+                }
+                LcdImageLine line = lineBuilder.build();
+                return line.extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
 }
