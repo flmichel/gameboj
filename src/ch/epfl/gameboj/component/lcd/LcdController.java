@@ -46,6 +46,10 @@ public class LcdController implements Component, Clocked {
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
     
+    private static final LcdImageLine WHITE_LINE = new LcdImageLine(
+            new BitVector(LCD_WIDTH),
+            new BitVector(LCD_WIDTH),
+            new BitVector(LCD_WIDTH));
     private LcdImage.Builder nextImageBuilder;
     private LcdImage currentImage;
 
@@ -195,10 +199,7 @@ public class LcdController implements Component, Clocked {
     private LcdImageLine computeLine(int indexLine) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(BACKGROUND_IMAGE_SIZE);
         if (!registerFile.testBit(Reg.LCDC, RegLCDC.LCD_STATUS)) {
-            return new LcdImageLine(
-                    new BitVector(LCD_WIDTH),
-                    new BitVector(LCD_WIDTH),
-                    new BitVector(LCD_WIDTH));
+            return WHITE_LINE;
         }
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA)
                 ? AddressMap.BG_DISPLAY_DATA[1]
