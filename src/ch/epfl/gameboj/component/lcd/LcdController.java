@@ -45,15 +45,11 @@ public class LcdController implements Component, Clocked {
 
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
-<<<<<<< HEAD
     
     private static final LcdImageLine WHITE_LINE = new LcdImageLine(
             new BitVector(LCD_WIDTH),
             new BitVector(LCD_WIDTH),
             new BitVector(LCD_WIDTH));
-=======
-
->>>>>>> c7044d6a2786132fb24c275980247de3e691a7c2
     private LcdImage.Builder nextImageBuilder;
     private LcdImage currentImage;
 
@@ -99,7 +95,6 @@ public class LcdController implements Component, Clocked {
         int cycleInLine = (int) ((cycle - lcdOnCycle) % NB_CYCLES_LINE);
         int lineIndex = ((int) (cycle - lcdOnCycle) % NB_CYCLES_LCD) / NB_CYCLES_LINE;
         if (lineIndex < LCD_HEIGHT) {
-<<<<<<< HEAD
             switch (cycleInLine) {    
                 case ENTER_MODE2 : {
                     if (firstLine) {
@@ -122,32 +117,6 @@ public class LcdController implements Component, Clocked {
                     setMode(0);
                     nextNonIdleCycle += NB_CYCLES_MODE0;  
                 } break;
-=======
-            switch (r) {    
-            case ENTER_MODE2 : {
-                if (firstLine) {
-                    nextImageBuilder = new LcdImage.Builder(LCD_WIDTH, LCD_HEIGHT);
-                    firstLine = false;
-                }
-                setMode(2);             
-                needInterrupt(RegSTAT.INT_MODE2);
-                LycEqLyAndSetLy(lineIndex);
-                nextNonIdleCycle += NB_CYCLES_MODE2;  
-            } break;
-
-            case ENTER_MODE3 : {
-                LcdImageLine line = computeLine(lineIndex);
-                nextImageBuilder.setLine(lineIndex, line);
-                setMode(3);
-                nextNonIdleCycle += NB_CYCLES_MODE3;  
-            } break;
-
-            case ENTER_MODE0 : {
-                setMode(0);
-                needInterrupt(RegSTAT.INT_MODE0);
-                nextNonIdleCycle += NB_CYCLES_MODE0;  
-            } break;
->>>>>>> c7044d6a2786132fb24c275980247de3e691a7c2
             }
         } else {
             if (!firstLine) {
