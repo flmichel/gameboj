@@ -184,7 +184,7 @@ public class LcdController implements Component, Clocked {
             }
         }
         if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) {
-            if (address == AddressMap.REG_DMA) {
+            if (address == AddressMap.REG_DMA) { //reg_DMA existe deja dans enum Reg: l utiliser ?
                 dmaCopyProcess(data);
                 dmaOn = false; // le mettre dans la methode ?
             }
