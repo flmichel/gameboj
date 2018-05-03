@@ -35,8 +35,9 @@ public final class Bus {
     public int read(int address) {
         Preconditions.checkBits16(address);
         for (Component component : components) {
-            if (component.read(address) != Component.NO_DATA)
-                return component.read(address);        
+            int componentValue = component.read(address);
+            if (componentValue != Component.NO_DATA)
+                return componentValue;        
         }
         return VALUE_TO_RETURN;
     }

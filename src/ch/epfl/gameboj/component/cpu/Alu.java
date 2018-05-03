@@ -295,7 +295,7 @@ public final class Alu {
     public static int rotate(RotDir d, int v) {
         Preconditions.checkBits8(v);
         int dir, index;
-        if (d.name() == "LEFT") {
+        if (d == RotDir.LEFT) {
             dir = 1;
             index = 0;
         } else {
@@ -333,7 +333,8 @@ public final class Alu {
      */
     public static int swap(int v) {
         Preconditions.checkBits8(v);
-        v = Bits.clip(4, v) << 4 | Bits.extract(v, 4, 4);
+        //v = Bits.clip(4, v) << 4 | Bits.extract(v, 4, 4);
+        v = Bits.rotate(8, v, 4);
         return packValueZNHC(v, v == 0, false, false, false);
     }
 

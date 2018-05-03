@@ -37,7 +37,8 @@ public final class Cpu implements Component, Clocked {
     private enum Reg implements Register {
         A, F, B, C, D, E, H, L
     }
-    RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
+    
+    private final RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     private enum Reg16 implements Register {
         AF, BC, DE, HL
@@ -681,7 +682,7 @@ public final class Cpu implements Component, Clocked {
     }
 
     private void setReg16(Reg16 r, int newV) {
-        if (r.name() == "AF")
+        if (r == Reg16.AF)
             newV = newV & 0xFFF0;
         registerFile.set(Reg.values()[r.index() * 2], Bits.extract(newV, 8, 8));
         registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.clip(8, newV));
@@ -689,7 +690,7 @@ public final class Cpu implements Component, Clocked {
 
 
     private void setReg16SP(Reg16 r, int newV) {
-        if (r.name() == "AF")
+        if (r == Reg16.AF)
             SP = newV;
         else
             setReg16(r, newV); 

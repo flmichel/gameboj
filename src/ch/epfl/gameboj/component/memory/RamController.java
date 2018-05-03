@@ -75,6 +75,7 @@ public class RamController implements Component {
         if (address < startAddress || address >= endAddress)
             return false;
         return true;
+        // return !(address < startAddress || address >= endAddress)
     }
 
 }
