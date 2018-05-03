@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import ch.epfl.gameboj.component.LcdImage;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
+import ch.epfl.gameboj.component.lcd.LcdImage;
 
 public final class DebugMain2 {
     private static final int[] COLOR_MAP = new int[] {

@@ -2,7 +2,7 @@ package ch.epfl.gameboj;
 
 import java.util.Objects;
 
-import ch.epfl.gameboj.component.Joypad;
+
 import ch.epfl.gameboj.component.Timer;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.cpu.Cpu;
@@ -24,7 +24,6 @@ public class GameBoy {
     private long cyclesNb = 0;
     private Timer minuteur;
     private LcdController lcdC;
-    private Joypad joypad;
     
     public static final long NB_CYCLES_P_SECOND = (long) Math.pow(2, 20); //ca marche ?
     public static final double NB_CYCLES_P_NANOSECOND = (double) (NB_CYCLES_P_SECOND) / Math.pow(10, 9); // juste?
@@ -47,9 +46,6 @@ public class GameBoy {
         bus.attach(minuteur);
         lcdC = new LcdController(cpu);
         lcdC.attachTo(bus); 
-        joypad = new Joypad(cpu);
-        joypad.attachTo(bus); // laquelle ?
-        bus.attach(joypad);
     }
 
     /**
@@ -96,9 +92,6 @@ public class GameBoy {
      * Retourne le clavier du Game Boy
      * @return le clavier du Game Boy
      */
-    public Joypad joypad() {
-        return joypad;
-    }
 
     /**
      * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1.

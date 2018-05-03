@@ -1,9 +1,12 @@
 package ch.epfl.gameboj;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.lcd.LcdController;
-import ch.epfl.gameboj.component.LcdImage;
-
+import ch.epfl.gameboj.component.lcd.LcdImage;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
@@ -15,15 +18,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
 public final class DebugMainLive extends Application {
 
     /** Configuration */
 
-    private static final String ROM_PATH = "flappyboy.gb";
+    private static final String ROM_PATH = "tasmaniaStory.gb";
 
     private static final float EMULATION_SPEED = 1f;
     private static final int CYCLES_PER_ITERATION = (int)(17_556 * EMULATION_SPEED);

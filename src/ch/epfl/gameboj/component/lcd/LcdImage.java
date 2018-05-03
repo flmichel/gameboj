@@ -1,15 +1,12 @@
-package ch.epfl.gameboj.component;
+package ch.epfl.gameboj.component.lcd;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.bits.BitVector;
 import ch.epfl.gameboj.bits.Bits;
-import ch.epfl.gameboj.component.lcd.LcdImageLine;
 /**
  * Une image dans l'écran du Game Boy.
  * @author Riand Andre
