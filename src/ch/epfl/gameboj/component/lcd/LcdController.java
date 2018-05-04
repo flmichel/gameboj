@@ -43,8 +43,11 @@ public class LcdController implements Component, Clocked {
     private int winY;
     private long lcdOnCycle;
     private long nextNonIdleCycle = Long.MAX_VALUE;
-    private boolean dmaOn;
+    //private boolean dmaOn;
+    private int sourceAddress;
+    private int copyAddress = Integer.MAX_VALUE; //meilleure option ?
 
+    private Bus bus;
     private final Cpu cpu;
     private Ram videoRam = new Ram(AddressMap.VIDEO_RAM_SIZE);
     private Ram oam = new Ram(AddressMap.OAM_RAM_SIZE);
@@ -92,8 +95,11 @@ public class LcdController implements Component, Clocked {
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
         }
-        if(dmaOn) {
-            // copier le prochain octet vers la mémoire d'attributs d'objets
+        if(copyAddress < oam.size()) {
+            // copie le prochain octet vers la mémoire d'attributs d'objets
+            oam.write(AddressMap.OAM_START + copyAddress, bus.read(sourceAddress));
+            copyAddress++;
+            sourceAddress++;
         }
     }
 
@@ -179,17 +185,13 @@ public class LcdController implements Component, Clocked {
             }
         }
         if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) {
-            if (address == AddressMap.REG_DMA) { //reg_DMA existe deja dans enum Reg: l utiliser ?
-                dmaCopyProcess(data);
-                dmaOn = false; // le mettre dans la methode ?
+            if (address == registerFile.get(Reg.DMA)) {
+                copyAddress = 0;
+                sourceAddress = address;
+            } else {
+                oam.write(address - AddressMap.OAM_START, data);
             }
-            oam.write(address - AddressMap.OAM_START, data);
         }
-    }
-
-    private void dmaCopyProcess(int data) {
-        dmaOn = true;
-        //...
     }
 
     /**
@@ -197,7 +199,8 @@ public class LcdController implements Component, Clocked {
      */
     @Override
     public void attachTo(Bus bus) {
-        bus.attach(this); //??
+        this.bus = bus;
+        bus.attach(this);
     }
 
     private void updateStateLycEqLy() {
@@ -224,7 +227,7 @@ public class LcdController implements Component, Clocked {
     }
 
     private LcdImageLine computeLine(int indexLine) {
-        
+
         LcdImageLine line = computeBgLine(indexLine);
         final int realWX = registerFile.get(Reg.WX) - WX_START;
         if (registerFile.testBit(Reg.LCDC, RegLCDC.WIN) && (realWX >= 0 && realWX < WIN_MAX_SIZE) && indexLine >= registerFile.get(Reg.WY)) {
@@ -233,7 +236,7 @@ public class LcdController implements Component, Clocked {
         }   
         return line.mapColors(registerFile.get(Reg.BGP));
     }
-    
+
     private LcdImageLine computeBgLine(int indexLine) {
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.BG_AREA) ? AddressMap.BG_DISPLAY_DATA[1] : AddressMap.BG_DISPLAY_DATA[0];
         final int Scx = registerFile.get(Reg.SCX);
@@ -241,17 +244,17 @@ public class LcdController implements Component, Clocked {
         final int indexY = (indexLine + Scy) % IMAGE_SIZE;
         return computeBgWinLine(startAddress, indexY).extractWrapped(Scx, LCD_WIDTH);
     }
-    
+
     private LcdImageLine computeWinLine(int realXW) {
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.WIN_AREA) ? AddressMap.BG_DISPLAY_DATA[1] : AddressMap.BG_DISPLAY_DATA[0];
         return computeBgWinLine(startAddress, winY).extractWrapped(realXW, LCD_WIDTH);
     }
-    
+
     private LcdImageLine computeBgWinLine(int startAddress, int indexY) {
         LcdImageLine.Builder lineBuilder = new LcdImageLine.Builder(IMAGE_SIZE);
         final int tileIndexY = indexY / PIXEL_PER_TILE_LINE;
         final int tileLineIndex = indexY % PIXEL_PER_TILE_LINE;
-        
+
         for (int i = 0; i < Integer.SIZE; i++) {
             final int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
             final int address = getAddress(numberOfTheTile, tileLineIndex);
@@ -261,7 +264,7 @@ public class LcdController implements Component, Clocked {
         }
         return lineBuilder.build();
     }
-    
+
     private int getAddress(int numberOfTheTile, int tileLineIndex) {
         final int begin;
         if (registerFile.testBit(Reg.LCDC, RegLCDC.TILE_SOURCE) || numberOfTheTile >= NUMBER_OF_TILE_ACCESSIBLE / 2)

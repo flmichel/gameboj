@@ -21,6 +21,10 @@ public class Joypad implements Component {
     public enum Key implements Bit{
         RIGHT, LEFT, UP, DOWN, A, B, SELECT, START;
     }
+    
+    private enum Tab implements Bit {
+        COL0, COL1, COL2, COL3, ROW0, ROW1;
+    }
 
     /**
      * Construit un clavier associé à un processeur (cpu)
