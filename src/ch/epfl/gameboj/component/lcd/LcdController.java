@@ -45,7 +45,7 @@ public class LcdController implements Component, Clocked {
     private long nextNonIdleCycle = Long.MAX_VALUE;
     //private boolean dmaOn;
     private int sourceAddress;
-    private int copyAddress = Integer.MAX_VALUE; //meilleure option ?
+    private int copyIndex = Integer.MAX_VALUE; //meilleure option ?
 
     private Bus bus;
     private final Cpu cpu;
@@ -95,10 +95,10 @@ public class LcdController implements Component, Clocked {
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
         }
-        if(copyAddress < oam.size()) {
+        if(copyIndex < oam.size()) {
             // copie le prochain octet vers la mémoire d'attributs d'objets
-            oam.write(AddressMap.OAM_START + copyAddress, bus.read(sourceAddress));
-            copyAddress++;
+            oam.write(AddressMap.OAM_START + copyIndex, bus.read(sourceAddress));
+            copyIndex++;
             sourceAddress++;
         }
     }
@@ -183,10 +183,9 @@ public class LcdController implements Component, Clocked {
                 registerFile.set(Reg.LY, 0);
                 nextNonIdleCycle = Long.MAX_VALUE;
             }
-        }
-        if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) {
-            if (address == registerFile.get(Reg.DMA)) {
-                copyAddress = 0;
+            if (reg == Reg.DMA) {
+                copyIndex = 0;
+                registerFile.set(Reg.DMA, data << 8); //Nombre magique ?
                 sourceAddress = address;
             } else {
                 oam.write(address - AddressMap.OAM_START, data);

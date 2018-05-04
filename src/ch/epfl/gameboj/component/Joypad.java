@@ -21,8 +21,8 @@ public class Joypad implements Component {
     public enum Key implements Bit{
         RIGHT, LEFT, UP, DOWN, A, B, SELECT, START;
     }
-    
-    private enum Tab implements Bit {
+
+    private enum JoyStick implements Bit {
         COL0, COL1, COL2, COL3, ROW0, ROW1;
     }
 
@@ -64,8 +64,7 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyPressed(Key K) {        
-        int line = K.index() < 4 ? line0 : line1;
-        keyAction(line, K, false);
+        keyAction(K, false);
         cpu.requestInterrupt(Interrupt.JOYPAD);
     }
 
@@ -74,11 +73,11 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyReleased(Key K) {
-        int line = K.index() < 4 ? line0 : line1;
-        keyAction(line, K, true);
+        keyAction(K, true);
     }
 
-    private void keyAction(int line, Key K, boolean newValue) {
+    private void keyAction(Key K, boolean newValue) {
+        int line = K.index() < 4 ? line0 : line1;
         Bits.set(line, K.index() % 4, newValue);
     }
 }
