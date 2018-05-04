@@ -95,12 +95,12 @@ public class LcdController implements Component, Clocked {
         if (cycle == nextNonIdleCycle) {
             reallyCycle(cycle);
         }
-        if(copyIndex < oam.size()) {
-            // copie le prochain octet vers la mémoire d'attributs d'objets
-            oam.write(AddressMap.OAM_START + copyIndex, bus.read(sourceAddress));
-            copyIndex++;
-            sourceAddress++;
-        }
+//        if(copyIndex < oam.size()) {
+//            // copie le prochain octet vers la mémoire d'attributs d'objets
+//            oam.write(AddressMap.OAM_START + copyIndex, bus.read(sourceAddress));
+//            copyIndex++;
+//            sourceAddress++;
+//        }
     }
 
     private void reallyCycle(long cycle) {
@@ -170,6 +170,7 @@ public class LcdController implements Component, Clocked {
         }
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
             Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
+
             if (reg == Reg.STAT) {
                 final int maskReadOnly = RegSTAT.MODE0.mask() | RegSTAT.MODE1.mask() | RegSTAT.LYC_EQ_LY.mask();
                 final int mask = ~maskReadOnly;
@@ -185,10 +186,8 @@ public class LcdController implements Component, Clocked {
             }
             if (reg == Reg.DMA) {
                 copyIndex = 0;
-                registerFile.set(Reg.DMA, data << 8); //Nombre magique ?
-                sourceAddress = address;
-            } else {
-                oam.write(address - AddressMap.OAM_START, data);
+                registerFile.set(Reg.DMA, data); //Nombre magique ?
+                sourceAddress = data << 8;
             }
         }
     }

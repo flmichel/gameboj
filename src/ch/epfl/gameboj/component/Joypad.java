@@ -17,13 +17,10 @@ public class Joypad implements Component {
     private Cpu cpu;
     private int line0;
     private int line1;
+    private int activeLines;
 
     public enum Key implements Bit{
         RIGHT, LEFT, UP, DOWN, A, B, SELECT, START;
-    }
-
-    private enum JoyStick implements Bit {
-        COL0, COL1, COL2, COL3, ROW0, ROW1;
     }
 
     /**
@@ -34,7 +31,6 @@ public class Joypad implements Component {
         this.cpu = cpu;
     }
 
-
     /**
      * @throws IllegalArgumentException si address ne peut pas s'écrire avec 16 bits.
      */
@@ -42,7 +38,7 @@ public class Joypad implements Component {
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (address == AddressMap.REG_P1) {
-            return 0; //combin line0 et line1
+            return 0b11 << 6 | Bits.clip(2, activeLines) << 4 | stateBits();
         } else return NO_DATA;
     }
 
@@ -53,9 +49,8 @@ public class Joypad implements Component {
     public void write(int address, int data) {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
-
         if (address == AddressMap.REG_P1) {
-
+            activeLines = Bits.extract(data, 4, 2);
         }
     }
 
@@ -80,4 +75,10 @@ public class Joypad implements Component {
         int line = K.index() < 4 ? line0 : line1;
         Bits.set(line, K.index() % 4, newValue);
     }
+    
+    private int stateBits() {
+        int activeLine0 = Bits.test(activeLines, 0) ? ~line0 : 0;
+        int activeLine1 = Bits.test(activeLines, 0) ? ~line0 : 0;
+        return ~(activeLine0 | activeLine1);
+    }         
 }
