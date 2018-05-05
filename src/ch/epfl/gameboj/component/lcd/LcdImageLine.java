@@ -60,7 +60,8 @@ public final class LcdImageLine {
     }
 
     /**
-     * Décale la ligne d'un nombre de pixels donné, en préservant sa longueur 
+     * Décale la ligne d'un nombre de pixels donné, en préservant sa longueur, en utilisant la convention qu'une distance positive 
+     * représente un décalage à gauche, une distance négative un décalage à droite (shift).
      * @param nb : nombre de décalages unitaires à faire
      * @return la ligne décalée, de meme longueur.
      */
