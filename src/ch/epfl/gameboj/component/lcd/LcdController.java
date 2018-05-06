@@ -78,19 +78,19 @@ public class LcdController implements Component, Clocked {
     private enum RegSTAT implements Bit {
         MODE0, MODE1, LYC_EQ_LY, INT_MODE0, INT_MODE1, INT_MODE2, INT_LYC, UNUSED;
     }
-    
+
     private enum Sprite implements Bit {
         Y, X, TILE_INDEX, FEATURES, 
     }
-    
+
     private enum SpriteFeatures implements Bit {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, PALETTE, FLIP_H, FLIP_V, BEHIND_BG
-        }
-    
+    }
+
     private enum ImageElement {
         BACK_GROUND, WINDOW, SPRITE
     }
-    
+
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     /**
@@ -201,7 +201,7 @@ public class LcdController implements Component, Clocked {
                 data &= mask;
             }
             registerFile.set(reg, data);
-            
+
             switch (reg) {
             case LYC: {
                 updateStateLycEqLy();            
@@ -257,14 +257,17 @@ public class LcdController implements Component, Clocked {
 
     private LcdImageLine computeLine(int indexLine) {
 
-        LcdImageLine line = computeBgLine(indexLine);
+        LcdImageLine line = new LcdImageLine.Builder(LCD_WIDTH).build();
+        if (registerFile.testBit(Reg.LCDC, RegLCDC.BG))
+            line = computeBgLine(indexLine);
         final int realWX = registerFile.get(Reg.WX) - WX_START;
         if (registerFile.testBit(Reg.LCDC, RegLCDC.WIN) && (realWX >= 0 && realWX < LCD_WIDTH) && indexLine >= registerFile.get(Reg.WY)) {
             winY = (winY + 1) % IMAGE_SIZE;
             line = line.join(computeWinLine(realWX), realWX);
-        }   
-        line = computeSpriteLine(indexLine, line);
-        return line.mapColors(registerFile.get(Reg.BGP));
+        }
+        if (registerFile.testBit(Reg.LCDC, RegLCDC.OBJ))
+            line = computeSpriteLine(indexLine, line);
+        return line;
     }
 
     private LcdImageLine computeBgLine(int indexLine) {
@@ -272,18 +275,24 @@ public class LcdController implements Component, Clocked {
         final int Scx = registerFile.get(Reg.SCX);
         final int Scy = registerFile.get(Reg.SCY);
         final int indexY = (indexLine + Scy) % IMAGE_SIZE;
-        return computeBgWinLine(startAddress, indexY).extractWrapped(Scx, LCD_WIDTH);
+        return computeBgWinLine(startAddress, indexY).extractWrapped(Scx, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
 
     private LcdImageLine computeWinLine(int realXW) {
         final int startAddress = registerFile.testBit(Reg.LCDC, RegLCDC.WIN_AREA) ? AddressMap.BG_DISPLAY_DATA[1] : AddressMap.BG_DISPLAY_DATA[0];
-        return computeBgWinLine(startAddress, winY).extractWrapped(realXW, LCD_WIDTH);
+        return computeBgWinLine(startAddress, winY).extractWrapped(realXW, LCD_WIDTH).mapColors(registerFile.get(Reg.BGP));
     }
-    
+
     private LcdImageLine computeSpriteLine(int indexLine, LcdImageLine line) {
         final int[] sprites = spritesIntersectingLine(indexLine);
         for (int i = sprites.length - 1; i >= 0; i--) {
-            line = line.below(spriteLine(sprites[i], indexLine));          
+            final int features = oamRam.read(sprites[i] + Sprite.FEATURES.index());
+            boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
+            LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
+            if (behind)
+                line = spriteLine.below(line);          
+            else
+                line = line.below(spriteLine);          
         }
         return line;
     }
@@ -311,7 +320,7 @@ public class LcdController implements Component, Clocked {
             begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
         return begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
     }
-    
+
     private int[] spritesIntersectingLine(int lineIndex) {
         final int spriteHeight = registerFile.testBit(Reg.LCDC, RegLCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
         final int[] sprites = new int[MAX_SPRITE_PER_LINE];
@@ -332,24 +341,29 @@ public class LcdController implements Component, Clocked {
         }
         return spritesIndexes;        
     }
-    
+
     private LcdImageLine spriteLine(int spriteIndex, int lineIndex) {
         final int spriteAddress = spriteIndex * SPRITE_SIZE_IN_MEMORY;
         final int numberOfTheTile = oamRam.read(spriteAddress + Sprite.TILE_INDEX.index());
         final int tileLineIndex = lineIndex - oamRam.read((spriteAddress + Sprite.Y.index())) + START_SPRITE_Y;
         final int xShift = oamRam.read(spriteAddress + Sprite.X.index());
-        
+
         final int features = oamRam.read(spriteAddress + Sprite.FEATURES.index());
         final Reg OBP = Bits.test(features, SpriteFeatures.PALETTE) ? Reg.OBP1 : Reg.OBP0;
         final int palette = registerFile.get(OBP);
+        final int spriteHeight = registerFile.testBit(Reg.LCDC, RegLCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
+        final int realTileLineIndex = Bits.test(features, SpriteFeatures.FLIP_V) ? spriteHeight - tileLineIndex : tileLineIndex; //à tester sur un autre jeu
         
+
         Builder spriteLine = new LcdImageLine.Builder(LCD_WIDTH);
-        final int address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
-        if (read(address) < 256) {
-            final int lsb = Bits.reverse8(read(address));
-            final int msb = Bits.reverse8(read(address + 1));
-            spriteLine.setBytes(0, msb, lsb);
+        final int address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + realTileLineIndex * 2;
+        int lsb = read(address);
+        int msb = read(address + 1);
+        if (!Bits.test(features, SpriteFeatures.FLIP_H)) {
+            lsb = Bits.reverse8(lsb);
+            msb = Bits.reverse8(msb);
         }
+        spriteLine.setBytes(0, msb, lsb);
         return spriteLine.build().shift(xShift - START_SPRITE_X).mapColors(palette);
     }
 }
