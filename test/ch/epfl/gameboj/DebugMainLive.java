@@ -61,6 +61,7 @@ public final class DebugMainLive extends Application {
         new AnimationTimer() {
             public void handle(long currentNanoTime) {
                 gb.runUntil(gb.cycles() + CYCLES_PER_ITERATION);
+                gb.joypad().keyPressed(Key.A);
                 imageView.setImage(null);
                 imageView.setImage(getImage(gb));
             }

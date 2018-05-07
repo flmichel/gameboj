@@ -11,7 +11,6 @@ import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
-import ch.epfl.gameboj.component.Joypad.Key;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.lcd.LcdImageLine.Builder;
@@ -88,10 +87,6 @@ public class LcdController implements Component, Clocked {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, PALETTE, FLIP_H, FLIP_V, BEHIND_BG
     }
 
-    private enum ImageElement {
-        BACK_GROUND, WINDOW, SPRITE
-    }
-
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     /**
@@ -113,7 +108,7 @@ public class LcdController implements Component, Clocked {
 
     @Override
     public void cycle(long cycle) {
-        if(copyIndex < oamRam.size() - 1) {
+        if(copyIndex < oamRam.size()) {
             // copie le prochain octet vers la mémoire d'attributs d'objets
             oamRam.write(copyIndex, bus.read(sourceAddress));
             copyIndex++;
@@ -193,6 +188,9 @@ public class LcdController implements Component, Clocked {
         if (address >= AddressMap.VIDEO_RAM_START && address < AddressMap.VIDEO_RAM_END) {
             videoRam.write(address - AddressMap.VIDEO_RAM_START, data);
         }
+        if (address >= AddressMap.OAM_START && address < AddressMap.OAM_END) {
+            oamRam.write(address - AddressMap.OAM_START, data);
+        }
         if (address >= AddressMap.REGS_LCDC_START && address < AddressMap.REGS_LCDC_END) {
             Reg reg = Reg.values()[address - AddressMap.REGS_LCDC_START];
 
@@ -266,8 +264,9 @@ public class LcdController implements Component, Clocked {
             winY = (winY + 1) % IMAGE_SIZE;
             line = line.join(computeWinLine(realWX), realWX);
         }
-        if (registerFile.testBit(Reg.LCDC, RegLCDC.OBJ))
+        if (registerFile.testBit(Reg.LCDC, RegLCDC.OBJ)) {
             line = computeSpriteLine(indexLine, line);
+        }
         return line;
     }
 
@@ -287,13 +286,13 @@ public class LcdController implements Component, Clocked {
     private LcdImageLine computeSpriteLine(int indexLine, LcdImageLine line) {
         final int[] sprites = spritesIntersectingLine(indexLine);
         for (int i = sprites.length - 1; i >= 0; i--) {
-            final int features = oamRam.read(sprites[i] + Sprite.FEATURES.index());
+            final int features = oamRam.read(sprites[i] * SPRITE_SIZE_IN_MEMORY + Sprite.FEATURES.index());
             boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
             LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
-            if (behind) 
-                line = spriteLine.below(line);   
+            if (behind)
+                line = spriteLine.below(line);          
             else
-                line = line.below(spriteLine);          
+                line = line.below(spriteLine);   
         }
         return line;
     }
@@ -326,7 +325,7 @@ public class LcdController implements Component, Clocked {
         final int spriteHeight = registerFile.testBit(Reg.LCDC, RegLCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
         final int[] sprites = new int[MAX_SPRITE_PER_LINE];
         int spriteCount = 0;
-        int spriteIndex = 0;        
+        int spriteIndex = 0;
         while (spriteCount < MAX_SPRITE_PER_LINE && spriteIndex < AddressMap.OAM_RAM_SIZE / SPRITE_SIZE_IN_MEMORY) {
             int positionY = oamRam.read(spriteIndex * SPRITE_SIZE_IN_MEMORY + Sprite.Y.index()) - START_SPRITE_Y;
             if (positionY > lineIndex - spriteHeight && positionY <= lineIndex) {
