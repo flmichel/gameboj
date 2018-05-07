@@ -24,7 +24,7 @@ public class GameBoy {
     private long cyclesNb = 0;
     private Timer minuteur;
     private LcdController lcdC;
-   // private Joypad joypad;
+    private Joypad joypad;
     
     public static final long NB_CYCLES_P_SECOND = (long) Math.pow(2, 20); //ca marche ?
     public static final double NB_CYCLES_P_NANOSECOND = (double) (NB_CYCLES_P_SECOND) / Math.pow(10, 9); // juste?
@@ -47,8 +47,8 @@ public class GameBoy {
         bus.attach(minuteur);
         lcdC = new LcdController(cpu);
         lcdC.attachTo(bus); 
-        //joypad = new Joypad(cpu);
-        //bus.attach(joypad);
+        joypad = new Joypad(cpu);
+        bus.attach(joypad);
     }
 
     /**
@@ -95,9 +95,9 @@ public class GameBoy {
      * Retourne le clavier du Game Boy
      * @return le clavier du Game Boy
      */
-//    public Joypad joypad() {
-//        return joypad;
-//    }
+    public Joypad joypad() {
+        return joypad;
+    }
 
     /**
      * Simule le fonctionnement du GameBoy jusqu'au cycle donné moins 1.
@@ -116,5 +116,4 @@ public class GameBoy {
             }
         }
     }
-
 }

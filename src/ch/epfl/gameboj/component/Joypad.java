@@ -19,7 +19,7 @@ public class Joypad implements Component {
     private int line1;
     private int activeLines;
 
-    public enum Key implements Bit{
+    public enum Key implements Bit {
         RIGHT, LEFT, UP, DOWN, A, B, SELECT, START;
     }
 
@@ -38,8 +38,9 @@ public class Joypad implements Component {
     public int read(int address) {
         Preconditions.checkBits16(address);
         if (address == AddressMap.REG_P1) {
-            return 0b11 << 6 | Bits.clip(2, activeLines) << 4 | stateBits();
-        } else return NO_DATA;
+            return Bits.complement8(getP1());
+        }
+        return NO_DATA;
     }
 
     /**
@@ -50,7 +51,7 @@ public class Joypad implements Component {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
         if (address == AddressMap.REG_P1) {
-            activeLines = Bits.extract(data, 4, 2);
+            activeLines = Bits.extract(Bits.complement8(data), 4, 2);
         }
     }
 
@@ -59,7 +60,7 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyPressed(Key K) {        
-        keyAction(K, false);
+        keyAction(K, true);
         cpu.requestInterrupt(Interrupt.JOYPAD);
     }
 
@@ -68,17 +69,24 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyReleased(Key K) {
-        keyAction(K, true);
+        keyAction(K, false);
     }
 
     private void keyAction(Key K, boolean newValue) {
-        int line = K.index() < 4 ? line0 : line1;
-        Bits.set(line, K.index() % 4, newValue);
+        final int firstPart = Key.values().length / 2;
+        if (K.index() < firstPart)
+            line0 = Bits.set(line0, K.index(), newValue);
+        else
+            line1 = Bits.set(line1, K.index() % firstPart, newValue);
     }
     
     private int stateBits() {
-        int activeLine0 = Bits.test(activeLines, 0) ? ~line0 : 0;
-        int activeLine1 = Bits.test(activeLines, 0) ? ~line0 : 0;
-        return ~(activeLine0 | activeLine1);
-    }         
+        int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
+        int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
+        return activeLine0 | activeLine1;
+    }
+    
+    private int getP1() {
+        return activeLines << 4 | stateBits();
+    }
 }

@@ -11,6 +11,7 @@ import ch.epfl.gameboj.bits.Bit;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
+import ch.epfl.gameboj.component.Joypad.Key;
 import ch.epfl.gameboj.component.cpu.Cpu;
 import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
 import ch.epfl.gameboj.component.lcd.LcdImageLine.Builder;
@@ -289,8 +290,8 @@ public class LcdController implements Component, Clocked {
             final int features = oamRam.read(sprites[i] + Sprite.FEATURES.index());
             boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
             LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
-            if (behind)
-                line = spriteLine.below(line);          
+            if (behind) 
+                line = spriteLine.below(line);   
             else
                 line = line.below(spriteLine);          
         }
