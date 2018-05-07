@@ -286,7 +286,7 @@ public class LcdController implements Component, Clocked {
     private LcdImageLine computeSpriteLine(int indexLine, LcdImageLine line) {
         final int[] sprites = spritesIntersectingLine(indexLine);
         for (int i = sprites.length - 1; i >= 0; i--) {
-            final int features = oamRam.read(sprites[i] * SPRITE_SIZE_IN_MEMORY + Sprite.FEATURES.index());
+            final int features = spriteValue(sprites[i], Sprite.FEATURES);
             boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
             LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
             if (behind)
@@ -327,9 +327,10 @@ public class LcdController implements Component, Clocked {
         int spriteCount = 0;
         int spriteIndex = 0;
         while (spriteCount < MAX_SPRITE_PER_LINE && spriteIndex < AddressMap.OAM_RAM_SIZE / SPRITE_SIZE_IN_MEMORY) {
-            int positionY = oamRam.read(spriteIndex * SPRITE_SIZE_IN_MEMORY + Sprite.Y.index()) - START_SPRITE_Y;
+            int positionY = spriteValue(spriteIndex, Sprite.Y);
             if (positionY > lineIndex - spriteHeight && positionY <= lineIndex) {
-                sprites[spriteCount] = Bits.make16(positionY, spriteIndex);
+                int positionX = spriteValue(spriteIndex, Sprite.TILE_INDEX);
+                sprites[spriteCount] = Bits.make16(positionX, spriteIndex);
                 spriteCount++;
             }
             spriteIndex++;    
@@ -343,12 +344,11 @@ public class LcdController implements Component, Clocked {
     }
 
     private LcdImageLine spriteLine(int spriteIndex, int lineIndex) {
-        final int spriteAddress = spriteIndex * SPRITE_SIZE_IN_MEMORY;
-        final int numberOfTheTile = oamRam.read(spriteAddress + Sprite.TILE_INDEX.index());
-        final int tileLineIndex = lineIndex - oamRam.read((spriteAddress + Sprite.Y.index())) + START_SPRITE_Y;
-        final int xShift = oamRam.read(spriteAddress + Sprite.X.index());
+        final int numberOfTheTile = spriteValue(spriteIndex, Sprite.TILE_INDEX);
+        final int tileLineIndex = lineIndex - spriteValue(spriteIndex, Sprite.Y);
+        final int xShift = spriteValue(spriteIndex, Sprite.X);
 
-        final int features = oamRam.read(spriteAddress + Sprite.FEATURES.index());
+        final int features = spriteValue(spriteIndex, Sprite.FEATURES);
         final Reg OBP = Bits.test(features, SpriteFeatures.PALETTE) ? Reg.OBP1 : Reg.OBP0;
         final int palette = registerFile.get(OBP);
         final int spriteHeight = registerFile.testBit(Reg.LCDC, RegLCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
@@ -364,6 +364,15 @@ public class LcdController implements Component, Clocked {
             msb = Bits.reverse8(msb);
         }
         spriteLine.setBytes(0, msb, lsb);
-        return spriteLine.build().shift(xShift - START_SPRITE_X).mapColors(palette);
+        return spriteLine.build().shift(xShift).mapColors(palette);
+    }
+    
+    private int spriteValue(int index, Sprite value) {
+        int spriteValue = oamRam.read(index * SPRITE_SIZE_IN_MEMORY + value.index());
+        if (value == Sprite.Y)
+            spriteValue -= START_SPRITE_Y;
+        if (value == Sprite.X)
+            spriteValue -= START_SPRITE_X;
+        return spriteValue;
     }
 }
