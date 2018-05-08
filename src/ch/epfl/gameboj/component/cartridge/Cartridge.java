@@ -19,7 +19,11 @@ import ch.epfl.gameboj.component.memory.Rom;
 public final class Cartridge implements Component {
     private Component bankController;
     
-    private static Map<Integer, Integer> ramSizeMap = Map.of(0, 0, 1, 2048, 2, 8192, 3, 32768);
+    private static Map<Integer, Integer> ramSizeMap = 
+            Map.of( 0, 0,
+                    1, 2048,
+                    2, 8192,
+                    3, 32768);
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
