@@ -26,8 +26,8 @@ public class GameBoy {
     private LcdController lcdC;
     private Joypad joypad;
     
-    public static final long NB_CYCLES_P_SECOND = (long) Math.pow(2, 20); //ca marche ?
-    public static final double NB_CYCLES_P_NANOSECOND = (double) (NB_CYCLES_P_SECOND) / Math.pow(10, 9); // juste?
+    public static final long NB_CYCLES_P_SECOND = (long) Math.pow(2, 20);
+    public static final double NB_CYCLES_P_NANOSECOND = (double) ((NB_CYCLES_P_SECOND) / 1e9);
 
     /**
      * Construit un Game Boy avec la cartouche (cartridge) donnée, en créant tous les composants nécessaires pour le bon fonctionnement de celui-ci (Processeur, Ram...) et les attachant à un bus commum.
