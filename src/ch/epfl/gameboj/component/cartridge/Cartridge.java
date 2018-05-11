@@ -12,13 +12,13 @@ import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Rom;
 
 /**
- * Une cartouche
+ * Représente une cartouche
  * @author Riand Andre
  * @author Michel François;
  */
 public final class Cartridge implements Component {
     private Component bankController;
-    
+
     private static Map<Integer, Integer> ramSizeMap = 
             Map.of( 0, 0,
                     1, 2048,
@@ -40,7 +40,7 @@ public final class Cartridge implements Component {
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
             byte[] data = stream.readAllBytes();
-            
+
             int cartridgeType = data[0x147];
             Preconditions.checkArgument(cartridgeType >= 0 && cartridgeType < 4); //0x147 correspond au type de la cartouche.
             Component bc;

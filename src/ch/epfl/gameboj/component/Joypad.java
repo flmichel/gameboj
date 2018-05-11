@@ -19,6 +19,11 @@ public class Joypad implements Component {
     private int line1;
     private int activeLines;
 
+    /**
+     * Représente une touche (un bouton)
+     * @author Riand Andre
+     * @author Michel François
+     */
     public enum Key implements Bit {
         RIGHT, LEFT, UP, DOWN, A, B, SELECT, START;
     }
@@ -81,13 +86,13 @@ public class Joypad implements Component {
         else
             line1 = Bits.set(line1, K.index() % firstPart, newValue);
     }
-    
+
     private int stateBits() {
         int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
         int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
         return activeLine0 | activeLine1;
     }
-    
+
     private int getP1() {
         return activeLines << 4 | stateBits();
     }

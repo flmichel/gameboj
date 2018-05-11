@@ -11,7 +11,7 @@ import ch.epfl.gameboj.Preconditions;
 public final class BitVector {
 
     private final int[] vect;
-    
+
     //Constructeurs
 
     /**
@@ -92,7 +92,7 @@ public final class BitVector {
         }
         return new BitVector(tab);
     }
-    
+
     /**
      * Calcule la disjonction de deux vecteurs de bits
      * @param that : un vecteur de bits
@@ -110,7 +110,7 @@ public final class BitVector {
 
     //liste des types d'extraction
     private enum Extract {ZERO_EXTENDED, WRAPPED}; 
-    
+
     /**
      * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits"
      * allant de l'index "start" (inclus) à l'index (start + size) (exclus). Si l'index "start"
@@ -124,7 +124,7 @@ public final class BitVector {
     public BitVector extractZeroExtended(int start, int size) {
         return extract(start, size, Extract.ZERO_EXTENDED);
     }
-    
+
     /**
      * Retourne une valeur dont les "size" bits de poids faible sont égaux à ceux de "bits"
      * allant de l'index "start" (inclus) à l'index (start + size) (exclus). Si l'index "start"
@@ -138,7 +138,7 @@ public final class BitVector {
     public BitVector extractWrapped(int start, int size) {
         return extract(start, size, Extract.WRAPPED);
     }
-    
+
     /**
      * Décale logiquement le vecteur d'une distance quelconque, en utilisant la convention qu'une distance positive 
      * représente un décalage à gauche, une distance négative un décalage à droite (shift).
@@ -152,13 +152,13 @@ public final class BitVector {
     private BitVector extract(int start, int size, Extract type ) {
         Preconditions.checkArgument(size > 0 && (size % Integer.SIZE == 0));
         final int[] tab = new int[size/Integer.SIZE];
-       
+
         for (int i = 0 ; i < tab.length ; i++) {
-           tab[i] = getExtractedValue(i, start, type);
+            tab[i] = getExtractedValue(i, start, type);
         }
         return new BitVector(tab);
     }
-  
+
     private int getExtractedValue(int index, int start, Extract type) {
         final int i = Math.floorDiv(start, Integer.SIZE) + index;
         final int start32 = Math.floorDiv(start, Integer.SIZE) * Integer.SIZE;
@@ -197,25 +197,25 @@ public final class BitVector {
         }
         return sb.toString();
     }
-    
+
     /**
-     * Bâtisseur du vector de bit
+     * Bâtisseur du vecteur de bit
      * @author Riand Andre
      * @author Michel François
      */
     public final static class Builder {
 
         private int[] tab;
-        
+
         /**
-         * Construit un vecteurs initialisé à zéro et de taille "vectSize"
+         * Construit un vecteur initialisé à zéro et de taille "vectSize"
          * @param vectSize : taille du vecteur
          * @throws IllegalArgumentException si la taille du vecteur est négative ou n'est pas un multiple de 32.
          */
         public Builder(int vectSize) {
             tab = checkAndFill(vectSize, false);
         }
-        
+
         /**
          * Modifie 8 bit dans le vecteur.
          * @param index correspond à la position ou la valeur 8 bit est insérée. Par exemple les valeur
@@ -236,7 +236,7 @@ public final class BitVector {
             tab[i] |= value << shift;
             return this;
         }
-        
+
         /**
          * Retourne le vecteur construit 
          * @return le vecteur construit
