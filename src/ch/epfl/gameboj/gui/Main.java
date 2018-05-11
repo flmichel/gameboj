@@ -18,15 +18,15 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     
-    private Map<KeyCode, Key> keyMap = Map.of(  KeyCode.A, Key.A,
-                                                KeyCode.B, Key.B,
-                                                KeyCode.S, Key.START,
-                                                KeyCode.SPACE, Key.SELECT,
-                                                KeyCode.UP, Key.UP,
-                                                KeyCode.DOWN, Key.DOWN,
-                                                KeyCode.LEFT, Key.LEFT,
-                                                KeyCode.RIGHT, Key.RIGHT
-                                                );
+    private static Map<KeyCode, Key> keyMap = Map.of(   KeyCode.A, Key.A,
+                                                        KeyCode.B, Key.B,
+                                                        KeyCode.S, Key.START,
+                                                        KeyCode.SPACE, Key.SELECT,
+                                                        KeyCode.UP, Key.UP,
+                                                        KeyCode.DOWN, Key.DOWN,
+                                                        KeyCode.LEFT, Key.LEFT,
+                                                        KeyCode.RIGHT, Key.RIGHT
+                                                        );
 
     public static void main(String[] args) {
         Application.launch(args);

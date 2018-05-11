@@ -168,7 +168,7 @@ public final class BitVector {
                 a = vect[i];
             }
             else if (type == Extract.WRAPPED)
-                a = vect[i % vect.length];
+                a = vect[Math.floorMod(i, vect.length)];
         } else {
             int cut = Math.floorMod(start, Integer.SIZE);
             a = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut;
