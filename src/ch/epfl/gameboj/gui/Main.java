@@ -16,18 +16,28 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+/**
+ * Contient le programme principal du simulateur. 
+ * @author Riand Andre
+ * @author Michel François
+ */
 public class Main extends Application {
-    
-    private static Map<Object, Key> keyMap = Map.of(    "a", Key.A,
-                                                        "b", Key.B,
-                                                        "s", Key.START,
-                                                        KeyCode.SPACE, Key.SELECT,
-                                                        KeyCode.UP, Key.UP,
-                                                        KeyCode.DOWN, Key.DOWN,
-                                                        KeyCode.LEFT, Key.LEFT,
-                                                        KeyCode.RIGHT, Key.RIGHT
-                                                        );
 
+    private static Map<Object, Key> keyMap = Map.of(    
+            "a", Key.A,
+            "b", Key.B,
+            "s", Key.START,
+            KeyCode.SPACE, Key.SELECT,
+            KeyCode.UP, Key.UP,
+            KeyCode.DOWN, Key.DOWN,
+            KeyCode.LEFT, Key.LEFT,
+            KeyCode.RIGHT, Key.RIGHT
+            );
+
+    /**
+     * Lance l'application
+     * @param args : parametres de lancement
+     */
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -59,14 +69,14 @@ public class Main extends Application {
                 gb.joypad().keyReleased(keyMap.get(e.getText()));
             }
         });
-        
+
         BorderPane border = new BorderPane(imageView);
         Scene scene = new Scene(border);
         stage.setScene(scene);
 
         stage.show();
         imageView.requestFocus();
-        
+
         long start = System.nanoTime();
         AnimationTimer timer = new AnimationTimer() {
             @Override

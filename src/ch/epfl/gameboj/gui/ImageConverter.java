@@ -5,6 +5,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
+/**
+ * Convertisseur d'image Game Boy en image JavaFX
+ * @author Riand Andre
+ * @author Michel François
+ */
 public class ImageConverter {
     LcdImage li;
     private static final int[] COLOR_MAP = new int[] {
@@ -13,6 +18,11 @@ public class ImageConverter {
     
     private ImageConverter() {};
 
+    /**
+     * Convertit une image de Game Boy en image JavaFX
+     * @param li : image à convertir
+     * @return une image de type javaFX
+     */
     public static Image convert(LcdImage li) {
         WritableImage wImage = new WritableImage(li.width(), li.height());
         PixelWriter pixelWriter = wImage.getPixelWriter();
