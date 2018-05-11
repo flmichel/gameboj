@@ -72,9 +72,7 @@ public class RamController implements Component {
      * @return True si l'adresse est valide, False sinon.
      */
     private boolean isAccessible(int address) {
-        if (address < startAddress || address >= endAddress)
-            return false;
-        return true;
+        return !(address < startAddress || address >= endAddress);
     }
 
 }
