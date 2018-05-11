@@ -59,9 +59,11 @@ public class Joypad implements Component {
      * Simule la pression d'une touche
      * @param K : touche concernée
      */
-    public void keyPressed(Key K) {        
+    public void keyPressed(Key K) {
+        int oldP1 = getP1();
         keyAction(K, true);
-        cpu.requestInterrupt(Interrupt.JOYPAD);
+        if (oldP1 != getP1())
+            cpu.requestInterrupt(Interrupt.JOYPAD);
     }
 
     /**

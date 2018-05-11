@@ -18,9 +18,9 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     
-    private static Map<KeyCode, Key> keyMap = Map.of(   KeyCode.A, Key.A,
-                                                        KeyCode.B, Key.B,
-                                                        KeyCode.S, Key.START,
+    private static Map<Object, Key> keyMap = Map.of(    "a", Key.A,
+                                                        "b", Key.B,
+                                                        "s", Key.START,
                                                         KeyCode.SPACE, Key.SELECT,
                                                         KeyCode.UP, Key.UP,
                                                         KeyCode.DOWN, Key.DOWN,
@@ -48,11 +48,15 @@ public class Main extends Application {
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
                 gb.joypad().keyPressed(keyMap.get(e.getCode()));
+            } else if (keyMap.containsKey(e.getText())) {
+                gb.joypad().keyPressed(keyMap.get(e.getText()));
             }
         });
         imageView.setOnKeyReleased(e -> {
             if (keyMap.containsKey(e.getCode())) {
                 gb.joypad().keyReleased(keyMap.get(e.getCode()));
+            } else if (keyMap.containsKey(e.getText())) {
+                gb.joypad().keyReleased(keyMap.get(e.getText()));
             }
         });
         
