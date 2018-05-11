@@ -78,7 +78,7 @@ public final class LcdImageLine {
     public LcdImageLine extractWrapped(int index, int l) {
         return new LcdImageLine(msb.extractWrapped(index, l), lsb.extractWrapped(index, l), opac.extractWrapped(index, l));
     }
-    
+
     /**
      * Transforme les couleurs de la ligne en fonction d'une palette, donnée sous la forme d'un octet encodé, qui, à chaque couleur, en associe une autre. 
      * @param map : palette de transformation des couleurs
@@ -140,32 +140,32 @@ public final class LcdImageLine {
         BitVector nOpac = opac.and(mask.not()).or(that.opac.and(mask));        
         return new LcdImageLine(nMsb, nLsb, nOpac);
     }
-    
+
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof LcdImageLine))
             return false;
         LcdImageLine thatImageLine = (LcdImageLine)that;
         return this.msb.equals(thatImageLine.msb) &&
-               this.lsb.equals(thatImageLine.lsb) &&
-               this.opac.equals(thatImageLine.opac);
+                this.lsb.equals(thatImageLine.lsb) &&
+                this.opac.equals(thatImageLine.opac);
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(msb, lsb, opac);
     }
-    
+
     /**
      * Bâtisseur d'une ligne d'image GameBoy
      * @author Riand Andre
      * @author Michel François
      */
     public final static class Builder {
-        
+
         private BitVector.Builder msbLine;
         private BitVector.Builder lsbLine;
-        
+
         /**
          * Construit la ligne avec une longuer size et met la couleur à 0.
          * @param size : taille de la ligne.
@@ -177,7 +177,7 @@ public final class LcdImageLine {
         }
 
         /**
-         * Définir la valeur des octets de poids fort et de poids faible de la ligne, à un index donné.
+         * Définit la valeur des octets de poids fort et de poids faible de la ligne, à un index donné.
          * @param index auquel la valeur 8 bits est modifiée.
          * @param value est la nouvelle valeur 8 bit de la ligne.
          * @return
@@ -189,7 +189,7 @@ public final class LcdImageLine {
             lsbLine.setByte(index, lowValue);
             return this;
         }
-        
+
         /**
          * Retourne la ligne construite. Les pixels de couleur 0 sont transparents, les autres opaques.
          * @return la ligne construite.

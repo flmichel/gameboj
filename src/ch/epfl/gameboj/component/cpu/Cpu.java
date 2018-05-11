@@ -85,7 +85,7 @@ public final class Cpu implements Component, Clocked {
      * Regarde si les interruptions sont activées (c'est-à-dire si IME est vrai) et si une interruption est en attente, auquel cas elle la gère; sinon, elle exécute normalement la prochaine instruction.
      */
     private void reallyCycle() {
-        
+
         if (IME && ieAndIfDiffZero()) {
             IME = false;
             int i = Integer.lowestOneBit(IE & IF);
@@ -108,6 +108,8 @@ public final class Cpu implements Component, Clocked {
 
 
     private void dispatch(Opcode opcode) {
+
+        int e8 = Bits.signExtend8(read8AfterOpcode());
 
         switch (opcode.family) {
 
@@ -499,13 +501,11 @@ public final class Cpu implements Component, Clocked {
             }   
         } break;
         case JR_E8: {
-            int e8 = Bits.signExtend8(read8AfterOpcode());
             PC = Bits.clip(16, nextPC + e8);
             addTotalByte = false;
         } break;
         case JR_CC_E8: {
             if (checkCondition(opcode)) {
-                int e8 = Bits.signExtend8(read8AfterOpcode());
                 PC = Bits.clip(16, nextPC + e8);
                 addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
@@ -559,9 +559,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case STOP:
             throw new Error("STOP is not implemented");
-        default: 
-            throw new IllegalArgumentException();
-        }        
+        }
     }
 
     /**
@@ -780,7 +778,8 @@ public final class Cpu implements Component, Clocked {
         case (0b00) : return !registerFile.testBit(Reg.F, Flag.Z) ? true : false;
         case (0b01) : return registerFile.testBit(Reg.F, Flag.Z) ? true : false;
         case (0b10) : return !registerFile.testBit(Reg.F, Flag.C) ? true : false;
-        default : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        case (0b11) : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        default : throw new IllegalArgumentException(); //?
         }
     }   
 }

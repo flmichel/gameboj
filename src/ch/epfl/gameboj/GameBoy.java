@@ -25,8 +25,15 @@ public class GameBoy {
     private Timer minuteur;
     private LcdController lcdC;
     private Joypad joypad;
-    
+
+    /**
+     * Nombre de cycles par secondes
+     */
     public static final long NB_CYCLES_P_SECOND = (long) Math.pow(2, 20);
+
+    /**
+     * Nombre de cycles par nanosecondes
+     */
     public static final double NB_CYCLES_P_NANOSECOND = (double) ((NB_CYCLES_P_SECOND) / 1e9);
 
     /**
@@ -82,7 +89,7 @@ public class GameBoy {
     public Timer timer() {
         return minuteur;
     }
-    
+
     /**
      * Retourne le controleur LCD du Game Boy
      * @return le controleur LCD du Game Boy
@@ -90,7 +97,7 @@ public class GameBoy {
     public LcdController lcdController() {
         return lcdC;
     }
-    
+
     /**
      * Retourne le clavier du Game Boy
      * @return le clavier du Game Boy
@@ -107,13 +114,11 @@ public class GameBoy {
     public void runUntil(long cycle) {
         Preconditions.checkArgument(cycles() <= cycle);        
 
-        if (cycles() < cycle) {
-            for (long i = cycles() ; i < cycle ; i++) {
-                minuteur.cycle(i);
-                lcdC.cycle(i);
-                cpu.cycle(i);
-                cyclesNb++;
-            }
+        while (cycles() < cycle) {
+            minuteur.cycle(cycles());
+            lcdC.cycle(cycles());
+            cpu.cycle(cycles());
+            cyclesNb++;        
         }
     }
 }

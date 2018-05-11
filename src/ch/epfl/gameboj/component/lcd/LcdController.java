@@ -22,39 +22,35 @@ import ch.epfl.gameboj.component.memory.Ram;
  */
 public class LcdController implements Component, Clocked {
 
-    public static final int LCD_WIDTH = 160;
-    public static final int LCD_HEIGHT = 144;
-    public static final int NB_CYCLES_LINE = 114;
-    public static final int NB_CYCLES_MODE0 = 51;
-    public static final int NB_CYCLES_MODE2 = 20;
-    public static final int NB_CYCLES_MODE3 = 43;
-    public static final int NB_CYCLES_LCD = 17556;
-    public static final int ENTER_MODE2 = 0;
-    public static final int ENTER_MODE3 = 20;
-    public static final int ENTER_MODE0 = 63;
+    private static final int LCD_WIDTH = 160;
+    private static final int LCD_HEIGHT = 144;
+    private static final int NB_CYCLES_LINE = 114;
+    private static final int NB_CYCLES_MODE0 = 51;
+    private static final int NB_CYCLES_MODE2 = 20;
+    private static final int NB_CYCLES_MODE3 = 43;
+    private static final int NB_CYCLES_LCD = 17556;
+    private static final int ENTER_MODE2 = 0;
+    private static final int ENTER_MODE3 = NB_CYCLES_MODE2;
+    private static final int ENTER_MODE0 = NB_CYCLES_MODE2 + NB_CYCLES_MODE3;
 
-    public static final int IMAGE_SIZE = 256;
-    public static final int TILE_SIZE_IN_MEMORY = 16;
-    public static final int NUMBER_OF_TILE_ACCESSIBLE = 256;
-    public static final int PIXEL_PER_TILE_LINE = 8;
-    public static final int NUMBER_OF_TILES_PER_LINE = 32;
-    public static final int NUMBER_OF_TILES = NUMBER_OF_TILES_PER_LINE * NUMBER_OF_TILES_PER_LINE;
-    public static final int WX_START = 7;
+    private static final int IMAGE_SIZE = 256;
+    private static final int TILE_SIZE_IN_MEMORY = 16;
+    private static final int NUMBER_OF_TILE_ACCESSIBLE = 256;
+    private static final int PIXEL_PER_TILE_LINE = 8;
+    private static final int WX_START = 7;
 
-    public static final int SPRITE_SIZE_IN_MEMORY = 4;
-    public static final int NUMBER_OF_SPRITE = AddressMap.OAM_RAM_SIZE / SPRITE_SIZE_IN_MEMORY;
-    public static final int SMALL_SPRITE_HEIGHT = PIXEL_PER_TILE_LINE;
-    public static final int BIG_SPRITE_HEIGHT = 2 * PIXEL_PER_TILE_LINE;
-    public static final int MAX_SPRITE_PER_LINE = 10;
-    public static final int START_SPRITE_X = PIXEL_PER_TILE_LINE;
-    public static final int START_SPRITE_Y = BIG_SPRITE_HEIGHT;
+    private static final int SPRITE_SIZE_IN_MEMORY = 4;
+    private static final int SMALL_SPRITE_HEIGHT = PIXEL_PER_TILE_LINE;
+    private static final int BIG_SPRITE_HEIGHT = 2 * PIXEL_PER_TILE_LINE;
+    private static final int MAX_SPRITE_PER_LINE = 10;
+    private static final int START_SPRITE_X = PIXEL_PER_TILE_LINE;
+    private static final int START_SPRITE_Y = BIG_SPRITE_HEIGHT;
 
 
 
     private int winY;
     private long lcdOnCycle;
     private long nextNonIdleCycle = Long.MAX_VALUE;
-    //private boolean dmaOn;
     private int sourceAddress;
     private int copyIndex = Integer.MAX_VALUE;
 
@@ -351,8 +347,8 @@ public class LcdController implements Component, Clocked {
         final Reg OBP = Bits.test(features, SpriteFeatures.PALETTE) ? Reg.OBP1 : Reg.OBP0;
         final int palette = registerFile.get(OBP);
         final int spriteHeight = registerFile.testBit(Reg.LCDC, RegLCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
-        final int realTileLineIndex = Bits.test(features, SpriteFeatures.FLIP_V) ? spriteHeight - tileLineIndex - 1 : tileLineIndex; //à tester sur un autre jeu
-        
+        final int realTileLineIndex = Bits.test(features, SpriteFeatures.FLIP_V) ? spriteHeight - tileLineIndex - 1 : tileLineIndex;
+
         Builder spriteLine = new LcdImageLine.Builder(LCD_WIDTH);
         final int address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + realTileLineIndex * 2;
         int lsb = read(address);
@@ -364,7 +360,7 @@ public class LcdController implements Component, Clocked {
         spriteLine.setBytes(0, msb, lsb);
         return spriteLine.build().shift(xShift).mapColors(palette);
     }
-    
+
     private int spriteValue(int index, Sprite value) {
         int spriteValue = oamRam.read(index * SPRITE_SIZE_IN_MEMORY + value.index());
         if (value == Sprite.Y)

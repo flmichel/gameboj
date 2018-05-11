@@ -13,7 +13,7 @@ import ch.epfl.gameboj.bits.Bits;
  * @author Michel François
  */
 public final class LcdImage {
-    
+
     private final int width;
     private final int height;
     private final List<LcdImageLine> lines;
@@ -22,7 +22,7 @@ public final class LcdImage {
      * Construit une image Game Boy.
      * @param width représente la largeur de l'image.
      * @param height représente la hauteur de l'image.
-     * @param lines contient la liste de toutes les ligne de l'image.
+     * @param lines contient la liste de toutes les lignes de l'image.
      * @throws IllegalArgumentException si la largeur de l'image est négative ou si 
      * la hauteur est différente du nombre de line (de lines).
      */
@@ -32,7 +32,7 @@ public final class LcdImage {
         this.height = height;
         this.lines = new ArrayList<>(lines);           
     }
-    
+
     /**
      * Retourne la largeur de l'image.
      * @return la largeur de l'image.
@@ -40,7 +40,7 @@ public final class LcdImage {
     public int width() {
         return width;
     }
-    
+
     /**
      * Retourne la hauteur de l'image.
      * @return la hauteur de l'image.
@@ -48,12 +48,12 @@ public final class LcdImage {
     public int height() {
         return height;
     }
-    
+
     /**
-     * Retourne un entier composé de 2 bits représantant la couleur à l'index (x,y) donné.
+     * Retourne un entier composé de 2 bits représentant la couleur à l'index (x,y) donné.
      * @param x corresond à l'axe horizontal de l'image.
      * @param y corresond à l'axe vertical de l'image.
-     * @return un entier composé de 2 bits représantant la couleur à l'index (x,y) donné.
+     * @return un entier composé de 2 bits représentant la couleur à l'index (x,y) donné.
      */
     public int get(int x, int y) {
         Preconditions.checkArgument(x < width && x >= 0 && y < height && y >= 0);
@@ -63,7 +63,7 @@ public final class LcdImage {
         color = Bits.set(color, 1, line.msb().testBit(x));
         return color;
     }
-    
+
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof LcdImage))
@@ -73,12 +73,12 @@ public final class LcdImage {
             return false;
         return this.lines.equals(thatImage.lines);
     }
-    
+
     @Override
     public int hashCode() {
         return this.lines.hashCode();
     }
-    
+
     /**
      * Bâtisseur d'image GameBoy
      * @author Riand Andre
@@ -87,7 +87,7 @@ public final class LcdImage {
     public final static class Builder {
 
         private List<LcdImageLine> linesList;
-        
+
         /**
          * Construit le bâtisseur d'image et tous ses pixels ont la couleur 0.
          * @param width représente la largeur de l'image.
@@ -112,7 +112,7 @@ public final class LcdImage {
             linesList.set(index, line);
             return this;
         }
-        
+
         /**
          * Retourne l'image construite.
          * @return l'image construite.
