@@ -24,10 +24,10 @@ public class LcdController implements Component, Clocked {
 
     private static final int LCD_WIDTH = 160;
     private static final int LCD_HEIGHT = 144;
-    private static final int NB_CYCLES_LINE = 114;
     private static final int NB_CYCLES_MODE0 = 51;
     private static final int NB_CYCLES_MODE2 = 20;
     private static final int NB_CYCLES_MODE3 = 43;
+    private static final int NB_CYCLES_LINE = NB_CYCLES_MODE0 + NB_CYCLES_MODE2 + NB_CYCLES_MODE3;
     private static final int NB_CYCLES_LCD = 17556;
     private static final int ENTER_MODE2 = 0;
     private static final int ENTER_MODE3 = NB_CYCLES_MODE2;
