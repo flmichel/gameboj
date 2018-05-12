@@ -5,20 +5,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Rom;
 
 /**
- * Une cartouche
+ * Représente une cartouche
  * @author Riand Andre
- * @author Michel François
+ * @author Michel François;
  */
 public final class Cartridge implements Component {
     private final Component bankController;
     
-    private static final int POSITION_MBC_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
+    private static final int SOFTWARE_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
+    private static final int EXTERNAL_RAM_SIZE_TYPE = 0x149;
+    private static int[] ramSizeMap = {0, 2048, 8192, 32768};
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
@@ -29,13 +32,28 @@ public final class Cartridge implements Component {
      * @param romFile fichier à lire.
      * @return Une cartouche tel que décrit ci-dessus.
      * @throws IOException en cas d'erreur d'entrée-sortie, y compris si le fichier donné n'existe pas.
-     * @throws IllegalArgumentException si le fichier en question ne contient pas 0 à la position 147 (en base 16).
+     * @throws IllegalArgumentException si le fichier en question ne contient pas une valeur de 0 à 3 à la position 147 (en base 16).
+     * @throws IllegalArgumentException si le fichier en question est de type 3 et ne contient pas une valeur de 0 à 3 à la position 149 (en base 16).
      */
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
-            final byte[] data = stream.readAllBytes();
-            Preconditions.checkArgument(data[POSITION_MBC_TYPE] == 0);
-            final MBC0 bc = new MBC0(new Rom(data));
+            byte[] data = stream.readAllBytes();
+
+            int cartridgeType = data[SOFTWARE_TYPE];
+            Preconditions.checkArgument(cartridgeType >= 0 && cartridgeType < 4);
+            Component bc;
+            if (cartridgeType > 0) {
+                int ramSize = 0;
+                if (cartridgeType == 3) {
+                    int ramType = data[EXTERNAL_RAM_SIZE_TYPE];
+                    Preconditions.checkArgument(ramType >= 0 && ramType < 4);
+                    ramSize = ramSizeMap[ramType];
+                }
+                bc = new MBC1(new Rom(data), ramSize);
+            }
+            else {
+                bc = new MBC0(new Rom(data));
+            }
             return new Cartridge(bc);
         }
     }

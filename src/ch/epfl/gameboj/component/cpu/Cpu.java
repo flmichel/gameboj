@@ -40,7 +40,8 @@ public final class Cpu implements Component, Clocked {
     private enum Reg implements Register {
         A, F, B, C, D, E, H, L
     }
-    RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
+
+    private final RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     private enum Reg16 implements Register {
         AF, BC, DE, HL
@@ -67,11 +68,15 @@ public final class Cpu implements Component, Clocked {
         return a;
     }
 
+    private boolean ieAndIfDiffZero() {
+        int reg = IE & IF;
+        return Bits.clip(5, reg) != 0;
+    }
+
     @Override
     public void cycle(long cycle) {
         if (nextNonIdleCycle == Long.MAX_VALUE) {
-            final int reg = IE & IF;
-            if (Bits.clip(5, reg) != 0)
+            if (ieAndIfDiffZero())
                 nextNonIdleCycle = cycle;
         }       
         if (cycle == nextNonIdleCycle) {
@@ -83,10 +88,10 @@ public final class Cpu implements Component, Clocked {
      * Regarde si les interruptions sont activées (c'est-à-dire si IME est vrai) et si une interruption est en attente, auquel cas elle la gère; sinon, elle exécute normalement la prochaine instruction.
      */
     private void reallyCycle() {
-        final int reg = IE & IF;
-        if (IME && (Bits.clip(5, reg) != 0)) {
+        if (IME && ieAndIfDiffZero()) {
+
             IME = false;
-            int i = Integer.lowestOneBit(reg);
+            int i = Integer.lowestOneBit(IE & IF);
             IF -= i;
             push16(PC);
             PC = AddressMap.INTERRUPTS[Integer.numberOfTrailingZeros(i)];
@@ -106,6 +111,8 @@ public final class Cpu implements Component, Clocked {
 
 
     private void dispatch(Opcode opcode) {
+
+        int e8 = Bits.signExtend8(read8AfterOpcode());
 
         switch (opcode.family) {
 
@@ -475,9 +482,9 @@ public final class Cpu implements Component, Clocked {
             combineAluFlags(vf, FlagSrc.ALU, FlagSrc.CPU, FlagSrc.V0, FlagSrc.ALU);
         } break;
         case SCCF: {
-            final boolean c = !combineBit3AndC(opcode);
-            if (c) combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V1);
-            else combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V0);
+            boolean c = combineBit3AndC(opcode);
+            if (c) combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V0);               
+            else combineAluFlags(0, FlagSrc.CPU, FlagSrc.V0, FlagSrc.V0, FlagSrc.V1);
         } break;
 
         // Jumps
@@ -497,13 +504,11 @@ public final class Cpu implements Component, Clocked {
             }   
         } break;
         case JR_E8: {
-            int e8 = Bits.signExtend8(read8AfterOpcode());
             PC = Bits.clip(16, nextPC + e8);
             addTotalByte = false;
         } break;
         case JR_CC_E8: {
             if (checkCondition(opcode)) {
-                final int e8 = Bits.signExtend8(read8AfterOpcode());
                 PC = Bits.clip(16, nextPC + e8);
                 addTotalByte = false;
                 nextNonIdleCycle += opcode.additionalCycles;
@@ -557,9 +562,7 @@ public final class Cpu implements Component, Clocked {
         } break;
         case STOP:
             throw new Error("STOP is not implemented");
-        default: 
-            throw new IllegalArgumentException();
-        }        
+        }
     }
 
     /**
@@ -658,7 +661,7 @@ public final class Cpu implements Component, Clocked {
     }
 
     private void write8AtHl(int v){
-        bus.write(reg16(Reg16.HL), v);
+        write8(reg16(Reg16.HL),v);
     }
 
     private void push16(int v) {
@@ -684,7 +687,7 @@ public final class Cpu implements Component, Clocked {
     }
 
     private void setReg16(Reg16 r, int newV) {
-        if (r.name() == "AF")
+        if (r == Reg16.AF)
             newV = newV & 0xFFF0;
         registerFile.set(Reg.values()[r.index() * 2], Bits.extract(newV, 8, 8));
         registerFile.set(Reg.values()[r.index() * 2 + 1], Bits.clip(8, newV));
@@ -692,7 +695,7 @@ public final class Cpu implements Component, Clocked {
 
 
     private void setReg16SP(Reg16 r, int newV) {
-        if (r.name() == "AF")
+        if (r == Reg16.AF)
             SP = newV;
         else
             setReg16(r, newV); 
@@ -778,7 +781,8 @@ public final class Cpu implements Component, Clocked {
         case (0b00) : return !registerFile.testBit(Reg.F, Flag.Z) ? true : false;
         case (0b01) : return registerFile.testBit(Reg.F, Flag.Z) ? true : false;
         case (0b10) : return !registerFile.testBit(Reg.F, Flag.C) ? true : false;
-        default : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        case (0b11) : return registerFile.testBit(Reg.F, Flag.C) ? true : false;
+        default : throw new IllegalArgumentException(); //?
         }
     }   
 }

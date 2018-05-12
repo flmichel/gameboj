@@ -11,7 +11,8 @@ import ch.epfl.gameboj.bits.Bits;
  */
 public final class RegisterFile<E extends Register> {
 
-    private byte[] values;
+    private E[] allRegs;
+    private final byte[] values;
 
     /**
      * Construit un banc de registres 8 bits dont la taille (c'est-à-dire le nombre de registres) est égale à la taille du tableau donné.
