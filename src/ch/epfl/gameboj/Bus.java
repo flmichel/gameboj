@@ -15,7 +15,7 @@ import ch.epfl.gameboj.component.Component;
 public final class Bus {
 
     private final static int VALUE_TO_RETURN = 0xFF;
-    private ArrayList<Component> components = new ArrayList<Component>();
+    private final ArrayList<Component> components = new ArrayList<Component>();
 
     /**
      * Attache le composant donné au bus.

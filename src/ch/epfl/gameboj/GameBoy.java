@@ -16,11 +16,11 @@ import ch.epfl.gameboj.component.memory.RamController;
  * @author Riand Andre
  * @author Michel François
  */
-public class GameBoy {
+public final class GameBoy {
 
-    private Bus bus;
-    private Ram workRam;
-    private Cpu cpu;
+    private final Bus bus;
+    private final Ram workRam;
+    private final Cpu cpu;
     private long cyclesNb = 0;
     private Timer minuteur;
     private LcdController lcdC;

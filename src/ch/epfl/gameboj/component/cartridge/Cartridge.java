@@ -17,7 +17,9 @@ import ch.epfl.gameboj.component.memory.Rom;
  * @author Michel François;
  */
 public final class Cartridge implements Component {
-    private Component bankController;
+    private final Component bankController;
+    
+    private static final int POSITION_MBC_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
 
     private static Map<Integer, Integer> ramSizeMap = 
             Map.of( 0, 0,
@@ -27,7 +29,6 @@ public final class Cartridge implements Component {
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
-
     }
 
     /**
