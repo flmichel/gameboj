@@ -5,20 +5,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Rom;
 
 /**
- * Une cartouche
+ * Représente une cartouche
  * @author Riand Andre
- * @author Michel François
+ * @author Michel François;
  */
 public final class Cartridge implements Component {
     private final Component bankController;
     
     private static final int POSITION_MBC_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
+
+    private static Map<Integer, Integer> ramSizeMap = 
+            Map.of( 0, 0,
+                    1, 2048,
+                    2, 8192,
+                    3, 32768);
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
@@ -33,9 +40,23 @@ public final class Cartridge implements Component {
      */
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
-            final byte[] data = stream.readAllBytes();
-            Preconditions.checkArgument(data[POSITION_MBC_TYPE] == 0);
-            final MBC0 bc = new MBC0(new Rom(data));
+            byte[] data = stream.readAllBytes();
+
+            int cartridgeType = data[0x147];
+            Preconditions.checkArgument(cartridgeType >= 0 && cartridgeType < 4); //0x147 correspond au type de la cartouche.
+            Component bc;
+            if (cartridgeType > 0) {
+                int ramSize = 0;
+                if (cartridgeType == 3) {
+                    int ramType = data[0x149];
+                    Preconditions.checkArgument(ramType >= 0 && ramType < 4);
+                    ramSize = ramSizeMap.get(ramType);
+                }
+                bc = new MBC1(new Rom(data), ramSize);
+            }
+            else {
+                bc = new MBC0(new Rom(data));
+            }
             return new Cartridge(bc);
         }
     }

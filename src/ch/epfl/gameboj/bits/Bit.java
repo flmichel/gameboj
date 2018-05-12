@@ -25,6 +25,6 @@ public interface Bit {
      * @return le masque correspondant au bit.
      */
     default int mask() {
-        return 0b1 << index();
+        return Bits.mask(index());
     }
 }

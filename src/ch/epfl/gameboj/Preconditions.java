@@ -24,10 +24,8 @@ public interface Preconditions {
      * @throws IllegalArgumentException si l'entier ne peut pas s'écrire avec 8 bits.
      */
     static public int checkBits8(int v) {
-        if (v >= 0 && v <= 0xFF)
-            return v;
-        else
-            throw new IllegalArgumentException();
+        checkArgument(v >= 0 && v <= 0xFF);
+        return v;
     }
 
     /**
@@ -37,9 +35,7 @@ public interface Preconditions {
      * @throws IllegalArgumentException si l'entier ne peut pas s'écrire avec 16 bits.
      */
     static public int checkBits16(int v) {
-        if (v >= 0 && v <= 0xFFFF)
-            return v;
-        else
-            throw new IllegalArgumentException();
+        checkArgument(v >= 0 && v <= 0xFFFF);
+        return v;
     }
 }
