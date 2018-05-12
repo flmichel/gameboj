@@ -22,8 +22,9 @@ import ch.epfl.gameboj.component.memory.Ram;
  */
 public class LcdController implements Component, Clocked {
 
-    private static final int LCD_WIDTH = 160;
-    private static final int LCD_HEIGHT = 144;
+    public static final int LCD_WIDTH = 160;
+    public static final int LCD_HEIGHT = 144;
+    
     private static final int NB_CYCLES_MODE0 = 51;
     private static final int NB_CYCLES_MODE2 = 20;
     private static final int NB_CYCLES_MODE3 = 43;
