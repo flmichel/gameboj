@@ -11,6 +11,7 @@ import ch.epfl.gameboj.component.lcd.LcdImage;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -33,6 +34,9 @@ public class Main extends Application {
             KeyCode.LEFT, Key.LEFT,
             KeyCode.RIGHT, Key.RIGHT
             );
+    private double simulationSpeed = 1.0;
+    private long cycle = 0;
+    private long before = System.nanoTime();
 
     /**
      * Lance l'application
@@ -55,6 +59,30 @@ public class Main extends Application {
         imageView.setImage(ImageConverter.convert(li));
         imageView.setFitWidth(li.width() * 2);
         imageView.setFitHeight(li.height() * 2);
+        
+        Button button = new Button("x1");
+        button.setOnMouseReleased(e -> {
+            switch (button.getText()) {    
+            case "x1" : {
+                simulationSpeed += 0.5;
+                button.setText("x1.5");
+            } break;
+            case "x1.5" : {  
+                simulationSpeed += 0.5;
+                button.setText("x2");
+            } break;
+            case "x2" : {
+                simulationSpeed = 5;
+                button.setText("x5");
+            } break;
+            case "x5" : {
+                simulationSpeed = 1;
+                button.setText("x1");
+            } break;
+            }
+        }
+                );
+        
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
                 gb.joypad().keyPressed(keyMap.get(e.getCode()));
@@ -70,21 +98,21 @@ public class Main extends Application {
             }
         });
 
-        BorderPane border = new BorderPane(imageView);
-        Scene scene = new Scene(border);
+        BorderPane pane = new BorderPane(imageView, button, null, null, null);
+        Scene scene = new Scene(pane);
         stage.setScene(scene);
 
         stage.show();
-        imageView.requestFocus();
-
-        long start = System.nanoTime();
+        
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                long elapsed = now - start;
-                long cycle = (long)(elapsed * GameBoy.NB_CYCLES_P_NANOSECOND);
+                long elapse = now - before;
+                before = now;
+                cycle += (long)(GameBoy.NB_CYCLES_P_NANOSECOND * elapse * simulationSpeed);
                 gb.runUntil(cycle);
                 LcdImage li = gb.lcdController().currentImage();
+                imageView.requestFocus();
                 imageView.setImage(ImageConverter.convert(li));
             }
         };
