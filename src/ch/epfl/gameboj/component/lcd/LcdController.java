@@ -370,4 +370,24 @@ public class LcdController implements Component, Clocked {
             spriteValue -= START_SPRITE_X;
         return spriteValue;
     }
+    
+    // Bonus
+    
+    public LcdImage spriteTiles() {
+        int size = IMAGE_SIZE/2;
+        LcdImage.Builder imageBuilder = new LcdImage.Builder(size, 192);
+        for (int lineIndex = 0; lineIndex < 192; lineIndex++) {
+            LcdImageLine.Builder line = new LcdImageLine.Builder(size);
+            for (int x = 0; x < size / PIXEL_PER_TILE_LINE; x++) {
+                final int numberOfTheTile = lineIndex / PIXEL_PER_TILE_LINE * 16 + x;
+                final int tileLineIndex = lineIndex % PIXEL_PER_TILE_LINE;
+                final int address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
+                int lsb = read(address);
+                int msb = read(address + 1);
+                line.setBytes(x, msb, lsb);
+            }
+            imageBuilder.setLine(lineIndex, line.build());
+        }
+        return imageBuilder.build();
+    }
 }

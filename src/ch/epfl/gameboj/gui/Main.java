@@ -54,34 +54,44 @@ public class Main extends Application {
         File romFile = new File(arguments.get(0));
         GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
         LcdImage li = gb.lcdController().currentImage();
-
+        
         ImageView imageView = new ImageView();
         imageView.setImage(ImageConverter.convert(li));
         imageView.setFitWidth(li.width() * 2);
         imageView.setFitHeight(li.height() * 2);
         
-        Button button = new Button("x1");
-        button.setOnMouseReleased(e -> {
-            switch (button.getText()) {    
+        LcdImage sprites = gb.lcdController().spriteTiles();
+
+        ImageView spriteImageView = new ImageView();
+        spriteImageView.setImage(ImageConverter.convert(sprites));
+        spriteImageView.setFitWidth(sprites.width() * 2);
+        spriteImageView.setFitHeight(sprites.height() * 2);
+        
+       
+        Button speedButton = new Button("x1");
+        speedButton.setOnMouseReleased(e -> {
+            switch (speedButton.getText()) {    
             case "x1" : {
                 simulationSpeed += 0.5;
-                button.setText("x1.5");
+                speedButton.setText("x1.5");
             } break;
             case "x1.5" : {  
                 simulationSpeed += 0.5;
-                button.setText("x2");
+                speedButton.setText("x2");
             } break;
             case "x2" : {
                 simulationSpeed = 5;
-                button.setText("x5");
+                speedButton.setText("x5");
             } break;
             case "x5" : {
                 simulationSpeed = 1;
-                button.setText("x1");
+                speedButton.setText("x1");
             } break;
             }
         }
                 );
+        
+        Button visButton = new Button("Hide tiles");
         
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
@@ -98,7 +108,18 @@ public class Main extends Application {
             }
         });
 
-        BorderPane pane = new BorderPane(imageView, button, null, null, null);
+        BorderPane pane = new BorderPane(imageView, speedButton, spriteImageView, null, visButton);
+        
+        visButton.setOnMouseReleased(e -> {
+            if (visButton.getText() == "Show tiles") {
+                visButton.setText("Hide tiles");
+                pane.setRight(spriteImageView);
+            } else {
+                visButton.setText("Show tiles");
+                pane.setRight(null);
+            }
+        });
+        
         Scene scene = new Scene(pane);
         stage.setScene(scene);
 
@@ -112,8 +133,12 @@ public class Main extends Application {
                 cycle += (long)(GameBoy.NB_CYCLES_P_NANOSECOND * elapse * simulationSpeed);
                 gb.runUntil(cycle);
                 LcdImage li = gb.lcdController().currentImage();
+
                 imageView.requestFocus();
                 imageView.setImage(ImageConverter.convert(li));
+                
+                LcdImage sprites = gb.lcdController().spriteTiles();
+                spriteImageView.setImage(ImageConverter.convert(sprites));
             }
         };
         timer.start();
