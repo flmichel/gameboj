@@ -8,6 +8,7 @@ import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.Register;
 import ch.epfl.gameboj.RegisterFile;
 import ch.epfl.gameboj.bits.Bit;
+import ch.epfl.gameboj.bits.BitVector;
 import ch.epfl.gameboj.bits.Bits;
 import ch.epfl.gameboj.component.Clocked;
 import ch.epfl.gameboj.component.Component;
@@ -281,17 +282,20 @@ public class LcdController implements Component, Clocked {
 
     private LcdImageLine computeSpriteLine(int indexLine, LcdImageLine line) {
         final int[] sprites = spritesIntersectingLine(indexLine);
+        BitVector lineOpacity = line.opacity();
+         
         for (int i = sprites.length - 1; i >= 0; i--) {
             final int features = spriteValue(sprites[i], Sprite.FEATURES);
             boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
             LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
             if (behind)
-                line = spriteLine.below(line);          
+                line = spriteLine.below(line, lineOpacity.or(spriteLine.opacity().not()));          
             else
                 line = line.below(spriteLine);   
         }
         return line;
     }
+
 
     private LcdImageLine computeBgWinLine(int startAddress, int indexY) {
         final Builder lineBuilder = new LcdImageLine.Builder(IMAGE_SIZE);
