@@ -22,9 +22,9 @@ public final class GameBoy {
     private final Ram workRam;
     private final Cpu cpu;
     private long cyclesNb = 0;
-    private Timer minuteur;
-    private LcdController lcdC;
-    private Joypad joypad;
+    private final Timer minuteur;
+    private final LcdController lcdC;
+    private final Joypad joypad;
 
     /**
      * Nombre de cycles par secondes

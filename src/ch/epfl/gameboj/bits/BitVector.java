@@ -161,19 +161,19 @@ public final class BitVector {
     private int getExtractedValue(int index, int start, Extract type) {
         final int i = Math.floorDiv(start, Integer.SIZE) + index;
         final int start32 = Math.floorDiv(start, Integer.SIZE) * Integer.SIZE;
-        int a = 0;
+        int extractedValue = 0;
         if (start % Integer.SIZE == 0) {
             if (i >= 0 && i < vect.length) {
-                a = vect[i];
+                extractedValue = vect[i];
             }
             else if (type == Extract.WRAPPED)
-                a = vect[Math.floorMod(i, vect.length)];
+                extractedValue = vect[Math.floorMod(i, vect.length)];
         } else {
             int cut = Math.floorMod(start, Integer.SIZE);
-            a = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut;
-            a |= Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
+            extractedValue = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut |
+                             Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
         }
-        return a;
+        return extractedValue;
     }
 
     @Override
@@ -229,7 +229,7 @@ public final class BitVector {
             Preconditions.checkArgument(index >= 0 && index < tab.length * 4);
             final int shift = (index % 4) * Byte.SIZE;
             final int i = index/4;
-            final int mask = 0b11111111 << shift; // Biggest value of a byte.
+            final int mask = Bits.mask(Byte.SIZE) - 1 << shift; // Biggest value of a byte.
             final int inverseMask = ~mask;
             tab[i] &= inverseMask; // We clear the part with we want to set.
             tab[i] |= value << shift;

@@ -53,8 +53,8 @@ public class Main extends Application {
 
         ImageView imageView = new ImageView();
         imageView.setImage(ImageConverter.convert(li));
-        imageView.setFitWidth(li.width() * 2);
-        imageView.setFitHeight(li.height() * 2);
+        imageView.setFitWidth(li.width() * 5);
+        imageView.setFitHeight(li.height() * 5);
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
                 gb.joypad().keyPressed(keyMap.get(e.getCode()));

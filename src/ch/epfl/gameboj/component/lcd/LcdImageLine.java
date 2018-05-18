@@ -16,6 +16,7 @@ public final class LcdImageLine {
     private final BitVector lsb;
     private final BitVector opac;
     private final static int NB_COLORS = 4;
+    private final static int STANDARD_MAP = 0b11_10_01_00;
 
     /**
      * Construit une ligne d'image Game Boy.
@@ -35,7 +36,7 @@ public final class LcdImageLine {
      * @return la longueur, en pixels, de la ligne
      */
     public int size() {
-        return msb.size(); //pourrait etre lsb.size ou opac.size aussi
+        return msb.size();
     }   
 
     /**
@@ -87,13 +88,13 @@ public final class LcdImageLine {
      */
     public LcdImageLine mapColors(int map) {
         Preconditions.checkBits8(map);
-        if(map == 0b11_10_01_00) {return this;}
+        if (map == STANDARD_MAP) {return this;}
         BitVector nMsb = new BitVector(this.size());
         BitVector nLsb = new BitVector(this.size());
         for (int i = 0 ; i < NB_COLORS ; i++) {
-            BitVector a = Bits.test(i,0) ? lsb : lsb.not(); 
-            BitVector b = Bits.test(i,1) ? msb : msb.not();
-            BitVector mask = a.and(b);
+            BitVector maskLsb= Bits.test(i,0) ? lsb : lsb.not(); 
+            BitVector maskMsb = Bits.test(i,1) ? msb : msb.not();
+            BitVector mask = maskLsb.and(maskMsb);
             nMsb = Bits.test(map, 2*i+1) ? nMsb.or(mask) : nMsb;
             nLsb = Bits.test(map, 2*i) ? nLsb.or(mask) : nLsb;
         }
@@ -120,10 +121,14 @@ public final class LcdImageLine {
     public LcdImageLine below(LcdImageLine that, BitVector opac) {
         Preconditions.checkArgument(this.size() == that.size());
         Preconditions.checkArgument(this.size() == opac.size());
-        BitVector nMsb = opac.and(that.msb).or(opac.not().and(msb));
-        BitVector nLsb = opac.and(that.lsb).or(opac.not().and(lsb));
+        BitVector nMsb = below(that.msb, this.msb, opac);
+        BitVector nLsb = below(that.lsb, this.lsb, opac);
         BitVector nOpac = opac.or(this.opac);
         return new LcdImageLine(nMsb, nLsb, nOpac);
+    }
+    
+    private static BitVector below(BitVector vect1, BitVector vect2, BitVector opac) {
+        return opac.and(vect1).or(opac.not().and(vect2));
     }
 
     /**
@@ -135,10 +140,14 @@ public final class LcdImageLine {
      */
     public LcdImageLine join(LcdImageLine that, int cut) {
         BitVector mask = (new BitVector(this.size(), true).shift(cut));
-        BitVector nMsb = msb.and(mask.not()).or(that.msb.and(mask));
-        BitVector nLsb = lsb.and(mask.not()).or(that.lsb.and(mask));
-        BitVector nOpac = opac.and(mask.not()).or(that.opac.and(mask));        
+        BitVector nMsb = join(this.msb, that.msb, mask);
+        BitVector nLsb = join(this.lsb, that.lsb, mask);
+        BitVector nOpac = join(this.opac, that.opac, mask);
         return new LcdImageLine(nMsb, nLsb, nOpac);
+    }
+    
+    private static BitVector join(BitVector vect1, BitVector vect2, BitVector mask) {
+        return vect1.and(mask.not()).or(vect2.and(mask));
     }
 
     @Override
@@ -198,9 +207,9 @@ public final class LcdImageLine {
         public LcdImageLine build() {      
             if (msbLine == null)
                 throw new IllegalStateException();
-            BitVector msb = msbLine.build();
-            BitVector lsb = lsbLine.build();
-            BitVector opacity = msb.or(lsb);
+            final BitVector msb = msbLine.build();
+            final BitVector lsb = lsbLine.build();
+            final BitVector opacity = msb.or(lsb);
             msbLine = null;
             return new LcdImageLine(msb, lsb, opacity);        
         }

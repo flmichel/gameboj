@@ -13,6 +13,8 @@ import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
  * @author Michel François
  */
 public class Joypad implements Component {
+    
+    private static final int FIRST_ACTIVE_LINE_INDEX = 4;
 
     private Cpu cpu;
     private int line0;
@@ -56,7 +58,7 @@ public class Joypad implements Component {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
         if (address == AddressMap.REG_P1) {
-            activeLines = Bits.extract(Bits.complement8(data), 4, 2);
+            activeLines = Bits.extract(Bits.complement8(data), FIRST_ACTIVE_LINE_INDEX, 2);
         }
     }
 
@@ -94,6 +96,6 @@ public class Joypad implements Component {
     }
 
     private int getP1() {
-        return activeLines << 4 | stateBits();
+        return activeLines << FIRST_ACTIVE_LINE_INDEX | stateBits();
     }
 }

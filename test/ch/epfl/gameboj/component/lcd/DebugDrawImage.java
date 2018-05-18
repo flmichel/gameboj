@@ -9,8 +9,6 @@ import java.util.zip.GZIPInputStream;
 
 import javax.imageio.ImageIO;
 
-import ch.epfl.gameboj.component.LcdImage;
-
 public final class DebugDrawImage {
     private static final int[] COLOR_MAP = new int[] {
       0xFF_FF_FF, 0xD3_D3_D3, 0xA9_A9_A9, 0x00_00_00

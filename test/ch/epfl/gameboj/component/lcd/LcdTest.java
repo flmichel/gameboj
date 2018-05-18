@@ -107,7 +107,7 @@ public class LcdTest {
 
     }
 
-    @Test
+    //@Test
     void join() {
 
         LcdImageLine v1 = a.join(d, 4);

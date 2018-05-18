@@ -57,7 +57,7 @@ public final class LcdImage {
      */
     public int get(int x, int y) {
         Preconditions.checkArgument(x < width && x >= 0 && y < height && y >= 0);
-        LcdImageLine line = lines.get(y);
+        final LcdImageLine line = lines.get(y);
         int color = 0;
         color = Bits.set(color, 0, line.lsb().testBit(x));
         color = Bits.set(color, 1, line.msb().testBit(x));
@@ -121,8 +121,8 @@ public final class LcdImage {
         public LcdImage build() {
             if (linesList == null)
                 throw new IllegalStateException();
-            int height = linesList.size();
-            int width = linesList.get(0).size();
+            final int height = linesList.size();
+            final int width = linesList.get(0).size();
             LcdImage image = new LcdImage(width, height, linesList);
             linesList = null;
             return image;
