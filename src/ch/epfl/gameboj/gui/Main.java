@@ -44,17 +44,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        List<String> arguments = getParameters().getRaw();
+        final List<String> arguments = getParameters().getRaw();
         if (arguments.size() != 1)
             System.exit(1);
-        File romFile = new File(arguments.get(0));
-        GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
-        LcdImage li = gb.lcdController().currentImage();
+        final File romFile = new File(arguments.get(0));
+        final GameBoy gb = new GameBoy(Cartridge.ofFile(romFile));
+        final LcdImage li = gb.lcdController().currentImage();
 
         ImageView imageView = new ImageView();
         imageView.setImage(ImageConverter.convert(li));
-        imageView.setFitWidth(li.width() * 5);
-        imageView.setFitHeight(li.height() * 5);
+        imageView.setFitWidth(li.width() * 2);
+        imageView.setFitHeight(li.height() * 2);
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
                 gb.joypad().keyPressed(keyMap.get(e.getCode()));
@@ -70,21 +70,21 @@ public class Main extends Application {
             }
         });
 
-        BorderPane border = new BorderPane(imageView);
-        Scene scene = new Scene(border);
+        final BorderPane border = new BorderPane(imageView);
+        final Scene scene = new Scene(border);
         stage.setScene(scene);
 
         stage.show();
         imageView.requestFocus();
 
-        long start = System.nanoTime();
+        final long start = System.nanoTime();
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                long elapsed = now - start;
-                long cycle = (long)(elapsed * GameBoy.NB_CYCLES_P_NANOSECOND);
+                final long elapsed = now - start;
+                final long cycle = (long)(elapsed * GameBoy.NB_CYCLES_P_NANOSECOND);
                 gb.runUntil(cycle);
-                LcdImage li = gb.lcdController().currentImage();
+                final LcdImage li = gb.lcdController().currentImage();
                 imageView.setImage(ImageConverter.convert(li));
             }
         };

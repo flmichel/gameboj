@@ -67,7 +67,7 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyPressed(Key K) {
-        int oldP1 = getP1();
+        final int oldP1 = getP1();
         keyAction(K, true);
         if (oldP1 != getP1())
             cpu.requestInterrupt(Interrupt.JOYPAD);
@@ -90,8 +90,8 @@ public class Joypad implements Component {
     }
 
     private int stateBits() {
-        int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
-        int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
+        final int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
+        final int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
         return activeLine0 | activeLine1;
     }
 
