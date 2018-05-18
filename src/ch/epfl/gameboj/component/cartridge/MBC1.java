@@ -8,7 +8,7 @@ import ch.epfl.gameboj.component.Component;
 import ch.epfl.gameboj.component.memory.Ram;
 import ch.epfl.gameboj.component.memory.Rom;
 
-public final class MBC1 implements Component {
+public final class MBC1 implements Component, Savable {
     private static final int RAM_ENABLE = 0xA;
 
     private enum Mode { MODE_0, MODE_1 };
@@ -84,5 +84,16 @@ public final class MBC1 implements Component {
 
     private int ramAddress(int b_12_0) {
         return ((msb2() << 13) | Bits.clip(13, b_12_0)) & ramMask;
+    }
+
+    @Override
+    public byte[] save() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void load(byte[] file) {
+        // TODO Auto-generated method stub       
     }
 }

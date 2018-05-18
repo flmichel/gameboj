@@ -22,9 +22,9 @@ public final class GameBoy {
     private final Ram workRam;
     private final Cpu cpu;
     private long cyclesNb = 0;
-    private Timer minuteur;
-    private LcdController lcdC;
-    private Joypad joypad;
+    private final Timer minuteur;
+    private final LcdController lcdC;
+    private final Joypad joypad;
 
     /**
      * Nombre de cycles par secondes
@@ -120,5 +120,11 @@ public final class GameBoy {
             cpu.cycle(cycles());
             cyclesNb++;        
         }
+    }
+    
+    public void reset() {
+        bus.attach(new RamController(workRam, AddressMap.WORK_RAM_START));
+        bus.attach(new RamController(workRam, AddressMap.ECHO_RAM_START, AddressMap.ECHO_RAM_END));
+        cyclesNb = 0;
     }
 }
