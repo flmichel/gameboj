@@ -23,10 +23,12 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-    private static Map<Object, Key> keyMap = Map.of(    
+    private static Map<String, Key> keyMapString = Map.of(    
             "a", Key.A,
             "b", Key.B,
-            "s", Key.START,
+            "s", Key.START
+            );
+    private static Map<KeyCode, Key> keyMapCode = Map.of(    
             KeyCode.SPACE, Key.SELECT,
             KeyCode.UP, Key.UP,
             KeyCode.DOWN, Key.DOWN,
@@ -56,17 +58,17 @@ public class Main extends Application {
         imageView.setFitWidth(li.width() * 2);
         imageView.setFitHeight(li.height() * 2);
         imageView.setOnKeyPressed(e -> {
-            if (keyMap.containsKey(e.getCode())) {
-                gb.joypad().keyPressed(keyMap.get(e.getCode()));
-            } else if (keyMap.containsKey(e.getText())) {
-                gb.joypad().keyPressed(keyMap.get(e.getText()));
+            if (keyMapCode.containsKey(e.getCode())) {
+                gb.joypad().keyPressed(keyMapCode.get(e.getCode()));
+            } else if (keyMapString.containsKey(e.getText())) {
+                gb.joypad().keyPressed(keyMapString.get(e.getText()));
             }
         });
         imageView.setOnKeyReleased(e -> {
-            if (keyMap.containsKey(e.getCode())) {
-                gb.joypad().keyReleased(keyMap.get(e.getCode()));
-            } else if (keyMap.containsKey(e.getText())) {
-                gb.joypad().keyReleased(keyMap.get(e.getText()));
+            if (keyMapCode.containsKey(e.getCode())) {
+                gb.joypad().keyReleased(keyMapCode.get(e.getCode()));
+            } else if (keyMapString.containsKey(e.getText())) {
+                gb.joypad().keyReleased(keyMapString.get(e.getText()));
             }
         });
 

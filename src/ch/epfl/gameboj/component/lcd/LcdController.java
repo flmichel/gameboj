@@ -82,6 +82,10 @@ public class LcdController implements Component, Clocked {
     private enum SpriteFeatures implements Bit {
         UNUSED_0, UNUSED_1, UNUSED_2, UNUSED_3, PALETTE, FLIP_H, FLIP_V, BEHIND_BG
     }
+    
+    private enum TypeOfLine {
+        SPRITE, BG_OR_WIN
+    }
 
     RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
@@ -286,7 +290,7 @@ public class LcdController implements Component, Clocked {
         for (int i = sprites.length - 1; i >= 0; i--) {
             final int features = spriteValue(sprites[i], Sprite.FEATURES);
             boolean behind = Bits.test(features, SpriteFeatures.BEHIND_BG);
-            LcdImageLine spriteLine = spriteLine(sprites[i], indexLine);
+            LcdImageLine spriteLine = spriteLine(sprites[i], indexLine, features);
             if (behind)
                 line = spriteLine.below(line, lineOpacity.or(spriteLine.opacity().not()));          
             else
@@ -302,21 +306,12 @@ public class LcdController implements Component, Clocked {
 
         for (int i = 0; i < Integer.SIZE; i++) {
             final int numberOfTheTile = read(startAddress + tileIndexY * Integer.SIZE + i);
-            final int address = getAddress(numberOfTheTile, tileLineIndex);
+            final int address = getAddress(numberOfTheTile, tileLineIndex, TypeOfLine.BG_OR_WIN);
             final int lsb = Bits.reverse8(read(address));
             final int msb = Bits.reverse8(read(address + 1));
             lineBuilder.setBytes(i, msb, lsb);
         }
         return lineBuilder.build().mapColors(registerFile.get(Reg.BGP));
-    }
-
-    private int getAddress(int numberOfTheTile, int tileLineIndex) {
-        final int begin;
-        if (registerFile.testBit(Reg.LCDC, LCDC.TILE_SOURCE) || numberOfTheTile >= NUMBER_OF_TILE_ACCESSIBLE / 2)
-            begin = AddressMap.TILE_SOURCE[1];
-        else
-            begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
-        return begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
     }
 
     private int[] spritesIntersectingLine(int lineIndex) {
@@ -341,19 +336,18 @@ public class LcdController implements Component, Clocked {
         return spritesIndexes;        
     }
 
-    private LcdImageLine spriteLine(int spriteIndex, int lineIndex) {
+    private LcdImageLine spriteLine(int spriteIndex, int lineIndex, int features) {
         final int numberOfTheTile = spriteValue(spriteIndex, Sprite.TILE_INDEX);
         final int tileLineIndex = lineIndex - spriteValue(spriteIndex, Sprite.Y);
         final int xShift = spriteValue(spriteIndex, Sprite.X);
 
-        final int features = spriteValue(spriteIndex, Sprite.FEATURES);
         final Reg OBP = Bits.test(features, SpriteFeatures.PALETTE) ? Reg.OBP1 : Reg.OBP0;
         final int palette = registerFile.get(OBP);
         final int spriteHeight = registerFile.testBit(Reg.LCDC, LCDC.OBJ_SIZE) ? BIG_SPRITE_HEIGHT : SMALL_SPRITE_HEIGHT;
         final int realTileLineIndex = Bits.test(features, SpriteFeatures.FLIP_V) ? spriteHeight - tileLineIndex - 1 : tileLineIndex;
 
-        Builder spriteLine = new LcdImageLine.Builder(LCD_WIDTH);
-        final int address = AddressMap.TILE_SOURCE[1] + numberOfTheTile * TILE_SIZE_IN_MEMORY + realTileLineIndex * 2;
+        final Builder spriteLine = new LcdImageLine.Builder(LCD_WIDTH);
+        final int address = getAddress(numberOfTheTile, realTileLineIndex, TypeOfLine.SPRITE);
         int lsb = read(address);
         int msb = read(address + 1);
         if (!Bits.test(features, SpriteFeatures.FLIP_H)) {
@@ -371,5 +365,14 @@ public class LcdController implements Component, Clocked {
         if (value == Sprite.X)
             spriteValue -= START_SPRITE_X;
         return spriteValue;
+    }
+
+    private int getAddress(int numberOfTheTile, int tileLineIndex, TypeOfLine type) {
+        final int begin;
+        if (registerFile.testBit(Reg.LCDC, LCDC.TILE_SOURCE) || numberOfTheTile >= NUMBER_OF_TILE_ACCESSIBLE / 2 || type == TypeOfLine.SPRITE)
+            begin = AddressMap.TILE_SOURCE[1];
+        else
+            begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
+        return begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
     }
 }
