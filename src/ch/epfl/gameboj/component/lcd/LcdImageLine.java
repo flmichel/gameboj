@@ -36,7 +36,7 @@ public final class LcdImageLine {
      * @return la longueur, en pixels, de la ligne
      */
     public int size() {
-        return msb.size();
+        return msb.size(); //Aurait pu etre lsb.size() ou opac.size() également
     }   
 
     /**
@@ -119,8 +119,7 @@ public final class LcdImageLine {
      * @throws IllegalArgumentException si les deux lignes n'ont pas la meme taille (longueur/ nombre de pixels) ou si le BitVector en argument n'a pas la meme taille que les lignes.
      */
     public LcdImageLine below(LcdImageLine that, BitVector opac) {
-        Preconditions.checkArgument(this.size() == that.size());
-        Preconditions.checkArgument(this.size() == opac.size());
+        Preconditions.checkArgument(this.size() == that.size() && this.size() == opac.size());
         BitVector nMsb = below(that.msb, this.msb, opac);
         BitVector nLsb = below(that.lsb, this.lsb, opac);
         BitVector nOpac = opac.or(this.opac);
@@ -139,6 +138,7 @@ public final class LcdImageLine {
      * @throws IllegalArgumentException si les deux lignes n'ont pas la meme taille (longueur/ nombre de pixels) ou si l'argument "cut" n'est pas valide
      */
     public LcdImageLine join(LcdImageLine that, int cut) {
+        Preconditions.checkArgument(this.size() == that.size());
         BitVector mask = (new BitVector(this.size(), true).shift(cut));
         BitVector nMsb = join(this.msb, that.msb, mask);
         BitVector nLsb = join(this.lsb, that.lsb, mask);
