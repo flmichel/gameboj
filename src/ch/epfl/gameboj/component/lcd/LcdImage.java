@@ -68,7 +68,7 @@ public final class LcdImage {
     public boolean equals(Object that) {
         if (!(that instanceof LcdImage))
             return false;
-        LcdImage thatImage = (LcdImage)that;
+        final LcdImage thatImage = (LcdImage)that;
         if (this.height != thatImage.height || this.width != thatImage.width)
             return false;
         return this.lines.equals(thatImage.lines);
@@ -94,7 +94,7 @@ public final class LcdImage {
          * @param height représente la hauteur de l'image.
          */
         public Builder(int width, int height) {
-            BitVector ZeroLine = new BitVector(width);
+            final BitVector ZeroLine = new BitVector(width);
             linesList = new ArrayList<>(Collections.nCopies(height, new LcdImageLine(ZeroLine, ZeroLine, ZeroLine)));
         }
 
@@ -123,7 +123,7 @@ public final class LcdImage {
                 throw new IllegalStateException();
             final int height = linesList.size();
             final int width = linesList.get(0).size();
-            LcdImage image = new LcdImage(width, height, linesList);
+            final LcdImage image = new LcdImage(width, height, linesList);
             linesList = null;
             return image;
         }

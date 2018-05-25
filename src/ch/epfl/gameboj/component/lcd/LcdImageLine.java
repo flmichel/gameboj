@@ -120,9 +120,9 @@ public final class LcdImageLine {
      */
     public LcdImageLine below(LcdImageLine that, BitVector opac) {
         Preconditions.checkArgument(this.size() == that.size() && this.size() == opac.size());
-        BitVector nMsb = below(that.msb, this.msb, opac);
-        BitVector nLsb = below(that.lsb, this.lsb, opac);
-        BitVector nOpac = opac.or(this.opac);
+        final BitVector nMsb = below(that.msb, this.msb, opac);
+        final BitVector nLsb = below(that.lsb, this.lsb, opac);
+        final BitVector nOpac = opac.or(this.opac);
         return new LcdImageLine(nMsb, nLsb, nOpac);
     }
     
@@ -139,10 +139,10 @@ public final class LcdImageLine {
      */
     public LcdImageLine join(LcdImageLine that, int cut) {
         Preconditions.checkArgument(this.size() == that.size());
-        BitVector mask = (new BitVector(this.size(), true).shift(cut));
-        BitVector nMsb = join(this.msb, that.msb, mask);
-        BitVector nLsb = join(this.lsb, that.lsb, mask);
-        BitVector nOpac = join(this.opac, that.opac, mask);
+        final BitVector mask = (new BitVector(this.size(), true).shift(cut));
+        final BitVector nMsb = join(this.msb, that.msb, mask);
+        final BitVector nLsb = join(this.lsb, that.lsb, mask);
+        final BitVector nOpac = join(this.opac, that.opac, mask);
         return new LcdImageLine(nMsb, nLsb, nOpac);
     }
     
@@ -154,7 +154,7 @@ public final class LcdImageLine {
     public boolean equals(Object that) {
         if (!(that instanceof LcdImageLine))
             return false;
-        LcdImageLine thatImageLine = (LcdImageLine)that;
+        final LcdImageLine thatImageLine = (LcdImageLine)that;
         return this.msb.equals(thatImageLine.msb) &&
                 this.lsb.equals(thatImageLine.lsb) &&
                 this.opac.equals(thatImageLine.opac);

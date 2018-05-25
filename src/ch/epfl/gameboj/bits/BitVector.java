@@ -246,7 +246,7 @@ public final class BitVector {
         public BitVector build() {
             if (tab == null)
                 throw new IllegalStateException();
-            BitVector vector = new BitVector(tab);
+            final BitVector vector = new BitVector(tab);
             tab = null;
             return vector;
         }

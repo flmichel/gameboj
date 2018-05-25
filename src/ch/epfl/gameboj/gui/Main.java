@@ -23,12 +23,12 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-    private static Map<String, Key> keyMapString = Map.of(    
+    private static final Map<String, Key> keyMapString = Map.of(    
             "a", Key.A,
             "b", Key.B,
             "s", Key.START
             );
-    private static Map<KeyCode, Key> keyMapCode = Map.of(    
+    private static final Map<KeyCode, Key> keyMapCode = Map.of(    
             KeyCode.SPACE, Key.SELECT,
             KeyCode.UP, Key.UP,
             KeyCode.DOWN, Key.DOWN,
