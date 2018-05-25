@@ -21,7 +21,7 @@ import ch.epfl.gameboj.component.memory.Ram;
  * @author Riand Andre
  * @author Michel François
  */
-public class LcdController implements Component, Clocked {
+public final class LcdController implements Component, Clocked {
 
     public static final int LCD_WIDTH = 160;
     public static final int LCD_HEIGHT = 144;
