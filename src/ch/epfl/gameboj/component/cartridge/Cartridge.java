@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
