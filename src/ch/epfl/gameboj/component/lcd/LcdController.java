@@ -26,6 +26,7 @@ public final class LcdController implements Component, Clocked {
     public static final int LCD_WIDTH = 160;
     public static final int LCD_HEIGHT = 144;
     
+    private static final int NB_OF_MODES = 4;
     private static final int NB_CYCLES_MODE0 = 51;
     private static final int NB_CYCLES_MODE2 = 20;
     private static final int NB_CYCLES_MODE3 = 43;
@@ -41,7 +42,6 @@ public final class LcdController implements Component, Clocked {
     private static final int NUMBER_OF_TILE_ACCESSIBLE = 256;
     private static final int WX_START = 7;
 
-    private static final int SPRITE_SIZE_IN_MEMORY = 4;
     private static final int SMALL_SPRITE_HEIGHT = PIXEL_PER_TILE_LINE;
     private static final int BIG_SPRITE_HEIGHT = 2 * PIXEL_PER_TILE_LINE;
     private static final int MAX_SPRITE_PER_LINE = 10;
@@ -87,7 +87,7 @@ public final class LcdController implements Component, Clocked {
         SPRITE, BG_OR_WIN
     }
 
-    RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
+    private final RegisterFile<Reg> registerFile = new RegisterFile<>(Reg.values());    
 
     /**
      * Construit un contrôleur LCD associé à un processeur (cpu)
@@ -124,8 +124,9 @@ public final class LcdController implements Component, Clocked {
     }
 
     private void reallyCycle(long cycle) {
-        final int cycleInLine = (int) ((cycle - lcdOnCycle) % NB_CYCLES_LINE);
-        final int lineIndex = ((int) (cycle - lcdOnCycle) % NB_CYCLES_LCD) / NB_CYCLES_LINE;
+        final int newCycle= (int) (cycle - lcdOnCycle);
+        final int cycleInLine = newCycle % NB_CYCLES_LINE;
+        final int lineIndex = (newCycle % NB_CYCLES_LCD) / NB_CYCLES_LINE;
         if (lineIndex < LCD_HEIGHT) {
             switch (cycleInLine) {    
             case ENTER_MODE2 : {
@@ -214,7 +215,7 @@ public final class LcdController implements Component, Clocked {
             } break;
             case DMA: {
                 copyIndex = 0;
-                sourceAddress = data << 8;           
+                sourceAddress = data << Byte.SIZE;           
             } break;
             default:
                 break;
@@ -245,7 +246,7 @@ public final class LcdController implements Component, Clocked {
     }
 
     private void setMode(int mode) {
-        Preconditions.checkArgument(mode >= 0 && mode < 4);
+        Preconditions.checkArgument(mode >= 0 && mode < NB_OF_MODES);
         if (mode < 3) {
             if (registerFile.testBit(Reg.STAT, STAT.values()[STAT.INT_MODE0.index() + mode]))
                 cpu.requestInterrupt(Interrupt.LCD_STAT);
@@ -319,10 +320,10 @@ public final class LcdController implements Component, Clocked {
         final int[] sprites = new int[MAX_SPRITE_PER_LINE];
         int spriteCount = 0;
         int spriteIndex = 0;
-        while (spriteCount < MAX_SPRITE_PER_LINE && spriteIndex < AddressMap.OAM_RAM_SIZE / SPRITE_SIZE_IN_MEMORY) {
-            int positionY = spriteValue(spriteIndex, Sprite.Y);
+        while (spriteCount < MAX_SPRITE_PER_LINE && spriteIndex < AddressMap.OAM_RAM_SIZE / Sprite.values().length) {
+           final int positionY = spriteValue(spriteIndex, Sprite.Y);
             if (positionY > lineIndex - spriteHeight && positionY <= lineIndex) {
-                int positionX = spriteValue(spriteIndex, Sprite.X);
+                final int positionX = spriteValue(spriteIndex, Sprite.X);
                 sprites[spriteCount] = Bits.make16(positionX + START_SPRITE_X, spriteIndex);
                 spriteCount++;
             }
@@ -331,7 +332,7 @@ public final class LcdController implements Component, Clocked {
         Arrays.sort(sprites, 0, spriteCount);
         final int[] spritesIndexes = new int[spriteCount];
         for (int i = 0; i < spriteCount; i++) {
-            spritesIndexes[i] = Bits.clip(8, sprites[i]);
+            spritesIndexes[i] = Bits.clip(Byte.SIZE, sprites[i]);
         }
         return spritesIndexes;        
     }
@@ -359,7 +360,7 @@ public final class LcdController implements Component, Clocked {
     }
 
     private int spriteValue(int index, Sprite value) {
-        int spriteValue = oamRam.read(index * SPRITE_SIZE_IN_MEMORY + value.index());
+        int spriteValue = oamRam.read(index * Sprite.values().length + value.index());
         if (value == Sprite.Y)
             spriteValue -= START_SPRITE_Y;
         if (value == Sprite.X)

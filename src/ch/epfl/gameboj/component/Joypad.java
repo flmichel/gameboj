@@ -16,7 +16,7 @@ public class Joypad implements Component {
     
     private static final int FIRST_ACTIVE_LINE_INDEX = 4;
 
-    private Cpu cpu;
+    private final Cpu cpu;
     private int line0;
     private int line1;
     private int activeLines;
@@ -89,13 +89,13 @@ public class Joypad implements Component {
             line1 = Bits.set(line1, K.index() % firstPart, newValue);
     }
 
+    private int getP1() {
+        return activeLines << FIRST_ACTIVE_LINE_INDEX | stateBits();
+    }
+    
     private int stateBits() {
         final int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
         final int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
         return activeLine0 | activeLine1;
-    }
-
-    private int getP1() {
-        return activeLines << FIRST_ACTIVE_LINE_INDEX | stateBits();
     }
 }
