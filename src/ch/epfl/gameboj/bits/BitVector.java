@@ -153,19 +153,19 @@ public final class BitVector {
         final int floorDiv = Math.floorDiv(start, Integer.SIZE);
         final int i = floorDiv + index;
         final int start32 = floorDiv * Integer.SIZE;
-        int a = 0;
+        int extractedValue = 0;
         if ((start % Integer.SIZE) == 0) {
             if (i >= 0 && i < vect.length) {
-                a = vect[i];
+                extractedValue = vect[i];
             }
             else if (type == Extract.WRAPPED)
-                a = vect[Math.floorMod(i, vect.length)];
+                extractedValue = vect[Math.floorMod(i, vect.length)];
         } else {
             int cut = Math.floorMod(start, Integer.SIZE);
-            a = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut;
-            a |= Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
+            extractedValue = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut |
+                             Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
         }
-        return a;
+        return extractedValue;
     }
     
     /**
@@ -228,10 +228,10 @@ public final class BitVector {
         public Builder setByte(int index, int value) {
             if (tab == null)
                 throw new IllegalStateException();
-            Preconditions.checkArgument(index >= 0 && index < tab.length * 4);
-            final int shift = (index % 4) * Byte.SIZE;
-            final int i = index/4;
-            final int mask = 0b11111111 << shift; // Biggest value of a byte.
+            Preconditions.checkArgument(index >= 0 && index < tab.length * Integer.BYTES);
+            final int shift = (index % Integer.BYTES) * Byte.SIZE;
+            final int i = index/Integer.BYTES;
+            final int mask = Bits.mask(Byte.SIZE) - 1 << shift; // Biggest value of a byte.
             final int inverseMask = ~mask;
             tab[i] &= inverseMask; // We clear the part with we want to set.
             tab[i] |= value << shift;
