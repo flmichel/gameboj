@@ -92,11 +92,11 @@ public final class LcdImageLine {
         BitVector nMsb = new BitVector(this.size());
         BitVector nLsb = new BitVector(this.size());
         for (int i = 0 ; i < NB_COLORS ; i++) {
-            BitVector maskLsb= Bits.test(i,0) ? lsb : lsb.not(); 
-            BitVector maskMsb = Bits.test(i,1) ? msb : msb.not();
-            BitVector mask = maskLsb.and(maskMsb);
-            nMsb = Bits.test(map, 2*i+1) ? nMsb.or(mask) : nMsb;
-            nLsb = Bits.test(map, 2*i) ? nLsb.or(mask) : nLsb;
+            final BitVector maskLsb= Bits.test(i,0) ? lsb : lsb.not(); 
+            final BitVector maskMsb = Bits.test(i,1) ? msb : msb.not();
+            final BitVector mask = maskLsb.and(maskMsb);
+            nMsb = Bits.test(map, 2 * i + 1) ? nMsb.or(mask) : nMsb;
+            nLsb = Bits.test(map, 2 * i) ? nLsb.or(mask) : nLsb;
         }
         return new LcdImageLine(nMsb, nLsb, this.opac);
     }
