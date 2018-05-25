@@ -10,7 +10,7 @@ import javafx.scene.image.WritableImage;
  * @author Riand Andre
  * @author Michel François
  */
-public class ImageConverter {
+public final class ImageConverter {
     LcdImage li;
     private static final int[] COLOR_MAP = new int[] {
             0xFF_FF_FF_FF, 0xFF_D3_D3_D3, 0xFF_A9_A9_A9, 0xFF_00_00_00
