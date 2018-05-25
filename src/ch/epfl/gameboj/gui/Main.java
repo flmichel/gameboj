@@ -113,6 +113,8 @@ public class Main extends Application {
                 gb.joypad().keyReleased(keyMap.get(e.getText()));
             }
         });
+        
+        Button visButton = new Button("Show tiles");
 
         Button resetButton = new Button("Reset");
         resetButton.setOnMouseReleased(e -> {
@@ -130,31 +132,48 @@ public class Main extends Application {
         BorderPane messagePane = new BorderPane(null);
         
         GridPane buttonsPane = new GridPane();
-        buttonsPane.addRow(0, speedButton, resetButton, saveButton);
+        buttonsPane.addRow(0, speedButton, resetButton, saveButton, visButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
        
         BorderPane tilePane = new BorderPane(spriteImageView);
+        Scene tileScene = new Scene(tilePane);
+        Stage tileStage = new Stage();
+        tileStage.setTitle("TILES");
+        
+        visButton.setOnMouseReleased(e -> {
+            if (visButton.getText() == "Show tiles") {
+                visButton.setText("Hide tiles");
+              
+                tileStage.setScene(tileScene);
+                tileStage.show();
 
-        Tab gameTab = new Tab();
-        gameTab.setText("Game");
-        gameTab.setContent(gamePane);
-        
-        Tab tileTab = new Tab();
-        tileTab.setText("Tiles");
-        tileTab.setContent(tilePane); 
-        
-        Tab manageTab = new Tab();
-        tileTab.setText("Manage");
-        tileTab.setContent(messagePane);
+            } else {
+                visButton.setText("Show tiles");
+              tileStage.close();
+            }
+        });
+
+//        Tab gameTab = new Tab();
+//        gameTab.setText("Game");
+//        gameTab.setContent(gamePane);
+//        
+//        Tab tileTab = new Tab();
+//        tileTab.setText("Tiles");
+//        tileTab.setContent(tilePane); 
+//        
+//        Tab manageTab = new Tab();
+//        tileTab.setText("Manage");
+//        tileTab.setContent(messagePane);
                 
-        TabPane pane = new TabPane(gameTab, tileTab);
+//        TabPane pane = new TabPane(gameTab, tileTab);
 
         saveButton.setOnMouseClicked(e -> {           
             messagePane.setCenter(new Label ("Game saved"));
         });    
         
-        Scene scene = new Scene(pane);
+        Scene scene = new Scene(gamePane);
         stage.setScene(scene);
+        stage.setTitle("GAMEBOY SIMULATOR");
 
         stage.show();
 
