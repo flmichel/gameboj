@@ -2,13 +2,9 @@ package ch.epfl.gameboj.gui;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.imageio.ImageIO;
 
