@@ -127,4 +127,8 @@ public final class GameBoy {
         bus.attach(new RamController(workRam, AddressMap.ECHO_RAM_START, AddressMap.ECHO_RAM_END));
         cyclesNb = 0;
     }
+    
+//    public Ram ram() {
+//        return workRam;
+//    }
 }
