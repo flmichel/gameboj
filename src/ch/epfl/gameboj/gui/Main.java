@@ -1,31 +1,33 @@
 package ch.epfl.gameboj.gui;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import javax.imageio.ImageIO;
 
 import ch.epfl.gameboj.GameBoy;
 import ch.epfl.gameboj.component.Joypad.Key;
 import ch.epfl.gameboj.component.cartridge.Cartridge;
 import ch.epfl.gameboj.component.lcd.LcdImage;
-import ch.epfl.gameboj.component.memory.Ram;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
-import javafx.scene.Node;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -35,7 +37,7 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-    private static Map<Object, Key> keyMap = Map.of(    
+    private static final Map<Object, Key> keyMap = Map.of(    
             "a", Key.A,
             "b", Key.B,
             "s", Key.START,
@@ -46,6 +48,7 @@ public class Main extends Application {
             KeyCode.RIGHT, Key.RIGHT
             );
     private double simulationSpeed = 1.0;
+    boolean pause;
     private long cycle = 0;
     private long before = System.nanoTime();
     private GameBoy gb;
@@ -109,6 +112,55 @@ public class Main extends Application {
 
         RadioButton tileButton =  new RadioButton("Show Tiles");
 
+        //Pause
+        Button pauseButton = new Button("Pause");
+        pauseButton.setMinWidth(100);
+        pauseButton.setOnMouseReleased(e -> {
+            if (pauseButton.getText().equals("Pause")) {
+                pauseButton.setText("Play ");
+                pause = true;
+            } else {
+                pauseButton.setText("Pause");
+                pause = false;
+            }                
+        }
+                );
+
+        //Screenshot
+
+        GridPane screenshotPane = new GridPane();
+        Label screenshotName = new Label("Name :");
+        TextField nameS = new TextField();
+        Button saveScreenshotButton = new Button("Save screenshot");
+        screenshotPane.addRow(0, screenshotName, nameS);
+        screenshotPane.addRow(1, saveScreenshotButton);
+        Scene screenshotScene = new Scene(screenshotPane);
+        Stage screenshotStage = new Stage();
+        screenshotStage.setTitle("SCREENSHOT");
+
+        Button screenshotButton = new Button("Screenshot");
+        screenshotButton.setOnMouseReleased(e -> {
+            pause = true;
+            screenshotStage.setScene(screenshotScene);
+            screenshotStage.show();
+            final Image i = ImageConverter.convert(gb.lcdController().currentImage());
+            final BufferedImage bi = SwingFXUtils.fromFXImage(i, null);
+            saveScreenshotButton.setOnMouseReleased(f -> {  
+                try {
+                    String name = nameS.getText();
+                    if (name.equals(""))
+                        name = "screenshot";
+                    ImageIO.write(bi, "png", new File(name  + ".png"));
+                    screenshotStage.close();
+                    stage.requestFocus();
+                    pause = false;
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            });
+        });
+
         Button resetButton = new Button("Reset");
         resetButton.setOnMouseReleased(e -> {
             try {
@@ -125,7 +177,7 @@ public class Main extends Application {
         BorderPane messagePane = new BorderPane(null);
 
         GridPane buttonsPane = new GridPane();
-        buttonsPane.addRow(0, lab, cb, resetButton, saveButton, tileButton);
+        buttonsPane.addRow(0, lab, cb, pauseButton, resetButton, saveButton, screenshotButton, tileButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
 
         BorderPane tilePane = new BorderPane(spriteImageView);
@@ -162,7 +214,8 @@ public class Main extends Application {
             public void handle(long now) {
                 long elapse = now - before;
                 before = now;
-                cycle += (long)(GameBoy.NB_CYCLES_P_NANOSECOND * elapse * simulationSpeed);
+                if (!pause)
+                    cycle += (long)(GameBoy.NB_CYCLES_P_NANOSECOND * elapse * simulationSpeed);
                 gb.runUntil(cycle);
                 LcdImage li = gb.lcdController().currentImage();
 
