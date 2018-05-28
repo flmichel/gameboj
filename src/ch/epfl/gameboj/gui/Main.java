@@ -11,12 +11,16 @@ import ch.epfl.gameboj.component.lcd.LcdImage;
 import ch.epfl.gameboj.component.memory.Ram;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -75,29 +79,17 @@ public class Main extends Application {
         spriteImageView.setFitWidth(sprites.width() * 2);
         spriteImageView.setFitHeight(sprites.height() * 2);
 
-
-        Button speedButton = new Button("x1");
-        speedButton.setOnMouseReleased(e -> {
-            switch (speedButton.getText()) {    
-            case "x1" : {
-                simulationSpeed += 0.5;
-                speedButton.setText("x1.5");
-            } break;
-            case "x1.5" : {  
-                simulationSpeed += 0.5;
-                speedButton.setText("x2");
-            } break;
-            case "x2" : {
-                simulationSpeed = 5;
-                speedButton.setText("x5");
-            } break;
-            case "x5" : {
-                simulationSpeed = 1;
-                speedButton.setText("x1");
-            } break;
-            }
+        Label lab = new Label(" Speed : x");
+        ChoiceBox<String> cb = new ChoiceBox<String>(FXCollections.observableArrayList(
+                "1", "1.5", "2", "5")
+                );
+        cb.getSelectionModel().selectFirst();;
+        cb.setOnAction(e -> {
+            simulationSpeed = Double.parseDouble(cb.getValue()); //prof a dit que ct bien que la speed soit associee au nombre
         }
                 );
+
+
 
         imageView.setOnKeyPressed(e -> {
             if (keyMap.containsKey(e.getCode())) {
@@ -113,8 +105,9 @@ public class Main extends Application {
                 gb.joypad().keyReleased(keyMap.get(e.getText()));
             }
         });
-        
-        Button visButton = new Button("Show tiles");
+
+
+        RadioButton tileButton =  new RadioButton("Show Tiles");
 
         Button resetButton = new Button("Reset");
         resetButton.setOnMouseReleased(e -> {
@@ -127,50 +120,37 @@ public class Main extends Application {
         });
 
         Button saveButton = new Button("Save game");
-        
+
         Label saveLabel = new Label ("Game saved");
         BorderPane messagePane = new BorderPane(null);
-        
+
         GridPane buttonsPane = new GridPane();
-        buttonsPane.addRow(0, speedButton, resetButton, saveButton, visButton);
+        buttonsPane.addRow(0, lab, cb, resetButton, saveButton, tileButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
-       
+
         BorderPane tilePane = new BorderPane(spriteImageView);
         Scene tileScene = new Scene(tilePane);
         Stage tileStage = new Stage();
         tileStage.setTitle("TILES");
-        
-        visButton.setOnMouseReleased(e -> {
-            if (visButton.getText() == "Show tiles") {
-                visButton.setText("Hide tiles");
-              
+
+        tileButton.setOnMouseReleased(e -> {
+            if (tileButton.isSelected()) {
+
                 tileStage.setScene(tileScene);
+                tileStage.setX(40);
                 tileStage.show();
+                stage.requestFocus();
 
             } else {
-                visButton.setText("Show tiles");
-              tileStage.close();
+
+                tileStage.close();
             }
         });
-
-//        Tab gameTab = new Tab();
-//        gameTab.setText("Game");
-//        gameTab.setContent(gamePane);
-//        
-//        Tab tileTab = new Tab();
-//        tileTab.setText("Tiles");
-//        tileTab.setContent(tilePane); 
-//        
-//        Tab manageTab = new Tab();
-//        tileTab.setText("Manage");
-//        tileTab.setContent(messagePane);
-                
-//        TabPane pane = new TabPane(gameTab, tileTab);
 
         saveButton.setOnMouseClicked(e -> {           
             messagePane.setCenter(new Label ("Game saved"));
         });    
-        
+
         Scene scene = new Scene(gamePane);
         stage.setScene(scene);
         stage.setTitle("GAMEBOY SIMULATOR");
