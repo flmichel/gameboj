@@ -1,6 +1,10 @@
 package ch.epfl.gameboj.gui;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -119,13 +123,15 @@ public class Main extends Application {
             }
         });
 
-        Button saveButton = new Button("Save game");
+//        Button saveButton = new Button("Save game");
+//        
+//        Button loadButton = new Button("Load");
 
-        Label saveLabel = new Label ("Game saved");
-        BorderPane messagePane = new BorderPane(null);
+//        Label saveLabel = new Label ("Game saved");
+//        BorderPane messagePane = new BorderPane(saveLabel);
 
         GridPane buttonsPane = new GridPane();
-        buttonsPane.addRow(0, lab, cb, resetButton, saveButton, tileButton);
+        buttonsPane.addRow(0, lab, cb, resetButton, tileButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
 
         BorderPane tilePane = new BorderPane(spriteImageView);
@@ -142,14 +148,28 @@ public class Main extends Application {
                 stage.requestFocus();
 
             } else {
-
                 tileStage.close();
             }
         });
 
-        saveButton.setOnMouseClicked(e -> {           
-            messagePane.setCenter(new Label ("Game saved"));
-        });    
+        
+//        Button okButton = new Button("Ok");
+//        messagePane.setRight(okButton);
+//        
+//        okButton.setOnMouseReleased(f -> {
+//            gamePane.setBottom(null); 
+//            stage.setHeight(stage.getHeight()-30);
+//        });
+             
+//        saveButton.setOnMouseClicked(e -> { 
+//            saveGame(gb);
+//            gamePane.setBottom(messagePane); 
+//            stage.setHeight(stage.getHeight()+30);
+//        });    
+//        
+//        loadButton.setOnMouseClicked(e -> { 
+//          loadGame("SAUVEGARDE.bin") ; 
+//        });
 
         Scene scene = new Scene(gamePane);
         stage.setScene(scene);
@@ -182,6 +202,83 @@ public class Main extends Application {
         gb = new GameBoy(Cartridge.ofFile(romFile));
         cycle = 0;
     }
+    
+//    private void saveGame(GameBoy gb) {
+//        FileOutputStream fop = null;
+//        File file;
+//
+//        try {
+//
+//            file = new File("SAUVEGARDE.bin");
+//            fop = new FileOutputStream(file);
+//
+//            // if file doesnt exists, then create it
+//            if (!file.exists()) {
+//                file.createNewFile();
+//            }
+//
+//            // get the content in bytes
+//            byte[] content = new byte[gb.ram().size()];
+//            for (int i=0 ; i< content.length ; i++) {
+//                content[i] = (byte) gb.ram().read(i);
+//            }
+//            
+//            fop.write(content);
+//            fop.flush();
+//            fop.close();
+//
+//            System.out.println("Done");
+//            
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            try {
+//                if (fop != null) {
+//                    fop.close();
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }       
+//        }
+//    }
+//    
+//    private void loadGame(String fileName) {
+//     
+//        BufferedReader br = null;
+//        FileReader fr = null;
+//
+//        try {
+//
+//            //br = new BufferedReader(new FileReader(FILENAME));
+//            fr = new FileReader(fileName);
+//            br = new BufferedReader(fr);
+//
+//            for(int i = 0 ; i < gb.ram().size() ; i++) {
+//                gb.ram().write(i, br.read());
+//                }
+//
+//        } catch (IOException e) {
+//
+//            e.printStackTrace();
+//
+//        } finally {
+//
+//            try {
+//
+//                if (br != null)
+//                    br.close();
+//
+//                if (fr != null)
+//                    fr.close();
+//
+//            } catch (IOException ex) {
+//
+//                ex.printStackTrace();
+//
+//            }
+//
+//        }
+//    }
 }
 
 
