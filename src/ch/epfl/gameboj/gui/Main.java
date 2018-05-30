@@ -64,9 +64,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        List<String> arguments = getParameters().getRaw();
+        final List<String> arguments = getParameters().getRaw();
         if (arguments.size() != 1)
             System.exit(1);
+        
         File romFile = new File(arguments.get(0));
         gb = new GameBoy(Cartridge.ofFile(romFile));
         LcdImage li = gb.lcdController().currentImage();

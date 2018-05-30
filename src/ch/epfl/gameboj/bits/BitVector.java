@@ -84,7 +84,7 @@ public final class BitVector {
      * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
     public BitVector and(BitVector that) {
-        Preconditions.checkArgument(that.size() == this.vect.length * Integer.SIZE);
+        Preconditions.checkArgument(that.size() == vect.length * Integer.SIZE);
         final int[] tab = new int[vect.length];
         for (int i = 0 ; i < vect.length ; i++) {
             tab[i] = vect[i] & that.vect[i];
@@ -99,7 +99,7 @@ public final class BitVector {
      * @throws IllegalArgumentException si les deux vecteurs de bits n'ont pas la meme taille
      */
     public BitVector or(BitVector that) {
-        Preconditions.checkArgument(that.size() == this.vect.length * Integer.SIZE);
+        Preconditions.checkArgument(that.size() == vect.length * Integer.SIZE);
         final int[] tab = new int[vect.length];
         for (int i = 0; i < vect.length; i++) {
             tab[i] = vect[i] | that.vect[i];
@@ -138,16 +138,6 @@ public final class BitVector {
         return extract(start, size, Extract.WRAPPED);
     }
 
-    /**
-     * Décale logiquement le vecteur d'une distance quelconque, en utilisant la convention qu'une distance positive 
-     * représente un décalage à gauche, une distance négative un décalage à droite (shift).
-     * @param distance du décalage à effectuer
-     * @return le résultat du décalage logic par la distance donnée.
-     */
-    public BitVector shift(int distance) {
-        return extractZeroExtended(-distance, vect.length * Integer.SIZE);
-    }
-
     private BitVector extract(int start, int size, Extract type ) {
         Preconditions.checkArgument(size > 0 && (size % Integer.SIZE == 0));
         final int[] tab = new int[size/Integer.SIZE];
@@ -159,21 +149,33 @@ public final class BitVector {
     }
 
     private int getExtractedValue(int index, int start, Extract type) {
-        final int i = Math.floorDiv(start, Integer.SIZE) + index;
-        final int start32 = Math.floorDiv(start, Integer.SIZE) * Integer.SIZE;
-        int a = 0;
-        if (start % Integer.SIZE == 0) {
+        
+        final int floorDiv = Math.floorDiv(start, Integer.SIZE);
+        final int i = floorDiv + index;
+        final int start32 = floorDiv * Integer.SIZE;
+        int extractedValue = 0;
+        if ((start % Integer.SIZE) == 0) {
             if (i >= 0 && i < vect.length) {
-                a = vect[i];
+                extractedValue = vect[i];
             }
             else if (type == Extract.WRAPPED)
-                a = vect[Math.floorMod(i, vect.length)];
+                extractedValue = vect[Math.floorMod(i, vect.length)];
         } else {
             int cut = Math.floorMod(start, Integer.SIZE);
-            a = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut;
-            a |= Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
+            extractedValue = Bits.clip(cut, getExtractedValue(index + 1, start32, type)) << Integer.SIZE - cut |
+                             Bits.extract(getExtractedValue(index, start32, type), cut, Integer.SIZE - cut);
         }
-        return a;
+        return extractedValue;
+    }
+    
+    /**
+     * Décale logiquement le vecteur d'une distance quelconque, en utilisant la convention qu'une distance positive 
+     * représente un décalage à gauche, une distance négative un décalage à droite (shift).
+     * @param distance du décalage à effectuer
+     * @return le résultat du décalage logique par la distance donnée.
+     */
+    public BitVector shift(int distance) {
+        return extractZeroExtended(-distance, vect.length * Integer.SIZE);
     }
 
     @Override
@@ -226,10 +228,10 @@ public final class BitVector {
         public Builder setByte(int index, int value) {
             if (tab == null)
                 throw new IllegalStateException();
-            Preconditions.checkArgument(index >= 0 && index < tab.length * 4);
-            final int shift = (index % 4) * Byte.SIZE;
-            final int i = index/4;
-            final int mask = 0b11111111 << shift; // Biggest value of a byte.
+            Preconditions.checkArgument(index >= 0 && index < tab.length * Integer.BYTES);
+            final int shift = (index % Integer.BYTES) * Byte.SIZE;
+            final int i = index/Integer.BYTES;
+            final int mask = Bits.mask(Byte.SIZE) - 1 << shift; // Biggest value of a byte.
             final int inverseMask = ~mask;
             tab[i] &= inverseMask; // We clear the part with we want to set.
             tab[i] |= value << shift;
@@ -244,7 +246,7 @@ public final class BitVector {
         public BitVector build() {
             if (tab == null)
                 throw new IllegalStateException();
-            BitVector vector = new BitVector(tab);
+            final BitVector vector = new BitVector(tab);
             tab = null;
             return vector;
         }

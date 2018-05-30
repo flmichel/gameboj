@@ -375,8 +375,7 @@ public final class LcdController implements Component, Clocked {
         else
             begin = AddressMap.TILE_SOURCE[1] + NUMBER_OF_TILE_ACCESSIBLE * TILE_SIZE_IN_MEMORY;
         return begin + numberOfTheTile * TILE_SIZE_IN_MEMORY + tileLineIndex * 2;
-    }
-    
+    }    
     // Bonus
     
     /**

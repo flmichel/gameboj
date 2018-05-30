@@ -57,7 +57,7 @@ public final class LcdImage {
      */
     public int get(int x, int y) {
         Preconditions.checkArgument(x < width && x >= 0 && y < height && y >= 0);
-        LcdImageLine line = lines.get(y);
+        final LcdImageLine line = lines.get(y);
         int color = 0;
         color = Bits.set(color, 0, line.lsb().testBit(x));
         color = Bits.set(color, 1, line.msb().testBit(x));
@@ -68,7 +68,7 @@ public final class LcdImage {
     public boolean equals(Object that) {
         if (!(that instanceof LcdImage))
             return false;
-        LcdImage thatImage = (LcdImage)that;
+        final LcdImage thatImage = (LcdImage)that;
         if (this.height != thatImage.height || this.width != thatImage.width)
             return false;
         return this.lines.equals(thatImage.lines);
@@ -94,7 +94,7 @@ public final class LcdImage {
          * @param height représente la hauteur de l'image.
          */
         public Builder(int width, int height) {
-            BitVector ZeroLine = new BitVector(width);
+            final BitVector ZeroLine = new BitVector(width);
             linesList = new ArrayList<>(Collections.nCopies(height, new LcdImageLine(ZeroLine, ZeroLine, ZeroLine)));
         }
 
@@ -121,9 +121,9 @@ public final class LcdImage {
         public LcdImage build() {
             if (linesList == null)
                 throw new IllegalStateException();
-            int height = linesList.size();
-            int width = linesList.get(0).size();
-            LcdImage image = new LcdImage(width, height, linesList);
+            final int height = linesList.size();
+            final int width = linesList.get(0).size();
+            final LcdImage image = new LcdImage(width, height, linesList);
             linesList = null;
             return image;
         }

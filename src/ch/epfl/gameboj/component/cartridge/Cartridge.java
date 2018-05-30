@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import ch.epfl.gameboj.Preconditions;
 import ch.epfl.gameboj.component.Component;
@@ -14,14 +13,16 @@ import ch.epfl.gameboj.component.memory.Rom;
 /**
  * Représente une cartouche
  * @author Riand Andre
- * @author Michel François;
+ * @author Michel François
  */
 public final class Cartridge implements Component {
     private final Component bankController;
+    private static final int NB_RAM_TYPE = 4;
+
     
     private static final int SOFTWARE_TYPE = 0x147; //Position de l’octet qui donne le type de MBC dans l’en-tête de la cartouche
     private static final int EXTERNAL_RAM_SIZE_TYPE = 0x149;
-    private static int[] ramSizeMap = {0, 2048, 8192, 32768};
+    private static final int[] ramSizeMap = {0, 2048, 8192, 32768};
 
     private Cartridge(Component bankController) {
         this.bankController = bankController;
@@ -37,16 +38,16 @@ public final class Cartridge implements Component {
      */
     public static Cartridge ofFile(File romFile) throws IOException {
         try(InputStream stream = new BufferedInputStream(new FileInputStream(romFile))) {
-            byte[] data = stream.readAllBytes();
+            final byte[] data = stream.readAllBytes();
 
-            int cartridgeType = data[SOFTWARE_TYPE];
-            Preconditions.checkArgument(cartridgeType >= 0 && cartridgeType < 4);
-            Component bc;
+            final int cartridgeType = data[SOFTWARE_TYPE];
+            Preconditions.checkArgument(cartridgeType >= 0 && cartridgeType < NB_RAM_TYPE);
+            final Component bc;
             if (cartridgeType > 0) {
                 int ramSize = 0;
                 if (cartridgeType == 3) {
-                    int ramType = data[EXTERNAL_RAM_SIZE_TYPE];
-                    Preconditions.checkArgument(ramType >= 0 && ramType < 4);
+                    final int ramType = data[EXTERNAL_RAM_SIZE_TYPE];
+                    Preconditions.checkArgument(ramType >= 0 && ramType < NB_RAM_TYPE);
                     ramSize = ramSizeMap[ramType];
                 }
                 bc = new MBC1(new Rom(data), ramSize);

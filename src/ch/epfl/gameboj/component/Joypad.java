@@ -13,8 +13,10 @@ import ch.epfl.gameboj.component.cpu.Cpu.Interrupt;
  * @author Michel François
  */
 public class Joypad implements Component {
+    
+    private static final int FIRST_ACTIVE_LINE_INDEX = 4;
 
-    private Cpu cpu;
+    private final Cpu cpu;
     private int line0;
     private int line1;
     private int activeLines;
@@ -56,7 +58,7 @@ public class Joypad implements Component {
         Preconditions.checkBits16(address);
         Preconditions.checkBits8(data);
         if (address == AddressMap.REG_P1) {
-            activeLines = Bits.extract(Bits.complement8(data), 4, 2);
+            activeLines = Bits.extract(Bits.complement8(data), FIRST_ACTIVE_LINE_INDEX, 2);
         }
     }
 
@@ -65,7 +67,7 @@ public class Joypad implements Component {
      * @param K : touche concernée
      */
     public void keyPressed(Key K) {
-        int oldP1 = getP1();
+        final int oldP1 = getP1();
         keyAction(K, true);
         if (oldP1 != getP1())
             cpu.requestInterrupt(Interrupt.JOYPAD);
@@ -87,13 +89,13 @@ public class Joypad implements Component {
             line1 = Bits.set(line1, K.index() % firstPart, newValue);
     }
 
-    private int stateBits() {
-        int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
-        int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
-        return activeLine0 | activeLine1;
-    }
-
     private int getP1() {
-        return activeLines << 4 | stateBits();
+        return activeLines << FIRST_ACTIVE_LINE_INDEX | stateBits();
+    }
+    
+    private int stateBits() {
+        final int activeLine0 = Bits.test(activeLines, 0) ? line0 : 0;
+        final int activeLine1 = Bits.test(activeLines, 1) ? line1 : 0;
+        return activeLine0 | activeLine1;
     }
 }
