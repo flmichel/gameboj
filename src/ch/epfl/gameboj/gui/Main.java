@@ -47,7 +47,7 @@ public class Main extends Application {
             KeyCode.RIGHT, Key.RIGHT
             );
     private double simulationSpeed = 1.0;
-    boolean pause;
+    private boolean pause;
     private long cycle = 0;
     private long before = System.nanoTime();
     private GameBoy gb;
@@ -74,12 +74,12 @@ public class Main extends Application {
         imageView.setFitWidth(li.width() * 4);
         imageView.setFitHeight(li.height() * 4);
 
-        LcdImage sprites = gb.lcdController().spriteTiles();
+        LcdImage tiles = gb.lcdController().tiles();
 
-        ImageView spriteImageView = new ImageView();
-        spriteImageView.setImage(ImageConverter.convert(sprites));
-        spriteImageView.setFitWidth(sprites.width() * 2);
-        spriteImageView.setFitHeight(sprites.height() * 2);
+        ImageView tilesImageView = new ImageView();
+        tilesImageView.setImage(ImageConverter.convert(tiles));
+        tilesImageView.setFitWidth(tiles.width() * 2);
+        tilesImageView.setFitHeight(tiles.height() * 2);
 
         Label lab = new Label(" Speed : x");
         ChoiceBox<String> cb = new ChoiceBox<String>(FXCollections.observableArrayList(
@@ -126,7 +126,6 @@ public class Main extends Application {
                 );
 
         //Screenshot
-
         GridPane screenshotPane = new GridPane();
         Label screenshotName = new Label("Name :");
         TextField nameS = new TextField();
@@ -142,13 +141,13 @@ public class Main extends Application {
             pause = true;
             screenshotStage.setScene(screenshotScene);
             screenshotStage.show();
-            final Image i = ImageConverter.convert(gb.lcdController().currentImage());
-            final BufferedImage bi = SwingFXUtils.fromFXImage(i, null);
             saveScreenshotButton.setOnMouseReleased(f -> {  
                 try {
                     String name = nameS.getText();
                     if (name.equals(""))
                         name = "screenshot";
+                    final Image i = ImageConverter.convert(gb.lcdController().currentImage());
+                    final BufferedImage bi = SwingFXUtils.fromFXImage(i, null);
                     ImageIO.write(bi, "png", new File(name  + ".png"));
                     screenshotStage.close();
                     stage.requestFocus();
@@ -159,6 +158,8 @@ public class Main extends Application {
                 }
             });
         });
+        screenshotStage.setOnCloseRequest(e -> {pause = false;});
+
 
         Button resetButton = new Button("Reset");
         resetButton.setOnMouseReleased(e -> {
@@ -170,18 +171,11 @@ public class Main extends Application {
             }
         });
 
-//        Button saveButton = new Button("Save game");
-//        
-//        Button loadButton = new Button("Load");
-
-//        Label saveLabel = new Label ("Game saved");
-//        BorderPane messagePane = new BorderPane(saveLabel);
-
         GridPane buttonsPane = new GridPane();
         buttonsPane.addRow(0, lab, cb, pauseButton, resetButton, screenshotButton, tileButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
 
-        BorderPane tilePane = new BorderPane(spriteImageView);
+        BorderPane tilePane = new BorderPane(tilesImageView);
         Scene tileScene = new Scene(tilePane);
         Stage tileStage = new Stage();
         tileStage.setTitle("TILES");
@@ -198,25 +192,6 @@ public class Main extends Application {
                 tileStage.close();
             }
         });
-
-        
-//        Button okButton = new Button("Ok");
-//        messagePane.setRight(okButton);
-//        
-//        okButton.setOnMouseReleased(f -> {
-//            gamePane.setBottom(null); 
-//            stage.setHeight(stage.getHeight()-30);
-//        });
-             
-//        saveButton.setOnMouseClicked(e -> { 
-//            saveGame(gb);
-//            gamePane.setBottom(messagePane); 
-//            stage.setHeight(stage.getHeight()+30);
-//        });    
-//        
-//        loadButton.setOnMouseClicked(e -> { 
-//          loadGame("SAUVEGARDE.bin") ; 
-//        });
 
         Scene scene = new Scene(gamePane);
         stage.setScene(scene);
@@ -237,8 +212,8 @@ public class Main extends Application {
                 imageView.requestFocus();
                 imageView.setImage(ImageConverter.convert(li));
 
-                LcdImage sprites = gb.lcdController().spriteTiles();
-                spriteImageView.setImage(ImageConverter.convert(sprites));
+                LcdImage tiles = gb.lcdController().tiles();
+                tilesImageView.setImage(ImageConverter.convert(tiles));
             }
         };
         timer.start();
@@ -250,83 +225,6 @@ public class Main extends Application {
         gb = new GameBoy(Cartridge.ofFile(romFile));
         cycle = 0;
     }
-    
-//    private void saveGame(GameBoy gb) {
-//        FileOutputStream fop = null;
-//        File file;
-//
-//        try {
-//
-//            file = new File("SAUVEGARDE.bin");
-//            fop = new FileOutputStream(file);
-//
-//            // if file doesnt exists, then create it
-//            if (!file.exists()) {
-//                file.createNewFile();
-//            }
-//
-//            // get the content in bytes
-//            byte[] content = new byte[gb.ram().size()];
-//            for (int i=0 ; i< content.length ; i++) {
-//                content[i] = (byte) gb.ram().read(i);
-//            }
-//            
-//            fop.write(content);
-//            fop.flush();
-//            fop.close();
-//
-//            System.out.println("Done");
-//            
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                if (fop != null) {
-//                    fop.close();
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }       
-//        }
-//    }
-//    
-//    private void loadGame(String fileName) {
-//     
-//        BufferedReader br = null;
-//        FileReader fr = null;
-//
-//        try {
-//
-//            //br = new BufferedReader(new FileReader(FILENAME));
-//            fr = new FileReader(fileName);
-//            br = new BufferedReader(fr);
-//
-//            for(int i = 0 ; i < gb.ram().size() ; i++) {
-//                gb.ram().write(i, br.read());
-//                }
-//
-//        } catch (IOException e) {
-//
-//            e.printStackTrace();
-//
-//        } finally {
-//
-//            try {
-//
-//                if (br != null)
-//                    br.close();
-//
-//                if (fr != null)
-//                    fr.close();
-//
-//            } catch (IOException ex) {
-//
-//                ex.printStackTrace();
-//
-//            }
-//
-//        }
-//    }
 }
 
 
