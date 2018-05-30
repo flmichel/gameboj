@@ -36,10 +36,12 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-    private static final Map<Object, Key> keyMap = Map.of(    
+    private static final Map<String, Key> keyMapString = Map.of(    
             "a", Key.A,
             "b", Key.B,
-            "s", Key.START,
+            "s", Key.START
+            );
+    private static final Map<KeyCode, Key> keyMapCode = Map.of(    
             KeyCode.SPACE, Key.SELECT,
             KeyCode.UP, Key.UP,
             KeyCode.DOWN, Key.DOWN,
@@ -73,43 +75,59 @@ public class Main extends Application {
         imageView.setImage(ImageConverter.convert(li));
         imageView.setFitWidth(li.width() * 4);
         imageView.setFitHeight(li.height() * 4);
-
+        
+        imageView.setOnKeyPressed(e -> {
+            if (keyMapCode.containsKey(e.getCode())) {
+                gb.joypad().keyPressed(keyMapCode.get(e.getCode()));
+            } else if (keyMapString.containsKey(e.getText())) {
+                gb.joypad().keyPressed(keyMapString.get(e.getText()));
+            }
+        });
+        imageView.setOnKeyReleased(e -> {
+            if (keyMapCode.containsKey(e.getCode())) {
+                gb.joypad().keyReleased(keyMapCode.get(e.getCode()));
+            } else if (keyMapString.containsKey(e.getText())) {
+                gb.joypad().keyReleased(keyMapString.get(e.getText()));
+            }
+        });
+        
+        //Tuiles
+        RadioButton tileButton =  new RadioButton("Show Tiles");
         LcdImage tiles = gb.lcdController().tiles();
 
         ImageView tilesImageView = new ImageView();
         tilesImageView.setImage(ImageConverter.convert(tiles));
         tilesImageView.setFitWidth(tiles.width() * 2);
         tilesImageView.setFitHeight(tiles.height() * 2);
+        
+        BorderPane tilePane = new BorderPane(tilesImageView);
+        Scene tileScene = new Scene(tilePane);
+        Stage tileStage = new Stage();
+        tileStage.setTitle("TILES");
 
+        tileButton.setOnMouseReleased(e -> {
+            if (tileButton.isSelected()) {
+
+                tileStage.setScene(tileScene);
+                tileStage.setX(40);
+                tileStage.show();
+                stage.requestFocus();
+
+            } else {
+                tileStage.close();
+            }
+        });
+        
+        //Vitesse d'émulation
         Label lab = new Label(" Speed : x");
         ChoiceBox<String> cb = new ChoiceBox<String>(FXCollections.observableArrayList(
                 "1", "1.5", "2", "5")
                 );
         cb.getSelectionModel().selectFirst();;
         cb.setOnAction(e -> {
-            simulationSpeed = Double.parseDouble(cb.getValue()); //prof a dit que ct bien que la speed soit associee au nombre
+            simulationSpeed = Double.parseDouble(cb.getValue());
         }
                 );
-
-
-
-        imageView.setOnKeyPressed(e -> {
-            if (keyMap.containsKey(e.getCode())) {
-                gb.joypad().keyPressed(keyMap.get(e.getCode()));
-            } else if (keyMap.containsKey(e.getText())) {
-                gb.joypad().keyPressed(keyMap.get(e.getText()));
-            }
-        });
-        imageView.setOnKeyReleased(e -> {
-            if (keyMap.containsKey(e.getCode())) {
-                gb.joypad().keyReleased(keyMap.get(e.getCode()));
-            } else if (keyMap.containsKey(e.getText())) {
-                gb.joypad().keyReleased(keyMap.get(e.getText()));
-            }
-        });
-
-
-        RadioButton tileButton =  new RadioButton("Show Tiles");
 
         //Pause
         Button pauseButton = new Button("Pause");
@@ -160,7 +178,7 @@ public class Main extends Application {
         });
         screenshotStage.setOnCloseRequest(e -> {pause = false;});
 
-
+        //Reset
         Button resetButton = new Button("Reset");
         resetButton.setOnMouseReleased(e -> {
             try {
@@ -171,27 +189,11 @@ public class Main extends Application {
             }
         });
 
+        
+        
         GridPane buttonsPane = new GridPane();
         buttonsPane.addRow(0, lab, cb, pauseButton, resetButton, screenshotButton, tileButton);
         BorderPane gamePane = new BorderPane(imageView, buttonsPane, null, null, null);
-
-        BorderPane tilePane = new BorderPane(tilesImageView);
-        Scene tileScene = new Scene(tilePane);
-        Stage tileStage = new Stage();
-        tileStage.setTitle("TILES");
-
-        tileButton.setOnMouseReleased(e -> {
-            if (tileButton.isSelected()) {
-
-                tileStage.setScene(tileScene);
-                tileStage.setX(40);
-                tileStage.show();
-                stage.requestFocus();
-
-            } else {
-                tileStage.close();
-            }
-        });
 
         Scene scene = new Scene(gamePane);
         stage.setScene(scene);
