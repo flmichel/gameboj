@@ -68,11 +68,11 @@ public class Main extends Application {
         if (arguments.size() != 1)
             System.exit(1);
         
-        File romFile = new File(arguments.get(0));
+        final File romFile = new File(arguments.get(0));
         gb = new GameBoy(Cartridge.ofFile(romFile));
         LcdImage li = gb.lcdController().currentImage();
 
-        ImageView imageView = new ImageView();
+        final ImageView imageView = new ImageView();
         imageView.setImage(ImageConverter.convert(li));
         imageView.setFitWidth(li.width() * 4);
         imageView.setFitHeight(li.height() * 4);
@@ -210,12 +210,12 @@ public class Main extends Application {
                 if (!pause)
                     cycle += (long)(GameBoy.NB_CYCLES_P_NANOSECOND * elapse * simulationSpeed);
                 gb.runUntil(cycle);
-                LcdImage li = gb.lcdController().currentImage();
+                final LcdImage li = gb.lcdController().currentImage();
 
                 imageView.requestFocus();
                 imageView.setImage(ImageConverter.convert(li));
 
-                LcdImage tiles = gb.lcdController().tiles();
+                final LcdImage tiles = gb.lcdController().tiles();
                 tilesImageView.setImage(ImageConverter.convert(tiles));
             }
         };
@@ -224,7 +224,7 @@ public class Main extends Application {
 
     private void resetGb() throws Exception {
         List<String> arguments = getParameters().getRaw();
-        File romFile = new File(arguments.get(0));
+        final File romFile = new File(arguments.get(0));
         gb = new GameBoy(Cartridge.ofFile(romFile));
         cycle = 0;
     }

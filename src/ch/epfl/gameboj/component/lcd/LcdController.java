@@ -383,16 +383,16 @@ public final class LcdController implements Component, Clocked {
      * @return une image avec toutes les tuiles affichées.
      */
     public LcdImage tiles() {
-        int size = IMAGE_SIZE/2;
-        LcdImage.Builder imageBuilder = new LcdImage.Builder(size, 192);
+        final int size = IMAGE_SIZE/2;
+        final LcdImage.Builder imageBuilder = new LcdImage.Builder(size, 192);
         for (int lineIndex = 0; lineIndex < 192; lineIndex++) {
-            LcdImageLine.Builder line = new LcdImageLine.Builder(size);
+            final LcdImageLine.Builder line = new LcdImageLine.Builder(size);
             for (int x = 0; x < size / PIXEL_PER_TILE_LINE; x++) {
                 final int numberOfTheTile = lineIndex / PIXEL_PER_TILE_LINE * 16 + x;
                 final int tileLineIndex = lineIndex % PIXEL_PER_TILE_LINE;
                 final int address = getAddress(numberOfTheTile, tileLineIndex, TypeOfLine.SPRITE);
-                int lsb = read(address);
-                int msb = read(address + 1);
+                final int lsb = read(address);
+                final int msb = read(address + 1);
                 line.setBytes(x, msb, lsb);
             }
             imageBuilder.setLine(lineIndex, line.build());
