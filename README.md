@@ -1,2 +1,2 @@
-# EPFL GamebojEPFL Gameboj projectt
+# EPFL Gameboj project
 Gameboy emulator written in Java
